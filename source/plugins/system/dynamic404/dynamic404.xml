@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" group="system" method="upgrade">
+	<name>PLG_SYSTEM_DYNAMIC404</name>
+	<author>Yireo</author>
+	<creationDate>May 2014</creationDate>
+	<copyright>Copyright (C) 2014 Yireo.com. All rights reserved.</copyright>
+	<license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
+	<authorEmail>support@yireo.com</authorEmail>
+	<authorUrl>www.yireo.com</authorUrl>
+	<version>1.0.34</version>
+	<description>PLG_SYSTEM_DYNAMIC404_DESC</description>
+
+	<files>
+		<filename plugin="dynamic404">dynamic404.php</filename>
+		<filename>index.html</filename>
+	</files>
+
+    <languages>
+        <language tag="en-GB">en-GB.plg_system_dynamic404.ini</language>
+        <language tag="en-GB">en-GB.plg_system_dynamic404.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field name="redirect_www" type="radio" default="0" label="PLG_SYSTEM_DYNAMIC404_FIELD_REDIRECT_WWW" description="PLG_SYSTEM_DYNAMIC404_FIELD_REDIRECT_WWW_DESC">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
+
+    <updateservers>
+        <server type="extension" priority="1" name="plg_system_dynamic404">http://www.yireo.com/updates/plg_system_dynamic404.xml</server>
+    </updateservers>
+</extension>

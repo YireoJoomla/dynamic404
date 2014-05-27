@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="2.5" method="upgrade">
+    <name>COM_DYNAMIC404</name>
+    <author>Yireo</author>
+    <authoremail>support@yireo.com</authoremail>
+    <authorurl>http://www.yireo.com</authorurl>
+    <creationDate>May 2014</creationDate>
+    <copyright>Copyright (C) 2014 Yireo.com. All rights reserved.</copyright>
+    <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
+    <version>1.0.35</version>
+    <description>COM_DYNAMIC404_DESC</description>
+
+    <!-- installation part -->
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file>
+        </sql>
+    </install>
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
+        </sql>
+    </uninstall>
+    <update>
+        <schemas>
+             <schemapath type="mysql">sql</schemapath>
+        </schemas>
+    </update>
+
+    <scriptfile>dynamic404.manifest.php</scriptfile>
+    
+    <files folder="site">
+        <filename>index.html</filename>
+        <filename>controller.php</filename>
+        <filename>dynamic404.php</filename>
+        <folder>views</folder>
+    </files>
+    
+    <!-- administration part -->
+    <administration>
+
+        <menu img="../media/com_dynamic404/images/menu-dynamic404.png">COM_DYNAMIC404</menu>
+        <submenu>
+            <menu link="option=com_dynamic404&amp;view=home">COM_DYNAMIC404_VIEW_HOME</menu>
+            <menu link="option=com_dynamic404&amp;view=setup">COM_DYNAMIC404_VIEW_SETUP</menu>
+            <menu link="option=com_dynamic404&amp;view=redirects">COM_DYNAMIC404_VIEW_REDIRECTS</menu>
+            <menu link="option=com_dynamic404&amp;view=logs">COM_DYNAMIC404_VIEW_LOGS</menu>
+        </submenu>
+
+        <files folder="admin">
+            <filename>access.xml</filename>
+            <filename>config.xml</filename>
+            <filename>controller.php</filename>
+            <filename>dynamic404.php</filename>
+            <filename>dynamic404.manifest.php</filename>
+            <filename>index.html</filename>
+            <folder>helpers</folder>
+            <folder>fields</folder>
+            <folder>lib</folder>
+            <folder>models</folder>
+            <folder>sql</folder>
+            <folder>tables</folder>
+            <folder>views</folder>
+        </files>
+        <files>
+            <filename>dynamic404.xml</filename>
+        </files>
+
+        <languages folder="admin/language">
+            <language tag="en-GB">en-GB.com_dynamic404.sys.ini</language>
+            <language tag="en-GB">en-GB.com_dynamic404.ini</language>
+            <language tag="en-GB">en-GB.lib_yireo.ini</language>
+        </languages>
+
+    </administration>
+
+    <languages folder="site/language">
+        <language tag="en-GB">en-GB.com_dynamic404.ini</language>
+    </languages>
+    
+    <media folder="media" destination="com_dynamic404">
+        <filename>index.html</filename>
+        <folder>css</folder>
+        <folder>images</folder>
+        <folder>js</folder>
+    </media>
+
+    <updateservers>
+        <server type="extension" priority="1" name="com_dynamic404">http://www.yireo.com/updates/com_dynamic404.xml</server>
+    </updateservers>
+</extension>

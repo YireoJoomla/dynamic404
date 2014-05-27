@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" group="dynamic404" method="upgrade">
+    <name>PLG_DYNAMIC404_MAGEBRIDGE</name>
+    <author>Yireo</author>
+    <creationDate>February 2013</creationDate>
+    <copyright>Copyright (C) 2013 Yireo.com. All rights reserved.</copyright>
+    <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
+    <authorEmail>info@yireo.com</authorEmail>
+    <authorUrl>www.yireo.com</authorUrl>
+    <version>1.1.0</version>
+    <description>PLG_DYNAMIC404_MAGEBRIDGE_DESC</description>
+
+    <files>
+        <filename plugin="magebridge">magebridge.php</filename>
+        <filename>index.html</filename>
+    </files>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                 <field name="enable_products" type="list" default="1" label="PLG_DYNAMIC404_MAGEBRIDGE_FIELD_ENABLE_PRODUCTS" description="PLG_DYNAMIC404_MAGEBRIDGE_FIELD_ENABLE_PRODUCTS_DESC">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </field>
+                <field name="product_rating" type="text" default="85" size="4" label="PLG_DYNAMIC404_MAGEBRIDGE_FIELD_PRODUCT_RATING" description="PLG_DYNAMIC404_MAGEBRIDGE_FIELD_PRODUCT_RATING_DESC" />
+                <field name="enable_categories" type="list" default="1" label="PLG_DYNAMIC404_MAGEBRIDGE_FIELD_ENABLE_CATEGORIES" description="PLG_DYNAMIC404_MAGEBRIDGE_FIELD_ENABLE_CATEGORIES_DESC">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </field>
+                <field name="category_rating" type="text" default="85" size="4" label="PLG_DYNAMIC404_MAGEBRIDGE_FIELD_CATEGORY_RATING" description="PLG_DYNAMIC404_MAGEBRIDGE_FIELD_CATEGORY_RATING_DESC" />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" group="dynamic404" method="upgrade">
+    <name>PLG_DYNAMIC404_MIJOSHOP</name>
+    <author>Yireo</author>
+    <creationDate>April 2014</creationDate>
+    <copyright>Copyright (C) 2014 Yireo.com. All rights reserved.</copyright>
+    <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
+    <authorEmail>info@yireo.com</authorEmail>
+    <authorUrl>www.yireo.com</authorUrl>
+    <version>1.0.1</version>
+    <description>PLG_DYNAMIC404_MIJOSHOP_DESC</description>
+
+    <files>
+        <filename plugin="mijoshop">mijoshop.php</filename>
+        <filename>index.html</filename>
+    </files>
+
+    <languages>
+        <language tag="en-GB">en-GB.plg_dynamic404_mijoshop.ini</language>
+        <language tag="en-GB">en-GB.plg_dynamic404_mijoshop.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field name="rating_product" type="text" default="80" size="4" label="PLG_DYNAMIC404_MIJOSHOP_FIELD_RATING_PRODUCT" description="PLG_DYNAMIC404_MIJOSHOP_FIELD_RATING_PRODUCT_DESC" />
+                <field name="rating_category" type="text" default="80" size="4" label="PLG_DYNAMIC404_MIJOSHOP_FIELD_RATING_CATEGORY" description="PLG_DYNAMIC404_MIJOSHOP_FIELD_RATING_CATEGORY_DESC" />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

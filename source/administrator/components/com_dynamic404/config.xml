@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <fields>
+        <fieldset name="basic" addfieldpath="administrator/components/com_dynamic404/fields">
+            <field name="enable_redirect" type="radio" default="1" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_ENABLE_REDIRECT" description="COM_DYNAMIC404_FIELD_ENABLE_REDIRECT_DESC" required="1">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="enable_logging" type="radio" default="1" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_ENABLE_LOGGING" description="COM_DYNAMIC404_FIELD_ENABLE_LOGGING_DESC" required="1">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="error_page" type="list" default="0" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_ERROR_PAGE" description="COM_DYNAMIC404_FIELD_ERROR_PAGE_DESC" required="1">
+                <option value="0">Dynamic404 error-page</option>
+                <option value="1">Default error-page</option>
+                <option value="2">Menu-Item</option>
+            </field>
+
+            <field name="@spacer" type="spacer" default="" label="" />
+            <field name="article_id_400" type="article" default="" 
+                label="COM_DYNAMIC404_FIELD_ARTICLE_ID_400" description="COM_DYNAMIC404_FIELD_ARTICLE_ID_400_DESC" />
+            <field name="menuitem_id_400" type="menuitem" default="" 
+                label="COM_DYNAMIC404_FIELD_MENUITEM_ID_400" description="COM_DYNAMIC404_FIELD_MENUITEM_ID_400_DESC">
+                <option value="">JNONE</option>
+            </field>
+            <field name="@spacer" type="spacer" default="" label="" />
+            <field name="article_id_401" type="article" default="" 
+                label="COM_DYNAMIC404_FIELD_ARTICLE_ID_401" description="COM_DYNAMIC404_FIELD_ARTICLE_ID_401_DESC" />
+            <field name="menuitem_id_401" type="menuitem" default="" 
+                label="COM_DYNAMIC404_FIELD_MENUITEM_ID_401" description="COM_DYNAMIC404_FIELD_MENUITEM_ID_401_DESC">
+                <option value="">JNONE</option>
+            </field>
+            <field name="@spacer" type="spacer" default="" label="" />
+            <field name="article_id_403" type="article" default="" 
+                label="COM_DYNAMIC404_FIELD_ARTICLE_ID_403" description="COM_DYNAMIC404_FIELD_ARTICLE_ID_403_DESC" />
+            <field name="menuitem_id_403" type="menuitem" default="" 
+                label="COM_DYNAMIC404_FIELD_MENUITEM_ID_403" description="COM_DYNAMIC404_FIELD_MENUITEM_ID_403_DESC">
+                <option value="">JNONE</option>
+            </field>
+            <field name="@spacer" type="spacer" default="" label="" />
+            <field name="article_id_404" type="article" default="" 
+                label="COM_DYNAMIC404_FIELD_ARTICLE_ID_404" description="COM_DYNAMIC404_FIELD_ARTICLE_ID_404_DESC" />
+            <field name="menuitem_id_404" type="menuitem" default="" 
+                label="COM_DYNAMIC404_FIELD_MENUITEM_ID_404" description="COM_DYNAMIC404_FIELD_MENUITEM_ID_404_DESC">
+                <option value="">JNONE</option>
+            </field>
+            <field name="@spacer" type="spacer" default="" label="" />
+            <field name="article_id_500" type="article" default="" 
+                label="COM_DYNAMIC404_FIELD_ARTICLE_ID_500" description="COM_DYNAMIC404_FIELD_ARTICLE_ID_500_DESC" />
+            <field name="menuitem_id_500" type="menuitem" default="" 
+                label="COM_DYNAMIC404_FIELD_MENUITEM_ID_500" description="COM_DYNAMIC404_FIELD_MENUITEM_ID_500_DESC">
+                <option value="">JNONE</option>
+            </field>
+        </fieldset>
+        <fieldset name="matching">
+            <field name="search_menuitems" type="radio" default="1" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_SEARCH_MENUITEMS" description="COM_DYNAMIC404_FIELD_SEARCH_MENUITEMS_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="search_articles" type="radio" default="1" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_SEARCH_ARTICLES" description="COM_DYNAMIC404_FIELD_SEARCH_ARTICLES_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="search_categories" type="radio" default="1" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_SEARCH_CATEGORIES" description="COM_DYNAMIC404_FIELD_SEARCH_CATEGORIES_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="search_ids" type="radio" default="1" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_SEARCH_IDS" description="COM_DYNAMIC404_FIELD_SEARCH_IDS_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field type="spacer" hr="true" />
+            <field name="rating_articles" type="text" default="85" label="COM_DYNAMIC404_FIELD_RATING_ARTICLES" description="COM_DYNAMIC404_FIELD_RATING_ARTICLES_DESC" />
+            <field name="rating_menuitems" type="text" default="80" label="COM_DYNAMIC404_FIELD_RATING_MENUITEMS" description="COM_DYNAMIC404_FIELD_RATING_MENUITEMS_DESC" />
+            <field name="rating_categories" type="text" default="80" label="COM_DYNAMIC404_FIELD_RATING_CATEGORIES" description="COM_DYNAMIC404_FIELD_RATING_CATEGORIES_DESC" />
+            <field name="rating_custom_full_url" type="text" default="95" label="COM_DYNAMIC404_FIELD_RATING_CUSTOM_FULL_URL" description="COM_DYNAMIC404_FIELD_RATING_CUSTOM_FULL_URL_DESC" />
+            <field name="rating_custom_last_segment" type="text" default="94" label="COM_DYNAMIC404_FIELD_RATING_CUSTOM_LAST_SEGMENT" description="COM_DYNAMIC404_FIELD_RATING_CUSTOM_LAST_SEGMENT_DESC" />
+            <field name="rating_custom_any_segment" type="text" default="90" label="COM_DYNAMIC404_FIELD_RATING_CUSTOM_ANY_SEGMENT" description="COM_DYNAMIC404_FIELD_RATING_CUSTOM_ANY_SEGMENT_DESC" />
+            <field name="rating_custom_fuzzy" type="text" default="90" label="COM_DYNAMIC404_FIELD_RATING_CUSTOM_FUZZY" description="COM_DYNAMIC404_FIELD_RATING_CUSTOM_FUZZY_DESC" />
+            <field type="spacer" hr="true" />
+            <field name="search_plugins" type="radio" default="1" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_SEARCH_PLUGINS" description="COM_DYNAMIC404_FIELD_SEARCH_PLUGINS_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="rating_search_plugins" type="text" default="80" label="COM_DYNAMIC404_FIELD_RATING_SEARCH_PLUGINS" description="COM_DYNAMIC404_FIELD_RATING_SEARCH_PLUGINS_DESC" />
+        </fieldset>
+        <fieldset name="advanced">
+            <field name="prevent_loops" type="radio" default="1" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_PREVENT_LOOPS" description="COM_DYNAMIC404_FIELD_PREVENT_LOOPS_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="redirect_non404" type="radio" default="0" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_REDIRECT_NON404" description="COM_DYNAMIC404_FIELD_REDIRECT_NON404">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="load_all_articles" type="radio" default="0" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_LOAD_ALL_ARTICLES" description="COM_DYNAMIC404_FIELD_LOAD_ALL_ARTICLES_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="load_all_categories" type="radio" default="0" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_LOAD_ALL_CATEGORIES" description="COM_DYNAMIC404_FIELD_LOAD_ALL_CATEGORIES_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="max_suggestions" type="text" default="5" label="COM_DYNAMIC404_FIELD_MAX_SUGGESTIONS" description="COM_DYNAMIC404_FIELD_MAX_SUGGESTIONS_DESC" />
+            <field name="http_status" type="list" default="301" label="COM_DYNAMIC404_FIELD_HTTP_STATUS" description="COM_DYNAMIC404_FIELD_HTTP_STATUS_DESC">
+                <option value="301">301 Moved Permanently</option>
+                <option value="302">302 Found</option>
+                <option value="303">303 See Other</option>
+                <option value="307">307 Temporary Redirect</option>
+            </field>
+            <field name="strip_extensions" type="textarea" default="asp,aspx" label="COM_DYNAMIC404_FIELD_STRIP_EXTENSIONS" description="COM_DYNAMIC404_FIELD_STRIP_EXTENSIONS_DESC" />
+            <field type="spacer" hr="true" />
+            <field name="backend_feed" type="radio" default="1" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_BACKEND_FEED" description="COM_DYNAMIC404_FIELD_BACKEND_FEED_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="support_key" type="text" default="" size="60"
+                label="LIB_YIREO_CONFIG_FIELD_SUPPORT_KEY" description="LIB_YIREO_CONFIG_FIELD_SUPPORT_KEY_DESC" />
+            <field name="debug" type="radio" default="0" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_DEBUG" description="COM_DYNAMIC404_FIELD_DEBUG_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="caching" type="radio" default="0" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_CACHING" description="COM_DYNAMIC404_FIELD_CACHING_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+       </fieldset>
+    </fields>
+    <fieldset name="permissions" description="JCONFIG_PERMISSIONS_DESC" label="JCONFIG_PERMISSIONS_LABEL">
+        <field name="rules" type="rules" component="com_dynamic404" filter="rules" validate="rules" label="COM_DYNAMIC404_FIELD_RULES" description="COM_DYNAMIC404_FIELD_RULES_DESC" section="component" />
+    </fieldset>
+</config>

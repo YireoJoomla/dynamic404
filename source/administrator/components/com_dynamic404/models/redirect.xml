@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fields name="params">
+        <fieldset name="params">
+            <field name="match_case" type="list" default="0" label="COM_DYNAMIC_REDIRECT_PARAM_MATCH_CASE" description="COM_DYNAMIC_REDIRECT_PARAM_MATCH_CASE_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+                <option value="2">JDEFAULT</option>
+            </field>
+            <field name="show_description" type="list" default="0" label="COM_DYNAMIC_REDIRECT_PARAM_SHOW_DESCRIPTION" description="COM_DYNAMIC_REDIRECT_PARAM_MATCH_SHOW_DESCRIPTION">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+                <option value="2">JDEFAULT</option>
+            </field>
+            <field name="rating" type="text" default="" label="COM_DYNAMIC_REDIRECT_PARAM_RATING" description="COM_DYNAMIC_REDIRECT_PARAM_MATCH_RATING" />
+        </fieldset>
+    </fields>
+</form>
