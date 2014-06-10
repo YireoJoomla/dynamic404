@@ -61,7 +61,17 @@ class plgDynamic404Zoo extends JPlugin
             return $matches;
         }
 
-        $rows = $this->getItems($urilast);
+        $rows = array();
+        $items = $this->getItems($urilast);
+        if(!empty($items)) {
+            $rows = array_merge($rows, $items);
+        }
+
+        $categories = $this->getCategories($urilast);
+        if(!empty($categories)) {
+            $rows = array_merge($rows, $categories);
+        }
+
         if(!empty($rows)) {
             foreach( $rows as $row ) {
 
@@ -108,6 +118,32 @@ class plgDynamic404Zoo extends JPlugin
     }
 
     /**
+     * Get all ZOO categories
+     *
+     * @access public
+     * @param string $alias
+     * @return array
+     */
+    public function getCategories($alias)
+    {
+        static $rows = null;
+        if(empty($rows)) {
+            $db = JFactory::getDBO();
+            $db->setQuery('SELECT `id`, `name`, `alias` FROM `#__zoo_category` WHERE `published`=1 AND `alias` LIKE "%'.$alias.'%"');
+            $rows = $db->loadObjectList();
+
+            if(!empty($rows)) { 
+                foreach($rows as $index => $row) {
+                    $row->row_type = 'category';
+                    $rows[$index] = $row;
+                }
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
      * Method to prepare an item
      *
      * @access private
@@ -126,14 +162,20 @@ class plgDynamic404Zoo extends JPlugin
         }
 
         $item->type = 'component';
-        $item->rating = $this->getParams()->get('rating', 85);
-        $item->match_note = 'zoo item';
 
         switch($item->row_type) {
     
+            case 'category':
+                $item->rating = $this->getParams()->get('category_rating', 85);
+                $item->match_note = 'zoo category';
+                $item->url = JRoute::_('index.php?option=com_zoo&task=category&category_id='.(int)$item->id.':'.$item->alias);
+                break;
+        
             case 'item':
             default:
-                $item->url = JRoute::_('index.php?option=com_zoo&view=item&layout=item&item_id='.(int)$item->id);
+                $item->rating = $this->getParams()->get('item_rating', 85);
+                $item->match_note = 'zoo item';
+                $item->url = JRoute::_('index.php?option=com_zoo&task=item&item_id='.(int)$item->id.':'.$item->alias);
                 break;
         }
         return $item;

@@ -24,10 +24,10 @@ class Dynamic404HelperGUI
     static public function getMatchTypes() 
     {
         $options = array(
-            array( 'value' => 'full_url', 'title' => JText::_( 'Match the full URL' )),
-            array( 'value' => 'last_segment', 'title' => JText::_( 'Match the last URL-segment' )),
-            array( 'value' => 'any_segment', 'title' => JText::_( 'Match any URL-segment' )),
-            array( 'value' => 'fuzzy', 'title' => JText::_( 'Partially match the last URL-segment' )),
+            array( 'value' => 'full_url', 'title' => JText::_( 'COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_FULL_URL' )),
+            array( 'value' => 'last_segment', 'title' => JText::_( 'COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_LAST_SEGMENT' )),
+            array( 'value' => 'any_segment', 'title' => JText::_( 'COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_ANY_SEGMENT' )),
+            array( 'value' => 'fuzzy', 'title' => JText::_( 'COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_FUZZY' )),
         );
         return $options;
     }

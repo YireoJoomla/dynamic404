@@ -29,6 +29,9 @@ class Dynamic404ViewRedirect extends YireoViewForm
      */
     public function display($tpl = null)
 	{
+        // Load Bootstrap
+        YireoHelper::bootstrap();
+
         // Automatically fetch the item and assign it to the layout
         $this->fetchItem();
 
@@ -37,30 +40,6 @@ class Dynamic404ViewRedirect extends YireoViewForm
             $this->item->match = base64_decode(JRequest::getString('match'));
         }
 
-        // Add select boxes
-        $options = Dynamic404HelperGUI::getMatchTypes();
-        $this->lists['type'] = JHTML::_('select.genericlist', $options, 'type', null, 'value', 'title', $this->item->type );
-
-        $options = Dynamic404HelperGUI::getRedirectTypes();
-        $this->lists['http_status'] = JHTML::_('select.genericlist', $options, 'http_status', null, 'value', 'title', $this->item->http_status );
-
 		parent::display($tpl);
 	}
-
-    /*
-     * Helper-method to get a tip-text
-     *
-     * @access public
-     * @param string $title
-     * @param string $description
-     * @return array
-     */
-    public function getMessageText($title = null, $description = null)
-    {
-        return '<span class="hasTip" title="'.JText::_($title).'::'.JText::_($description).'">'
-            . ((!empty($title)) ? JText::_($title) : null)
-            . '&nbsp; <img src="../media/com_dynamic404/images/info.png" alt="'.JText::_( 'Info' ).'" />'
-            . '</span>'
-        ;
-    }
 }

@@ -8,8 +8,7 @@
  */
 
 fieldset.adminform {
-    border: 1px solid #dfdfdf !important;
-    background-color: #f1f1f1;
+    border: 0;
 }
 
 fieldset.adminform td.key {

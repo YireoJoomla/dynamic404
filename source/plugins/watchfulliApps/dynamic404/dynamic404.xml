@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" group="watchfulliApps" method="upgrade">
+	<name>PLG_WATCHFULLIAPPS_DYNAMIC404</name>
+	<author>Yireo</author>
+	<creationDate>May 2014</creationDate>
+	<copyright>Copyright (C) 2014 Yireo.com. All rights reserved.</copyright>
+	<license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
+	<authorEmail>support@yireo.com</authorEmail>
+	<authorUrl>http://www.yireo.com/</authorUrl>
+	<version>1.0.0</version>
+	<description>PLG_WATCHFULLIAPPS_DYNAMIC404_DESC</description>
+
+	<files>
+		<filename plugin="dynamic404">dynamic404.php</filename>
+		<filename>index.html</filename>
+	</files>
+
+    <languages>
+        <language tag="en-GB">en-GB.plg_watchfulliApps_dynamic404.ini</language>
+        <language tag="en-GB">en-GB.plg_watchfulliApps_dynamic404.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field name="check_enable_redirect" type="radio" default="1" label="PLG_WATCHFULLIAPPS_DYNAMIC404_FIELD_CHECK_ENABLE_REDIRECT" 
+                    description="PLG_WATCHFULLIAPPS_DYNAMIC404_FIELD_CHECK_ENABLE_REDIRECT_DESC">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
+
+    <updateservers>
+        <server type="extension" priority="1" name="plg_watchfulliapps_dynamic404">http://www.yireo.com/updates/plg_watchfulliapps_dynamic404.xml</server>
+    </updateservers>
+</extension>

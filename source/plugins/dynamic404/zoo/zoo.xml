@@ -23,7 +23,8 @@
     <config>
         <fields name="params">
             <fieldset name="basic">
-                <field name="rating" type="text" default="85" size="4" label="PLG_DYNAMIC404_ZOO_FIELD_RATING" description="PLG_DYNAMIC404_ZOO_FIELD_RATING_DESC" />
+                <field name="item_rating" type="text" default="85" size="4" label="PLG_DYNAMIC404_ZOO_FIELD_ITEM_RATING" description="PLG_DYNAMIC404_ZOO_FIELD_ITEM_RATING_DESC" />
+                <field name="category_rating" type="text" default="85" size="4" label="PLG_DYNAMIC404_ZOO_FIELD_CATEGORY_RATING" description="PLG_DYNAMIC404_ZOO_FIELD_CATEGORY_RATING_DESC" />
             </fieldset>
         </fields>
     </config>
