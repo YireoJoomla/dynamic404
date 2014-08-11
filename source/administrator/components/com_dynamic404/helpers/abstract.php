@@ -45,6 +45,7 @@ class HelperAbstract
                 JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/home/tmpl/default_ads.php',
                 JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/home/tmpl/feeds.php',
                 JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/setup/tmpl/default_j16.php',
+                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/setup/tmpl/joomla25',
                 JPATH_ADMINISTRATOR.'/components/com_dynamic404/helpers/acl.php',
             ),
         );

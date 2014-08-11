@@ -656,9 +656,11 @@ class Dynamic404Helper
         }
 
         // Block access to non-existing components
-        $cmd = JRequest::getCmd('option');
-        if(!empty($cmd) && is_dir(JPATH_SITE.'/components/'.$cmd) == false) {
-            $block = true;
+        if ($this->params->get('block_nonexisting_components', 1) == 1) {
+            $cmd = JRequest::getCmd('option');
+            if(!empty($cmd) && is_dir(JPATH_SITE.'/components/'.$cmd) == false) {
+                $block = true;
+            }
         }
 
         if($block == false) {

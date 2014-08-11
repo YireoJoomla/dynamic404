@@ -32,33 +32,22 @@ class Dynamic404ViewSetup extends YireoView
      */
     public function display($tpl = null)
     {
-        $query = 'SELECT * FROM #__extensions WHERE `type`="plugin" AND `folder`="system" AND `element`="dynamic404" AND `enabled`="1"';
-        $db = JFactory::getDBO();
-        $db->setQuery($query);
-        $row = $db->loadObject();
-        
-        if (!empty($row)) {
-            $plugin_check_d404 = 'enabled';
-        } else if (file_exists(JPATH_SITE.'/plugins/system/dynamic404/dynamic404.php')) {
-            $plugin_check_d404 = 'disabled';
-        } else {
-            $plugin_check_d404 = 'missing';
-        }
-        $this->assignRef('plugin_check_d404', $plugin_check_d404);
-
-        $query = 'SELECT * FROM #__extensions WHERE `type`="plugin" AND `folder`="system" AND `element`="redirect" AND `enabled`="1"';
-        $db = JFactory::getDBO();
-        $db->setQuery($query);
-        $row = $db->loadObject();
-        
-        if (!empty($row)) {
-            $plugin_check_redirect = 'enabled';
-        } else {
-            $plugin_check_redirect = 'disabled';
-        }
-        $this->assignRef('plugin_check_redirect', $plugin_check_redirect);
+        $checks = $this->getChecks();
+        $this->assignRef('checks', $checks);
 
         parent::display();
+    }
+
+    public function getChecks()
+    {
+        require_once JPATH_COMPONENT.'/helpers/check.php';
+        $checks = array();
+        $checks[] = Dynamic404HelperCheck::checkDynamic404SystemPlugin();
+        $checks[] = Dynamic404HelperCheck::checkRedirectSystemPlugin();
+        $checks[] = Dynamic404HelperCheck::checkSefEnabled();
+        $checks[] = Dynamic404HelperCheck::checkSefRewritesEnabled();
+        $checks[] = Dynamic404HelperCheck::checkAutoRedirectEnabled();
+        return $checks;
     }
 
     /*
@@ -133,6 +122,33 @@ class Dynamic404ViewSetup extends YireoView
         $html .= '<img src="'.$img.'" /> &nbsp;';
         $html .= '<span style="line-height:26px;"><strong>'.JText::_($title).'</strong>: ';
         $html .= $description.'</span>';
+        return $html;
+    }
+
+    /*
+     * Helper-method to get a tip-text
+     *
+     * @access public
+     * @param string $status
+     * @return array
+     */
+    public function getStatusIcon($status)
+    {
+        if ($status == 'warning')
+        {
+            $img = '../media/com_dynamic404/images/check-warning.png';
+        }
+        else if ($status == 'error')
+        {
+            $img = '../media/com_dynamic404/images/check-error.png';
+
+        }
+        else
+        {
+            $img = '../media/com_dynamic404/images/check-ok.png';
+        }
+
+        $html = '<img src="'.$img.'" /> &nbsp;';
         return $html;
     }
 }

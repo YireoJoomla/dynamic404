@@ -168,7 +168,7 @@ class plgDynamic404MageBridge extends JPlugin
         $item->name = $type.'; '.$item->name;
         $item->match_note = 'magebridge '.$type;
 
-        if(isset($item->url)) {
+        if(isset($item->url) && preg_match('/^(http|https):\/\//', $item->url) == false) {
             $item->url = JRoute::_('index.php?option=com_magebridge&view=root&request='.$item->url);
         } elseif(isset($item->url_key)) {
             $item->url = JRoute::_('index.php?option=com_magebridge&view=root&request='.$item->url_key);

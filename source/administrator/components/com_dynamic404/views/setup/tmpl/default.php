@@ -17,40 +17,24 @@ JHTML::_('behavior.tooltip');
 ?>
 <form method="post" name="adminForm" id="adminForm" action="index.php">
 <fieldset class="adminform">
-    <legend><?php echo JText::_( 'System Plugin' ); ?></legend>
-    <table class="table table-striped">
+    <legend><?php echo JText::_('COM_DYNAMIC404_CHECK_FIELDSET'); ?></legend>
+    <table class="adminlist table table-striped">
+        <thead>
+            <tr>
+                <th width="25%"><?php echo JText::_('COM_DYNAMIC404_CHECK_COLUMN_LABEL'); ?></th>
+                <th width="9%"><?php echo JText::_('COM_DYNAMIC404_CHECK_COLUMN_STATUS'); ?></th>
+                <th><?php echo JText::_('COM_DYNAMIC404_CHECK_COLUMN_MESSAGE'); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach($this->checks as $check) : ?>
         <tr>
-            <td width="200" align="left">
-                Dynamic404 System Plugin
-            </td>
-            <td>
-                <?php if ($this->plugin_check_d404 == 'enabled') { ?>
-                    <?php echo $this->getMessageText('Enabled', 'Plugin is enabled.', 0); ?>
-
-                <?php } else if ($this->plugin_check_d404 == 'disabled') { ?>
-                    <?php echo $this->getMessageText('Disabled', 'Plugin is not enabled yet.', -1); ?>
-                    <a href="index.php?option=com_dynamic404&task=pluginD404">Click here to enable</a>
-
-                <?php } else { ?>
-                    <?php echo $this->getMessageText('Not installed', 'Plugin is not installed yet.', -2); ?>
-                    <a href="http://www.yireo.com/software/joomla-extensions/dynamic404/downloads">Download from Yireo site</a>
-                <?php } ?>
-            </td>
+            <td><?php echo JText::_($check['label']); ?></td>
+            <td><?php echo $this->getStatusIcon($check['status']); ?></td>
+            <td><?php echo $check['message']; ?></td>
         </tr>
-        <tr>
-            <td width="200" align="left">
-                Redirect System Plugin
-            </td>
-            <td>
-                <?php if ($this->plugin_check_redirect == 'enabled') { ?>
-                    <?php echo $this->getMessageText('Enabled', 'Plugin is conflicting.', -2); ?>
-                    <a href="index.php?option=com_dynamic404&task=pluginRedirect">Click here to disable</a>
-
-                <?php } else if ($this->plugin_check_redirect == 'disabled') { ?>
-                    <?php echo $this->getMessageText('Disabled', 'Plugin is not conflicting.', 0); ?>
-                <?php } ?>
-            </td>
-        </tr>
+        <?php endforeach; ?>
+        </tbody>
     </table>
 </fieldset>
 
