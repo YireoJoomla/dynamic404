@@ -325,6 +325,7 @@ class Dynamic404HelperMatch
                 // Increase the rating if the title matches directly
                 $keywordMatch = 0;
                 foreach($keywords as $keyword) {
+                    if(empty($keyword)) continue;
                     if(stristr($match->name, $keyword)) $keywordMatch++;
                 }
                 if($keywordMatch == count($keywords)) {

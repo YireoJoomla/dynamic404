@@ -644,14 +644,14 @@ class Dynamic404Helper
         $block = false;
 
         // Block certain hack strings
-        $hacks = array(
-            '../proc/self/environ_',
-            '/../../../../../../',
-        );
-        foreach($hacks as $hack) {
-            if(stristr($url, $hack)) {
-                $block = true;
-                break;
+        $hacksFile = __DIR__.'/hacks.php';
+        if(file_exists($hacksFile)) include_once $hacksFile;
+        if(!empty($hacks)) {
+            foreach($hacks as $hack) {
+                if(stristr($url, $hack)) {
+                    $block = true;
+                    break;
+                }
             }
         }
 
