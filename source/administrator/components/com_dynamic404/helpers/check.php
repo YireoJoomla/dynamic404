@@ -63,7 +63,8 @@ class Dynamic404HelperCheck
         } 
         else
         {
-            $message = JText::_('COM_DYNAMIC404_CHECK_REDIRECTSYSTEMPLUGIN_ENABLED');
+            $link = 'index.php?option=com_dynamic404&task=pluginRedirect';
+            $message = JText::sprintf('COM_DYNAMIC404_CHECK_REDIRECTSYSTEMPLUGIN_ENABLED', $link);
             $status = 'warning';
         }
 
