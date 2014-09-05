@@ -303,6 +303,11 @@ class Dynamic404HelperMatch
         $match = 'all';
         $ordering = 'popular';
         $active = null;
+
+        $helper = JPATH_ADMINISTRATOR.'/components/com_search/helpers/search.php';
+        if(file_exists($helper)) {
+            require_once $helper;
+        }
     
         JPluginHelper::importPlugin('search');
         $dispatcher = JDispatcher::getInstance();
