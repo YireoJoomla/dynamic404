@@ -304,11 +304,13 @@ class Dynamic404HelperMatch
         $ordering = 'popular';
         $active = null;
 
+        // Include old helper if it exists (Joomla! bug?)
         $helper = JPATH_ADMINISTRATOR.'/components/com_search/helpers/search.php';
         if(file_exists($helper)) {
             require_once $helper;
         }
     
+        // Include Search Plugins
         JPluginHelper::importPlugin('search');
         $dispatcher = JDispatcher::getInstance();
         $areas = $dispatcher->trigger('onContentSearch', array($search, $match, $ordering, $active));
