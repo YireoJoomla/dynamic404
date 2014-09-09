@@ -39,6 +39,7 @@ class HelperAbstract
                 'logs' => 'logs',
             ),
             'obsolete_files' => array(
+                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/logs/tmpl/default.php',
                 JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/redirects/tmpl/default.php',
                 JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/home/tmpl/default.php',
                 JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/home/tmpl/default_cpanel.php',
