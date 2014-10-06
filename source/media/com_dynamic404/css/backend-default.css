@@ -39,3 +39,8 @@ fieldset.adminform td.value label {
 fieldset.adminform td.value select {
     clear: both;
 }
+
+fieldset.jpublished {
+    padding-bottom: 10px;
+}
+

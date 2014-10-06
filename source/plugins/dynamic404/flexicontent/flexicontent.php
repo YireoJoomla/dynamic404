@@ -4,7 +4,7 @@
  *
  * @author      Yireo (http://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (c) 2013 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright (c) 2014 Yireo (http://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        http://www.yireo.com/
  */
@@ -21,26 +21,6 @@ jimport( 'joomla.plugin.plugin' );
 class plgDynamic404FLEXIcontent extends JPlugin
 {
     /**
-     * Load the parameters
-     * 
-     * @access private
-     * @param null
-     * @return JParameter
-     */
-    private function getParams()
-    {
-        jimport('joomla.version');
-        $version = new JVersion();
-        if(version_compare($version->RELEASE, '1.5', 'eq')) {
-            $plugin = JPluginHelper::getPlugin('dynamic404', 'flexicontent');
-            $params = new JParameter($plugin->params);
-            return $params;
-        } else {
-            return $this->params;
-        }
-    }
-
-    /**
      * Return on all numeric matches
      *
      * @access public
@@ -53,14 +33,23 @@ class plgDynamic404FLEXIcontent extends JPlugin
         $nullDate = $db->getNullDate();
         $now = JFactory::getDate();
         $now = (method_exists('JDate', 'toSql')) ? $now->toSql() : $now->toMySQL();
-        $query = 'SELECT a.id, a.title, a.alias, a.catid, c.alias AS catalias, a.access FROM #__content AS a'
-            . ' LEFT JOIN `#__categories` AS c ON c.id = a.catid'
-            . ' WHERE a.state = 1 '
-            . ' AND ( a.publish_up = "'.$nullDate.'" OR a.publish_up <= "'.$now.'" )'
-            . ' AND ( a.publish_down = "'.$nullDate.'" OR a.publish_down >= "'.$now.'" )'
-            . ' AND a.id = '.(int)$number
-            . ' ORDER BY ordering'
-        ;
+
+        $query = $db->getQuery(true);
+        $query->select($db->quoteName(array('a.id', 'a.title', 'a.alias', 'a.catid', 'a.access')));
+        $query->select($db->quoteName('c.alias', 'catalias'));
+        $query->from($db->quoteName('#__content', 'a'));
+
+        $query->join('LEFT', $db->quoteName('#__categories', 'c') 
+            . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')');
+
+        $query->where($db->quoteName('a.id') . ' = '.(int)$number);
+        $query->where($db->quoteName('a.state') . ' = 1');
+        $query->where('(' . $db->quoteName('a.publish_up') . ' = '.$db->quote($nullDate) 
+            . ' OR ' . $db->quoteName('a.publish_up') . ' <= ' . $db->quote($now) . ')');
+        $query->where('(' . $db->quoteName('a.publish_down') . ' = '.$db->quote($nullDate) 
+            . ' OR ' . $db->quoteName('a.publish_down') . ' >= ' . $db->quote($now) . ')');
+
+        $query->order($db->quoteName('a.ordering'));
 
         $db->setQuery( $query );
         $rows = $db->loadObjectList();
@@ -94,20 +83,25 @@ class plgDynamic404FLEXIcontent extends JPlugin
         $nullDate = $db->getNullDate();
         $now = JFactory::getDate();
         $now = (method_exists('JDate', 'toSql')) ? $now->toSql() : $now->toMySQL();
-        $query = 'SELECT a.id, a.title, a.alias, a.catid, c.alias AS catalias, a.access FROM #__content AS a'
-            . ' LEFT JOIN `#__categories` AS c ON c.id = a.catid'
-            . ' WHERE a.state = 1 '
-            . ' AND ( a.publish_up = "'.$nullDate.'" OR a.publish_up <= "'.$now.'" )'
-            . ' AND ( a.publish_down = "'.$nullDate.'" OR a.publish_down >= "'.$now.'" )'
-            . ' AND (a.alias LIKE "%'.$urilast.'%" OR a.alias LIKE "%'.$urilast2.'%")' 
-            . ' AND a.id IN (SELECT itemid FROM yio_flexicontent_cats_item_relations WHERE itemid = a.id)'
-            . ' ORDER BY ordering'
-        ;
 
-        $section = $this->getParams()->get('section');
-        if(!empty($section) && $section > 0) {
-            $query .= ' AND a.sectionid = '.(int)$section;
-        }
+        $query = $db->getQuery(true);
+        $query->select($db->quoteName(array('a.id', 'a.title', 'a.alias', 'a.catid', 'a.access')));
+        $query->select($db->quoteName('c.alias', 'catalias'));
+        $query->from($db->quoteName('#__content', 'a'));
+
+        $query->join('LEFT', $db->quoteName('#__categories', 'c') 
+            . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')');
+
+        $query->where($db->quoteName('a.state') . ' = 1');
+        $query->where('(' . $db->quoteName('a.publish_up') . ' = '.$db->quote($nullDate) 
+            . ' OR ' . $db->quoteName('a.publish_up') . ' <= ' . $db->quote($now) . ')');
+        $query->where('(' . $db->quoteName('a.publish_down') . ' = '.$db->quote($nullDate) 
+            . ' OR ' . $db->quoteName('a.publish_down') . ' >= ' . $db->quote($now) . ')');
+        $query->where('(' . $db->quoteName('a.alias') . ' LIKE ' . $db->quote('%' . $urilast . '%') 
+            . ' OR ' . $db->quoteName('a.alias') . ' LIKE ' . $db->quote('%' . $urilast2 . '%'). ')');
+        $query->where($db->quoteName('a.id') . ' IN (SELECT itemid FROM #__flexicontent_cats_item_relations WHERE itemid = a.id)');
+
+        $query->order($db->quoteName('a.ordering'));
 
         $db->setQuery( $query );
         $rows = $db->loadObjectList();
@@ -151,7 +145,7 @@ class plgDynamic404FLEXIcontent extends JPlugin
 
         $item->type = 'component';
         $item->name = $item->title;
-        $item->rating = $this->getParams()->get('rating_articles', 85);
+        $item->rating = $this->params->get('rating_articles', 85);
         $item->match_note = 'flexicontent alias';
 
         $slug = $item->id.':'.$item->alias;

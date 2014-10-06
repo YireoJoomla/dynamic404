@@ -4,7 +4,7 @@
  *
  * @author      Yireo
  * @package     Dynamic404
- * @copyright   Copyright (c) 2013 Yireo
+ * @copyright   Copyright (c) 2014 Yireo
  * @license     GNU Public License (GPL) 
  * @link        http://www.yireo.com/
  */
@@ -20,26 +20,6 @@ jimport( 'joomla.plugin.plugin' );
  */
 class plgDynamic404Simplelists extends JPlugin
 {
-    /**
-     * Load the parameters
-     * 
-     * @access private
-     * @param null
-     * @return JParameter
-     */
-    private function getParams()
-    {
-        jimport('joomla.version');
-        $version = new JVersion();
-        if(version_compare($version->RELEASE, '1.5', 'eq')) {
-            $plugin = JPluginHelper::getPlugin('dynamic404', 'simplelists');
-            $params = new JParameter($plugin->params);
-            return $params;
-        } else {
-            return $this->params;
-        }
-    }
-
     /**
      * Determine whether this plugin could be used
      * 
@@ -100,7 +80,12 @@ class plgDynamic404Simplelists extends JPlugin
         static $rows = null;
         if(empty($rows)) {
             $db = JFactory::getDBO();
-            $db->setQuery( 'SELECT id,title,alias,access FROM #__simplelists WHERE published=1 AND alias LIKE "%'.$alias.'%"' );
+            $query = $db->getQuery(true);
+            $query->select($db->quoteName(array('id', 'title', 'alias', 'access')));
+            $query->from($db->quoteName('#__simplelists_items'));
+            $query->where($db->quoteName('published') . ' = 1');
+            $query->where($db->quoteName('alias') . ' LIKE '. $db->quote('%'.$alias.'%'));
+            $db->setQuery($query);
             $rows = $db->loadObjectList();
         }
 
@@ -137,7 +122,7 @@ class plgDynamic404Simplelists extends JPlugin
 
         $item->type = 'component';
         $item->name = '['.$category->title.'] '.$item->title;
-        $item->rating = $this->getParams()->get('rating', 85);
+        $item->rating = $this->params->get('rating', 85);
         $item->url = $this->getUrl($category->id, $category->alias);
         $item->match_note = 'simplelists item';
         return $item;

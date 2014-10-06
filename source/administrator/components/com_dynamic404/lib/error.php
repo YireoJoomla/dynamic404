@@ -38,6 +38,9 @@ if(!empty($article)) {
     $this->title = $article->title;
 }
 
+// Fetch additional errors
+$additionalErrors = $this->getAdditionalErrors();
+
 // If no redirect is available or performed, show the page below
 ?>
 <!DOCTYPE HTML>
@@ -76,6 +79,16 @@ if(!empty($article)) {
 					?>"><?php echo JText::_('COM_DYNAMIC404_SEARCH_FOR'); ?>: "<?php echo $search; ?>"</a></li>
 				</ul>
 			</p>
+
+            <?php if (!empty($additionalErrors)) : ?>
+			    <p><?php echo JText::_('COM_DYNAMIC404_ADDITIONAL_ERRORS'); ?></p>
+                <ul>
+                    <?php foreach($additionalErrors as $additionalError) : ?>
+                    <li><?php echo $additionalError; ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
 			<p><?php echo JText::_('COM_DYNAMIC404_PROBLEMS'); ?></p>
 			<div id="techinfo">
 			<p><?php echo $this->error->get('message'); ?></p>

@@ -29,6 +29,11 @@ class Dynamic404Helper
      */
     private $matches = null;
 
+    /*
+     * List of additional errors
+     */
+    private $errors = null;
+
     /**
      * Constructor
      *
@@ -58,6 +63,7 @@ class Dynamic404Helper
         if ($init == true) {
             $this->log();
             $this->doRedirect();
+
             if ($this->params->get('debug', 0) == 1) {
                 echo 'PHP memory-usage: '.memory_get_usage();
             }
@@ -255,11 +261,6 @@ class Dynamic404Helper
     {
         $application = JFactory::getApplication();
 
-        // Do not redirect, if configured not to
-        if ($this->params->get('enable_redirect',1) == 0) {
-            return false;
-        }
-
         // Do not redirect, if the redirect flag is off
         $redirect = JRequest::getInt('noredirect');
         if ($redirect == 1) {
@@ -277,61 +278,82 @@ class Dynamic404Helper
             }
         }
 
-        // Get the first of the list of matches
+        // Check for matches
         $matches = $this->getMatches();
-        if (!empty($matches)) {
-            $url = $matches[0]->url;
-
-            // Get the fully qualified URL
-            if (!preg_match('/^(http|https):\/\//', $url)) {
-                $url = JURI::getInstance()->toString(array('scheme', 'host', 'port')).'/'.preg_replace('/^\//', '', $url);
-            }
-
-
-            // Perform a simple HEAD-test to check for redirects or endless redirects
-            if ($this->params->get('prevent_loops',1) == 1 && function_exists('curl_init')) {
-                $user_agent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : null;
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_HEADER, 1);
-                curl_setopt($ch, CURLOPT_NOBODY, 0);
-                curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-                curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
-                curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
-                curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
-                $curl_head = curl_exec($ch);
-                $curl_info = curl_getinfo($ch);
-
-                if (empty($curl_head)) {
-                    $application->enqueueMessage('Endless redirect detected', 'error');
-                    return false;
-                } else if (isset($curl_info['redirect_url']) && !empty($curl_info['redirect_url'])) {
-                    $application->enqueueMessage('Double redirect detected', 'error');
-                    return false;
-                }
-                curl_close($ch);
-            }
-
-            // Set the HTTP Redirect-status
-            if (isset($matches[0]->http_status) && $matches[0]->http_status > 0) {
-                $http_status = $matches[0]->http_status;
-            } else {
-                $params = JComponentHelper::getParams('com_dynamic404');
-                $http_status = $params->get('http_status', 301);
-            }
-
-            // Perform the actual redirect
-            header( 'HTTP/1.1 '.Dynamic404HelperCore::getHttpStatusDescription($http_status));
-            header( 'Location: '.$url);
-            header( 'Connection: close' );
-            $application->close();
-            return true;
+        if (empty($matches)) {
+            return false;
         }
 
-        return false;
+        // Take the first match
+        $match = $matches[0];
+        if (empty($match)) {
+            return false;
+        }
+
+        // Do not redirect, if configured not to
+        $params = YireoHelper::toRegistry($match->params);
+        if ($params->get('redirect', 0) != 1 && $this->params->get('enable_redirect',1) == 0) {
+            return false;
+        }
+
+        // Check for the URL
+        $url = $match->url;
+        if (empty($url)) {
+            return false;
+        }
+
+        // Get the fully qualified URL
+        if (!preg_match('/^(http|https):\/\//', $url)) {
+            $url = JURI::getInstance()->toString(array('scheme', 'host', 'port')).'/'.preg_replace('/^\//', '', $url);
+        }
+
+        // Perform a simple HEAD-test to check for redirects or endless redirects
+        if ($this->params->get('prevent_loops',1) == 1 && function_exists('curl_init')) {
+
+            $user_agent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : null;
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HEADER, 1);
+            curl_setopt($ch, CURLOPT_NOBODY, 0);
+            curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
+            curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+
+            $curl_head = curl_exec($ch);
+            $curl_info = curl_getinfo($ch);
+            $curl_error = curl_error($ch);
+            curl_close($ch);
+
+            if (empty($curl_head)) {
+                $this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_ENDLESS_REDIRECT').': '.$curl_error;
+                return false;
+
+            } else if (isset($curl_info['redirect_url']) && !empty($curl_info['redirect_url'])) {
+                $this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_DOUBLE_REDIRECT').': '.$curl_error;
+                return false;
+            }
+        }
+
+        // Set the HTTP Redirect-status
+        if (isset($match->http_status) && $match->http_status > 0) {
+            $http_status = $match->http_status;
+        } else {
+            $params = JComponentHelper::getParams('com_dynamic404');
+            $http_status = $params->get('http_status', 301);
+        }
+
+        // Perform the actual redirect
+        header( 'HTTP/1.1 '.Dynamic404HelperCore::getHttpStatusDescription($http_status));
+        header( 'Location: '.$url);
+        header( 'Connection: close' );
+
+        $application->close();
+        return true;
     }
 
     /**
@@ -669,5 +691,10 @@ class Dynamic404Helper
 
         header('HTTP/1.1 403 Forbidden');
         die('Access Forbidden');
+    }
+
+    public function getAdditionalErrors()
+    {
+        return $this->errors;
     }
 }

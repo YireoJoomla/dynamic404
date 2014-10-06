@@ -4,7 +4,7 @@
  *
  * @author      Yireo (http://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (c) 2013 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright (c) 2014 Yireo (http://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        http://www.yireo.com/
  */
@@ -20,26 +20,6 @@ jimport( 'joomla.plugin.plugin' );
  */
 class plgDynamic404EasyBlog extends JPlugin
 {
-    /**
-     * Load the parameters
-     * 
-     * @access private
-     * @param null
-     * @return JParameter
-     */
-    private function getParams()
-    {
-        jimport('joomla.version');
-        $version = new JVersion();
-        if(version_compare($version->RELEASE, '1.5', 'eq')) {
-            $plugin = JPluginHelper::getPlugin('dynamic404', 'easyblog');
-            $params = new JParameter($plugin->params);
-            return $params;
-        } else {
-            return $this->params;
-        }
-    }
-
     /**
      * Determine whether this plugin could be used
      * 
@@ -101,7 +81,12 @@ class plgDynamic404EasyBlog extends JPlugin
         static $rows = null;
         if(empty($rows)) {
             $db = JFactory::getDBO();
-            $db->setQuery('SELECT `id`,`title`,`permalink` FROM `#__easyblog_post` WHERE `published`=1 AND `permalink` LIKE "%'.$alias.'%"');
+            $query = $db->getQuery(true);
+            $query->select($db->quoteName(array('id', 'title', 'permalink')));
+            $query->from($db->quoteName('#__easyblog_post'));
+            $query->where($db->quoteName('published') . ' = 1');
+            $query->where($db->quoteName('permalink') . ' LIKE '. $db->quote('%'.$alias.'%'));
+            $db->setQuery($query);
             $rows = $db->loadObjectList();
 
             if(!empty($rows)) { 
@@ -126,7 +111,7 @@ class plgDynamic404EasyBlog extends JPlugin
     {
         $item->type = 'component';
         $item->name = $item->title;
-        $item->rating = $this->getParams()->get('rating', 85);
+        $item->rating = $this->params->get('rating', 85);
         $item->match_note = 'easyblog item';
 
         switch($item->row_type) {
