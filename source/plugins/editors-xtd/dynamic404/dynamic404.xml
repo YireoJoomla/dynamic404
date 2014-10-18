@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" group="editors-xtd" method="upgrade">
+    <name>PLG_EDITORS-XTD_DYNAMIC404</name>
+    <author>Yireo</author>
+    <creationDate>October 2014</creationDate>
+    <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+    <authorEmail>info@yireo.com</authorEmail>
+    <authorUrl>http://www.yireo.com/</authorUrl>
+    <version>0.0.1</version>
+    <description>PLG_EDITORS-XTD_DYNAMIC404_DESC</description>
+
+    <files>
+        <filename plugin="dynamic404">dynamic404.php</filename>
+		<filename>index.html</filename>
+    </files>
+
+    <languages>
+        <language tag="en-GB">en-GB.plg_editors-xtd_dynamic404.ini</language>
+        <language tag="en-GB">en-GB.plg_editors-xtd_dynamic404.sys.ini</language>
+    </languages>
+</extension>

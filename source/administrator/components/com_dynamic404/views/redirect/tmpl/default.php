@@ -18,6 +18,13 @@ jimport('joomla.utilities.utility');
 <?php echo $this->loadTemplate('script'); ?>
 
 <form method="post" name="adminForm" id="adminForm">
+
+<?php if(JRequest::getInt('modal') == 1): ?>
+<jdoc:include type="message" />
+<button onclick="Joomla.submitbutton('save');" class="btn btn-small btn-success"><?php echo JText::_('JSUBMIT'); ?></button>
+<input type="hidden" name="modal" value="1" />
+<?php endif; ?>
+
 <div class="row-fluid">
     <div class="span6">
         <?php echo $this->loadTemplate('fieldset', array('fieldset' => 'source')); ?>

@@ -29,6 +29,12 @@ class Dynamic404ViewRedirects extends YireoViewList
      */
     public function display($tpl = null)
 	{
+        // Hackish way of closing this page when it is a modal box
+        if(JRequest::getInt('modal') == 1) {
+            echo '<script>window.parent.SqueezeBox.close();</script>';
+            $this->app->close();
+        }
+
         // Automatically fetch items, total and pagination - and assign them to the template
         $this->fetchItems();
 

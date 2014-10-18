@@ -12,6 +12,7 @@
                 <option value="last_segment">COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_LAST_SEGMENT</option>
                 <option value="any_segment">COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_ANY_SEGMENT</option>
                 <option value="fuzzy">COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_FUZZY</option>
+                <option value="regex">COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_REGEX</option>
             </field>
         </fieldset>
 
@@ -46,17 +47,18 @@
                 label="COM_DYNAMIC404_REDIRECT_FIELD_REDIRECT" 
                 description="COM_DYNAMIC404_REDIRECT_FIELD_REDIRECT_DESC" 
                 >
-                <option value="0">JDEFAULT</option>
+                <option value="0">JNO</option>
                 <option value="1">JYES</option>
+                <option value="2">JDEFAULT</option>
             </field>
-            <field name="match_case" type="list" default="0" 
+            <field name="match_case" type="radio" default="0" class="btn-group"
                 label="COM_DYNAMIC404_REDIRECT_PARAM_MATCH_CASE" 
                 description="COM_DYNAMIC404_REDIRECT_PARAM_MATCH_CASE_DESC">
                 <option value="0">JNO</option>
                 <option value="1">JYES</option>
                 <option value="2">JDEFAULT</option>
             </field>
-            <field name="show_description" type="list" default="0" 
+            <field name="show_description" type="radio" default="0" class="btn-group"
                 label="COM_DYNAMIC404_REDIRECT_PARAM_SHOW_DESCRIPTION" 
                 description="COM_DYNAMIC404_REDIRECT_PARAM_MATCH_SHOW_DESCRIPTION">
                 <option value="0">JNO</option>

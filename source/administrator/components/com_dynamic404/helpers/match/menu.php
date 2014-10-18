@@ -105,6 +105,7 @@ class Dynamic404HelperMatchMenu
                             $count++;
                         }
                     }
+
                     $item->rating = 100 - (count($uri_parts) + $count)*8;
                     $item->url = $this->getMenuItemUrl($item);
                     $item->match_note = 'menu route';
@@ -118,9 +119,9 @@ class Dynamic404HelperMatchMenu
 
                     // Reset the base-rating
                     if (substr($item->route, 0, strlen($uri)) == $uri) {
-                        $item->rating = 90;
+                        $item->rating = 89;
                     } else {
-                        $item->rating = 80;
+                        $item->rating = 79;
                     }
 
                     // Try to make an improvement on the base rating

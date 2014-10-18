@@ -165,6 +165,7 @@ class Dynamic404HelperMatch
 
         $this->parseMatches();
         $this->sortMatches();
+
         return $this->matches;
     }
 
@@ -335,6 +336,7 @@ class Dynamic404HelperMatch
                     if(empty($keyword)) continue;
                     if(stristr($match->name, $keyword)) $keywordMatch++;
                 }
+
                 if($keywordMatch == count($keywords)) {
                     $match->rating += 2;
                 } elseif($keywordMatch > 0) {
@@ -372,14 +374,17 @@ class Dynamic404HelperMatch
             foreach ($rows as $row) 
             {
                 // Make sure the match-field is filled
-                if (empty($row->match)) continue;
+                if (empty($row->match))
+                {
+                    continue;
+                }
 
                 // Construct the URL
-                if(is_numeric(trim($row->url))) 
+                if (is_numeric(trim($row->url))) 
                 {
                     $menu = JFactory::getApplication()->getMenu();
                     $menuItem = $menu->getItem($row->url);
-                    if(!empty($menuItem)) 
+                    if (!empty($menuItem)) 
                     {
                         $row->name = $menuItem->title;
                         $row->url = $menuItem->link;
@@ -388,11 +393,11 @@ class Dynamic404HelperMatch
                         $row->link = $row->url;
                     }
                 } 
-                elseif(preg_match('/Itemid=([0-9]+)/', $row->url, $match)) 
+                elseif (preg_match('/Itemid=([0-9]+)/', $row->url, $match)) 
                 {
                     $menu = JFactory::getApplication()->getMenu();
                     $menuItem = $menu->getItem($match[1]);
-                    if(!empty($menuItem)) 
+                    if (!empty($menuItem)) 
                     {
                         $row->name = $menuItem->title;
                         $row->url = $menuItem->link;
@@ -450,6 +455,26 @@ class Dynamic404HelperMatch
                     {
                         $row->type = 'component';
                         $row->rating = $params->get('rating', $this->params->get('rating_custom_fuzzy', 90));
+                        $matches[] = $row;
+                        break;
+                    }
+
+                // Matching by regular expression
+                } 
+                elseif ($row->type == 'regex') 
+                { 
+                    $regex = trim($row->match);
+                    $regex = str_replace('/', '\/', $regex);
+                    if (@preg_match('/'.$regex.'/i', '/'.$uri, $regexMatch))
+                    {
+                        $row->type = 'regex';
+                        $row->rating = $params->get('rating', $this->params->get('rating_custom_regex', 90));
+                        foreach($regexMatch as $regexMatchIndex => $regexMatchParts) {
+                            if($regexMatchIndex == 0) continue;
+                            $row->url = str_replace('\\'.$regexMatchIndex, $regexMatchParts, $row->url);
+                        }
+                        $row->name = $row->url;
+                        $row->link = $row->url;
                         $matches[] = $row;
                         break;
                     }

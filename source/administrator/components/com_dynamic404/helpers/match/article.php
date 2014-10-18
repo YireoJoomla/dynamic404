@@ -181,14 +181,6 @@ class Dynamic404HelperMatchArticle
             return null;
         }
 
-        // Check access for 1.5
-        if (Dynamic404HelperCore::isJoomla15()) {
-            $user = &JFactory::getUser();
-            if (isset($item->access) && $item->access > $user->get('aid', 0)) {
-                return null;
-            }
-        }
-
         $item->type = 'component';
         $item->name = $item->title;
         $item->rating = $this->params->get('rating_articles', 85);

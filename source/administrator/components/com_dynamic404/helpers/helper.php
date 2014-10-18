@@ -45,7 +45,8 @@ class Dynamic404Helper
     {
         // Read the component parameters
         $this->params = JComponentHelper::getParams('com_dynamic404');
-        if ($this->params->get('debug', 0) == 1) {
+        if ($this->params->get('debug', 0) == 1)
+        {
             ini_set('display_errors', 1);
         }
 
@@ -60,7 +61,8 @@ class Dynamic404Helper
         $language->load('com_dynamic404', JPATH_SITE, JFactory::getLanguage()->getTag(), true);
 
         // Run the tasks if available
-        if ($init == true) {
+        if ($init == true)
+        {
             $this->log();
             $this->doRedirect();
 
@@ -83,12 +85,14 @@ class Dynamic404Helper
      */
     public function log() 
     {
-        if ($this->params->get('enable_logging',1) == 0) {
+        if ($this->params->get('enable_logging',1) == 0)
+        {
             return false;
         }
 
         $matches = $this->getMatches();
-        if ($this->params->get('enable_redirect',1) && !empty($matches)) {
+        if ($this->params->get('enable_redirect',1) && !empty($matches))
+        {
             return false;
         }
 
@@ -143,8 +147,10 @@ class Dynamic404Helper
     {
         $segment = $this->matchHelper->getRequest('uri_last');
         $strip_extensions = explode(',', $this->params->get('strip_extensions'));
-        if(!empty($strip_extensions)) {
-            foreach($strip_extensions as $strip_extension) {
+        if (!empty($strip_extensions))
+        {
+            foreach ($strip_extensions as $strip_extension)
+            {
                 $strip_extension = preg_replace('/([^a-zA-Z0-9\.\-\_]+)/', '', $strip_extension);
                 $segment = preg_replace('/\.'.$strip_extension.'$/', '', $segment);
             }
@@ -162,9 +168,12 @@ class Dynamic404Helper
     public function getSearchLink() 
     {
         $Itemid = Dynamic404HelperCore::getSearchItemid();
-        if ($Itemid > 0) {
+        if ($Itemid > 0)
+        {
             return JRoute::_('index.php?option=com_search&searchword='.$this->getLastSegment().'&Itemid='.$Itemid);
-        } else {
+        }
+        else
+        {
             return JRoute::_('index.php?option=com_search&searchword='.$this->getLastSegment());
         }
     }
@@ -178,9 +187,11 @@ class Dynamic404Helper
      */
     public function getErrorObject($error = null) 
     {
-        if (empty($error)) {
+        if (empty($error))
+        {
             $error = JError::getError(); 
-            if (empty($error) || $error == false) {
+            if (empty($error) || $error == false)
+            {
                 $error = new JObject();
                 $error->code = 404;
                 $error->message = JText::_('Not found');
@@ -198,9 +209,11 @@ class Dynamic404Helper
      */
     public function getMatches() 
     {
-        if (!is_array($this->matches)) {
+        if (!is_array($this->matches))
+        {
             $this->matches = $this->matchHelper->getMatches();
         }
+
         return array_slice($this->matches, 0, $this->getMax());
     }
 
@@ -213,9 +226,11 @@ class Dynamic404Helper
      */
     public function getDirectMatches() 
     {
-        if (!is_array($this->matches)) {
+        if (!is_array($this->matches))
+        {
             $this->matches = $this->matchHelper->findRedirectMatches();
         }
+
         return array_slice($this->matches, 0, $this->getMax());
     }
 
@@ -229,9 +244,11 @@ class Dynamic404Helper
     public function getArticle($error = '404') 
     {
         $params = $this->params->toArray();
-        if(empty($params['article_id_'.$error])) {
+        if(empty($params['article_id_'.$error]))
+        {
             return false;
         }
+
         $article = $params['article_id_'.$error];
 
         $db = JFactory::getDBO();
@@ -242,11 +259,13 @@ class Dynamic404Helper
         $db->setQuery($query);
 
         $row = $db->loadObject();
-        if(empty($row)) {
+        if(empty($row))
+        {
             return false;
         }
 
         $row->text = (!empty($row->fulltext)) ? $row->fulltext : $row->introtext;
+
         return $row;
     }
 
@@ -263,42 +282,55 @@ class Dynamic404Helper
 
         // Do not redirect, if the redirect flag is off
         $redirect = JRequest::getInt('noredirect');
-        if ($redirect == 1) {
+        if ($redirect == 1)
+        {
             return false;
         }
 
         // Do not redirect, if the HTTP-status is not a 4xx error
         $error = JError::getError();
-        if(empty($error)) {
+        if(empty($error))
+        {
             $errorCode = '404';
-        } else {
+        }
+        else
+        {
             $errorCode = (int)$error->get('code');
-            if ($this->params->get('redirect_non404', 0) == 0 && preg_match('/^4/', $errorCode) == false) {
+            if ($this->params->get('redirect_non404', 0) == 0 && preg_match('/^4/', $errorCode) == false)
+            {
                 return false;
             }
         }
 
         // Check for matches
         $matches = $this->getMatches();
-        if (empty($matches)) {
+        if (empty($matches))
+        {
             return false;
         }
 
         // Take the first match
         $match = $matches[0];
-        if (empty($match)) {
+        if (empty($match))
+        {
             return false;
         }
 
         // Do not redirect, if configured not to
         $params = YireoHelper::toRegistry($match->params);
-        if ($params->get('redirect', 0) != 1 && $this->params->get('enable_redirect',1) == 0) {
+        if ($params->get('redirect', 2) == 0)
+        {
+            return false;
+        }
+        elseif ($params->get('redirect', 2) == 2 && $this->params->get('enable_redirect', 1) == 0)
+        {
             return false;
         }
 
         // Check for the URL
         $url = $match->url;
-        if (empty($url)) {
+        if (empty($url))
+        {
             return false;
         }
 
@@ -308,7 +340,8 @@ class Dynamic404Helper
         }
 
         // Perform a simple HEAD-test to check for redirects or endless redirects
-        if ($this->params->get('prevent_loops',1) == 1 && function_exists('curl_init')) {
+        if ($this->params->get('prevent_loops',1) == 1 && function_exists('curl_init'))
+        {
 
             $user_agent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : null;
 
@@ -329,20 +362,26 @@ class Dynamic404Helper
             $curl_error = curl_error($ch);
             curl_close($ch);
 
-            if (empty($curl_head)) {
+            if (empty($curl_head))
+            {
                 $this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_ENDLESS_REDIRECT').': '.$curl_error;
                 return false;
 
-            } else if (isset($curl_info['redirect_url']) && !empty($curl_info['redirect_url'])) {
+            }
+            elseif (isset($curl_info['redirect_url']) && !empty($curl_info['redirect_url']))
+            {
                 $this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_DOUBLE_REDIRECT').': '.$curl_error;
                 return false;
             }
         }
 
         // Set the HTTP Redirect-status
-        if (isset($match->http_status) && $match->http_status > 0) {
+        if (isset($match->http_status) && $match->http_status > 0)
+        {
             $http_status = $match->http_status;
-        } else {
+        }
+        else
+        {
             $params = JComponentHelper::getParams('com_dynamic404');
             $http_status = $params->get('http_status', 301);
         }
@@ -366,13 +405,15 @@ class Dynamic404Helper
     public function displayCustomPage($error = null) 
     {
         // Check for the error
-        if (empty($error)) {
+        if (empty($error))
+        {
             $error = $this->getErrorObject();
         }
 
         // Check the parameters
         $componentParams = JComponentHelper::getParams('com_dynamic404');
-        if ($componentParams->get('error_page', 0) != 2) {
+        if ($componentParams->get('error_page', 0) != 2)
+        {
             return false;
         }
 
@@ -380,26 +421,34 @@ class Dynamic404Helper
         $Itemid = null;
         $article = null;
         $params = $this->params->toArray();
-        foreach ($params as $name => $value) {
-            if ($value > 0 && preg_match('/^menuitem_id_([0-9]+)/', $name, $match)) {
-                if ($error->get('code') == $match[1]) {
+        foreach ($params as $name => $value)
+        {
+            if ($value > 0 && preg_match('/^menuitem_id_([0-9]+)/', $name, $match))
+            {
+                if ($error->get('code') == $match[1])
+                {
                     $Itemid = (int)$value;
                 }
             }
-            if ($value > 0 && preg_match('/^article_id_([0-9]+)/', $name, $match)) {
-                if ($error->get('code') == $match[1]) {
+
+            if ($value > 0 && preg_match('/^article_id_([0-9]+)/', $name, $match))
+            {
+                if ($error->get('code') == $match[1])
+                {
                     $article = (int)$value;
                 }
             }
         }
 
         // Don't continue if no item is there
-        if ($Itemid > 0 == false && $article > 0 == false) {
+        if ($Itemid > 0 == false && $article > 0 == false)
+        {
             return false;
         }
 
         // Check whether the current page is already the Dynamic404-page
-        if (JRequest::getCmd('option') == 'com_dynamic404') {
+        if (JRequest::getCmd('option') == 'com_dynamic404')
+        {
             return false;
         }
 
@@ -408,27 +457,32 @@ class Dynamic404Helper
         $cache = JFactory::getCache();
 
         // Determine the URL by Menu-Item
-        if($Itemid > 0) {
-
+        if($Itemid > 0)
+        {
             // Load the configured Menu-Item 
             $menu = JFactory::getApplication()->getMenu();
             $item = $menu->getItem($Itemid);
-            if (empty($item) || !is_object($item) || !isset($item->query['option'])) {
+            if (empty($item) || !is_object($item) || !isset($item->query['option']))
+            {
                 return false;
             }
     
             // Construct the URL
-            if (isset($item->component) && $item->component == 'com_dynamic404') {
+            if (isset($item->component) && $item->component == 'com_dynamic404')
+            {
                 $currentUrl = JRequest::getURI();
                 $currentUrl = str_replace('?noredirect=1', '', $currentUrl);
                 $url = JRoute::_('index.php?option=com_dynamic404&Itemid='.$Itemid.'&uri='.base64_encode($currentUrl));
-            } else {
+            }
+            else
+            {
                 $url = JRoute::_('index.php?Itemid='.$Itemid);
             }
 
         // Article 
-        } else {
-
+        }
+        else
+        {
             // Load the configured article
             $row = $this->getArticle($error->get('code'));
             if(empty($row)) {
@@ -446,22 +500,28 @@ class Dynamic404Helper
         // Detect the language-SEF
         $currentLanguage = JFactory::getLanguage();
         $languages = JLanguageHelper::getLanguages('sef');
-        foreach($languages as $language) {
-            if($language->lang_code == $currentLanguage->getTag()) {
+        foreach ($languages as $language)
+        {
+            if ($language->lang_code == $currentLanguage->getTag())
+            {
                 $languageSef = $language->sef;
             }
         }
 
         // Add the language to the URL
-        if(!empty($languageSef)) {
+        if (!empty($languageSef))
+        {
             $url = (strstr($url, '?')) ? $url.'&lang='.$languageSef : $url.'?lang='.$languageSef;
         }
 
         // Fetch the content
-        if ($this->params->get('caching', 1) == 1) {
+        if ($this->params->get('caching', 1) == 1)
+        {
             $cache->setCaching(1);
             $contents = $cache->call(array('Dynamic404Helper', 'fetchPage'), $url); // @todo: This violates E_STRICT
-        } else {
+        }
+        else
+        {
             $contents = self::fetchPage($url);
         }
 
@@ -497,7 +557,8 @@ class Dynamic404Helper
         // Load the configured Menu-Item 
         $menu = JFactory::getApplication()->getMenu();
         $item = $menu->getItem($Itemid);
-        if (empty($item) || !is_object($item) || !isset($item->query['option'])) {
+        if (empty($item) || !is_object($item) || !isset($item->query['option']))
+        {
             return false;
         }
 
@@ -509,7 +570,8 @@ class Dynamic404Helper
         $lang->load($component, JPATH_SITE);
 
         // Loop through the items query-values and add them to the request
-        foreach ($item->query as $name => $value) {
+        foreach ($item->query as $name => $value)
+        {
             JRequest::setVar($name, $value);
         }
 
@@ -542,11 +604,13 @@ class Dynamic404Helper
 
         // Check the parameters
         $componentParams = JComponentHelper::getParams('com_dynamic404');
-        if ($componentParams->get('error_page', 0) == 1) {
+        if ($componentParams->get('error_page', 0) == 1)
+        {
             $file = JPATH_SITE.'/templates/'.$application->getTemplate().'/error.php';
         }
 
-        if(empty($file) || file_exists($file) == false) {
+        if(empty($file) || file_exists($file) == false)
+        {
             $file = JPATH_ADMINISTRATOR.'/components/com_dynamic404/lib/error.php';
         }
 
@@ -567,14 +631,16 @@ class Dynamic404Helper
         $error = JError::getError();
         $document = JFactory::getDocument();
 
-        if(YireoHelper::isJoomla25()) {
+        if (YireoHelper::isJoomla25())
+        {
 	    	$document->setError($error);
         }
 
         $errorCode = (is_object($error)) ? $error->get('code') : 'unknown';
 		$document->setTitle(JText::_('Error') . ': ' . $errorCode);
 
-        switch($errorCode) {
+        switch ($errorCode)
+        {
             case '400':
                 header('HTTP/1.0 400 Bad Request');
                 break;
@@ -632,16 +698,22 @@ class Dynamic404Helper
         $db = JFactory::getDBO();
         $db->setQuery('SELECT `match` FROM `#__dynamic404_redirects` WHERE `url`='.$db->Quote($url));
         $match = $db->loadResult();
-        if (empty($match)) {
+
+        if (empty($match))
+        {
             $match = self::generateRandomString();
             $query = "INSERT INTO `#__dynamic404_redirects` SET `match`=".$db->Quote($match).", `url`=".$db->Quote($url)
                 .", `http_status`=0, `type`='full_url', `published`=1";
             $db->setQuery($query);
             $db->query();
         }
-        if ($fullurl) {
+
+        if ($fullurl)
+        {
             return JURI::root().$match;
-        } else {
+        }
+        else
+        {
             return $match;
         }
     }
@@ -654,9 +726,12 @@ class Dynamic404Helper
         $length = 8;
         $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
         $string = '';
-        for ($p = 0; $p < $length; $p++) {
+
+        for ($p = 0; $p < $length; $p++)
+        {
             $string .= $characters[mt_rand(0, strlen($characters))];
         }
+
         return $string;
     }
 
@@ -667,10 +742,18 @@ class Dynamic404Helper
 
         // Block certain hack strings
         $hacksFile = __DIR__.'/hacks.php';
-        if(file_exists($hacksFile)) include_once $hacksFile;
-        if(!empty($hacks)) {
-            foreach($hacks as $hack) {
-                if(stristr($url, $hack)) {
+
+        if (file_exists($hacksFile))
+        {
+            include_once $hacksFile;
+        }
+
+        if (!empty($hacks))
+        {
+            foreach ($hacks as $hack)
+            {
+                if (stristr($url, $hack))
+                {
                     $block = true;
                     break;
                 }
@@ -678,14 +761,17 @@ class Dynamic404Helper
         }
 
         // Block access to non-existing components
-        if ($this->params->get('block_nonexisting_components', 1) == 1) {
+        if ($this->params->get('block_nonexisting_components', 1) == 1)
+        {
             $cmd = JRequest::getCmd('option');
-            if(!empty($cmd) && is_dir(JPATH_SITE.'/components/'.$cmd) == false) {
+            if (!empty($cmd) && is_dir(JPATH_SITE.'/components/'.$cmd) == false)
+            {
                 $block = true;
             }
         }
 
-        if($block == false) {
+        if ($block == false)
+        {
             return true;
         }
 

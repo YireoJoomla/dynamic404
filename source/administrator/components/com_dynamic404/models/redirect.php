@@ -49,4 +49,88 @@ class Dynamic404ModelRedirect extends YireoModel
 
         return parent::store($data);
     }
+
+    /**
+     * Method to get data
+     *
+     * @access public
+     * @subpackage Yireo
+     * @param null
+     * @return array
+     */
+    public function getData($forceNew = false)
+    {
+        // Get the parent data
+        $data = parent::getData();
+
+        if(JRequest::getInt('modal') == 1 && empty($data->redirect_id)) {
+            $asset_id = JRequest::getInt('asset');
+            $asset_data = $this->loadDataByAssetId($asset_id);
+            if(!empty($asset_data) && is_array($asset_data)) {
+                $data = (object)array_merge((array)$data, $asset_data);
+            }
+        }
+
+        return $data;
+    }
+
+    /*
+     * Method to prepare for HTML output
+     *
+     * @access public
+     * @param string $tpl
+     * @return null
+     */
+    public function loadDataByAssetId($asset_id)
+    {
+        $asset_id = (int)$asset_id;
+        if (empty($asset_id)) {
+            return array();
+        }
+
+        $db = JFactory::getDBO();
+        $query = $db->getQuery(true);
+        $query->select($db->quoteName('name'));
+        $query->from($db->quoteName('#__assets'));
+        $query->where($db->quoteName('id') . '=' . $asset_id);
+        $db->setQuery($query);
+
+        // Load the generic asset data
+        $assetName = $db->loadResult();
+        $asset = explode('.', $assetName);
+
+        if (!isset($asset[2]))
+        {
+            return array();
+        }
+
+        $data = array(
+            'match' => 'test',
+            'type' => 'full_url',
+            'http_status' => '303',
+            'url' => 'index.php?option='.$asset[0].'&view='.$asset[1].'&id='.$asset[2],
+            'params' => array(
+                'redirect' => 1,
+                'rating' => 99,
+            ),
+        );
+
+        // Complete with article data
+        if ($asset[0] == 'com_content')
+        {
+            $query = $db->getQuery(true);
+            $query->select($db->quoteName(array('id', 'alias', 'catid')));
+            $query->from($db->quoteName('#__content'));
+            $query->where($db->quoteName('id') . '=' . $asset[2]);
+            $db->setQuery($query);
+
+            $article = $db->loadObject();
+    
+            require_once JPATH_SITE.'/components/com_content/helpers/route.php' ;
+            $data['url'] = ContentHelperRoute::getArticleRoute($article->id.':'.$article->alias, $article->catid);
+            $data['match'] = $article->id.'-'.$article->alias;
+        }
+
+        return $data;
+    }
 }
