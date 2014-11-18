@@ -107,19 +107,42 @@ class Dynamic404HelperMatchArticle
     /**
      * Method to redirect to a specific match
      *
-     * @access private
-     * @param string $slug
-     * @param int $catid
-     * @param int $sectionid
+     * @access public
+     * @param string $article_slug
+     * @param int $category_id
+     * @param int $section_id
      * @return string
      */
-    private function getArticleLink($slug, $catid, $sectionid = null) 
+    public function getArticleLink($article_slug, $category_id = null, $section_id = null) 
     {
+        if(empty($article_slug)) {
+            return null;
+        }
+
         require_once JPATH_SITE.'/components/com_content/helpers/route.php' ;
-        if($sectionid > 0) {
-            return ContentHelperRoute::getArticleRoute( $slug, $catid, $sectionid );
+
+        if(empty($category_id) || is_numeric($article_slug)) {
+            $db = JFactory::getDBO();
+            $query = $db->getQuery(true);
+            $query->select($db->quoteName(array('a.id', 'a.alias', 'a.catid')))
+                ->select($db->quoteName('c.alias', 'catalias'))
+                ->from($db->quoteName('#__content', 'a'))
+                ->join('INNER', $db->quoteName('#__categories', 'c') . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')')
+                ->where($db->quoteName('a.id') . '=' . (int)$article_slug)
+            ;
+            $db->setQuery($query);
+            $article = $db->loadObject();
+    
+            if(!empty($article)) {
+                $article_slug = $article->id.':'.$article->alias;
+                $category_id = $article->catid.':'.$article->catalias;
+            }
+        }
+
+        if($section_id > 0) {
+            return ContentHelperRoute::getArticleRoute($article_slug, $category_id, $section_id);
         } else {
-            return ContentHelperRoute::getArticleRoute( $slug, $catid);
+            return ContentHelperRoute::getArticleRoute($article_slug, $category_id);
         }
     }
 

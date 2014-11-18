@@ -117,6 +117,19 @@ class plgSystemDynamic404 extends JPlugin
             }
         }
 
+        // Force lowercase
+        $force_lowercase = $this->params->get('force_lowercase', 0);
+        if($force_lowercase == 1) {
+            $uri = JURI::current();
+            $lowercase_uri = strtolower($uri);
+            if($uri != $lowercase_uri) {
+                header('HTTP/1.1 301 Moved Permanently');
+                header('Location: '.$lowercase_uri);
+                $application->close();
+                exit;
+            }
+        }
+
         // Test for non-existent components
         $uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
         if(preg_match('/\/component\/([a-zA-Z0-9\.\-\_]+)\//', $uri, $componentMatch)) {
@@ -159,6 +172,87 @@ class plgSystemDynamic404 extends JPlugin
             }
         }
         */
+    }
+
+    /**
+     * Method to be called after the component has been routed
+	 *
+	 * @param null
+	 * @return null
+     */
+    public function onAfterRoute()
+    {
+        // Get the application object.
+        $application = JFactory::getApplication();
+
+        // Make sure we are not in the administrator.
+        if ($application->isSite() == false) {
+            return null;
+        }
+
+        // Expand URLs
+        $url = JURI::current();
+        $params = JComponentHelper::getParams('com_dynamic404');
+        if($params->get('expand_ids', 1) == 1 && preg_match('/\/([0-9]+)/', $url))
+        {
+            $this->doExpandUrl();
+        }
+    }
+
+    /**
+     * Method to expand the URL
+	 *
+	 * @param null
+	 * @return null
+     */
+    public function doExpandUrl()
+    {
+        $url = JURI::current();
+        $application = JFactory::getApplication();
+        $component = $application->input->get('option');
+        $view = $application->input->get('view');
+        $id = $application->input->get('id');
+        $newUrl = null;
+
+        // Check for the article view
+        if($component == 'com_content' && $view == 'article')
+        {
+            require_once JPATH_ADMINISTRATOR.'/components/com_dynamic404/helpers/match/article.php';
+            $matchHelper = new Dynamic404HelperMatchArticle();
+            $newUrl = JRoute::_($matchHelper->getArticleLink($id));
+            $newUrl = JURI::base().substr($newUrl, strlen(JURI::base(true)) + 1);
+        }
+        else
+        {
+            // Call upon the plugins for help
+            $plugins = JPluginHelper::getPlugin('dynamic404');
+            foreach ($plugins as $plugin)
+            {
+                $className = 'plg'.$plugin->type.$plugin->name;
+                $method = 'onDynamic404Link';
+                if (class_exists($className))
+                {
+		            $dispatcher = JEventDispatcher::getInstance();
+                    $plugin = new $className($dispatcher, (array)$plugin);
+
+                    if (method_exists($plugin, $method))
+                    {
+                        $result = $plugin->$method($component, $view, $id);
+                        if (!empty($result))
+                        {
+                            $newUrl = $result;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Redirect if needed
+        if(!empty($newUrl) && $newUrl != $url) {
+            $application->redirect($newUrl);
+            $application->close();
+        }
     }
 
     /**

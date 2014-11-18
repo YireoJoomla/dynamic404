@@ -4,7 +4,7 @@
  *
  * @author      Yireo
  * @package     Dynamic404
- * @copyright   Copyright (c) 2013 Yireo
+ * @copyright   Copyright (c) 2014 Yireo
  * @license     GNU Public License (GPL) 
  * @link        http://www.yireo.com/
  */
@@ -20,26 +20,6 @@ jimport( 'joomla.plugin.plugin' );
  */
 class plgDynamic404K2 extends JPlugin
 {
-    /**
-     * Load the parameters
-     * 
-     * @access private
-     * @param null
-     * @return JParameter
-     */
-    private function getParams()
-    {
-        jimport('joomla.version');
-        $version = new JVersion();
-        if(version_compare($version->RELEASE, '1.5', 'eq')) {
-            $plugin = JPluginHelper::getPlugin('dynamic404', 'k2');
-            $params = new JParameter($plugin->params);
-            return $params;
-        } else {
-            return $this->params;
-        }
-    }
-
     /**
      * Determine whether this plugin could be used
      * 
@@ -70,8 +50,8 @@ class plgDynamic404K2 extends JPlugin
         }
 
         $rows = array();
-        if($this->getParams('search_items', 1)) $rows = array_merge($rows, $this->getItems($urilast));
-        if($this->getParams('search_categories', 0)) $rows = array_merge($rows, $this->getCategories($urilast));
+        if($this->params->get('search_items', 1)) $rows = array_merge($rows, $this->getItems($urilast));
+        if($this->params->get('search_categories', 0)) $rows = array_merge($rows, $this->getCategories($urilast));
 
         if(!empty($rows)) {
             foreach( $rows as $row ) {
@@ -161,7 +141,7 @@ class plgDynamic404K2 extends JPlugin
 
         // Set common options
         $item->type = 'component';
-        $item->rating = $this->getParams()->get('rating', 85);
+        $item->rating = $this->params->get()->get('rating', 85);
         $item->match_note = 'k2 alias';
 
         // Require the K2 helper

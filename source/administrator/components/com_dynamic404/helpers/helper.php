@@ -209,6 +209,21 @@ class Dynamic404Helper
      */
     public function getMatches() 
     {
+        // Do not search for matches, if this is not a valid URL
+        $url = $this->matchHelper->getRequest('uri');
+        if (preg_match('/^(templates|media|images)\//', $url))
+        {
+            return array();
+        }
+
+        // Do not search for matches, with extremely large requests
+        $block_large_requests_size = (int)$this->params->get('block_large_requests', 1000);
+        if ($block_large_requests_size > 0 && strlen($url) > $block_large_requests_size)
+        {
+            return array();
+        }
+
+        // Search for matches
         if (!is_array($this->matches))
         {
             $this->matches = $this->matchHelper->getMatches();
@@ -244,7 +259,7 @@ class Dynamic404Helper
     public function getArticle($error = '404') 
     {
         $params = $this->params->toArray();
-        if(empty($params['article_id_'.$error]))
+        if (empty($params['article_id_'.$error]))
         {
             return false;
         }
@@ -259,7 +274,7 @@ class Dynamic404Helper
         $db->setQuery($query);
 
         $row = $db->loadObject();
-        if(empty($row))
+        if (empty($row))
         {
             return false;
         }
@@ -287,9 +302,16 @@ class Dynamic404Helper
             return false;
         }
 
+        // Do not redirect, if this is not a valid URL
+        $url = $this->matchHelper->getRequest('uri');
+        if (preg_match('/^(templates|media|images)\//', $url))
+        {
+            return false;
+        }
+
         // Do not redirect, if the HTTP-status is not a 4xx error
         $error = JError::getError();
-        if(empty($error))
+        if (empty($error))
         {
             $errorCode = '404';
         }
@@ -317,6 +339,7 @@ class Dynamic404Helper
         }
 
         // Do not redirect, if configured not to
+        if(empty($match->params)) $match->params = null;
         $params = YireoHelper::toRegistry($match->params);
         if ($params->get('redirect', 2) == 0)
         {
@@ -457,7 +480,7 @@ class Dynamic404Helper
         $cache = JFactory::getCache();
 
         // Determine the URL by Menu-Item
-        if($Itemid > 0)
+        if ($Itemid > 0)
         {
             // Load the configured Menu-Item 
             $menu = JFactory::getApplication()->getMenu();
@@ -485,7 +508,7 @@ class Dynamic404Helper
         {
             // Load the configured article
             $row = $this->getArticle($error->get('code'));
-            if(empty($row)) {
+            if (empty($row)) {
                 return false;
             }
 
@@ -609,7 +632,7 @@ class Dynamic404Helper
             $file = JPATH_SITE.'/templates/'.$application->getTemplate().'/error.php';
         }
 
-        if(empty($file) || file_exists($file) == false)
+        if (empty($file) || file_exists($file) == false)
         {
             $file = JPATH_ADMINISTRATOR.'/components/com_dynamic404/lib/error.php';
         }
