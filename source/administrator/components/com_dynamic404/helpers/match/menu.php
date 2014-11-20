@@ -180,11 +180,22 @@ class Dynamic404HelperMatchMenu
      */
     private function getMenuItemUrl($item) 
     {
-        if ($item->type == 'component') {
-            $item->url = JRoute::_('index.php?Itemid='.$item->id);
-        } else {
+        if ($item->type == 'component')
+        {
+            $link = $item->link.'&Itemid='.$item->id;
+
+            if (!empty($item->language))
+            {
+                $link .= '&lang='.$item->language;
+            }
+
+            $item->url = JRoute::_($link);
+        }
+        else
+        {
             $item->url = $item->link;
         }
+
         return $item->url;
     }
 

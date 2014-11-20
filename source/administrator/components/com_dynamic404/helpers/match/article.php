@@ -42,8 +42,14 @@ class Dynamic404HelperMatchArticle
     {
         $row = $this->getArticleById($id);
         $row = $this->prepareArticle($row);
-        if (empty($row)) return null;
+
+        if (empty($row))
+        {
+            return null;
+        }
+
         $row->match_note = 'article id';
+
         return array($row);
     }
 
@@ -59,10 +65,13 @@ class Dynamic404HelperMatchArticle
         $matches = array();
 
         // Match the number only
-        if (preg_match('/^([0-9]+)\-/', $text1, $match)) {
+        if (preg_match('/^([0-9]+)\-/', $text1, $match))
+        {
             $row = $this->getArticleById($match[0]);
             $row = $this->prepareArticle($row);
-            if (!empty($row)) {
+
+            if (!empty($row))
+            {
                 $row->rating = 95;
                 $matches[] = $row;
             }
@@ -111,9 +120,10 @@ class Dynamic404HelperMatchArticle
      * @param string $article_slug
      * @param int $category_id
      * @param int $section_id
+     * @param string $language
      * @return string
      */
-    public function getArticleLink($article_slug, $category_id = null, $section_id = null) 
+    public function getArticleLink($article_slug, $category_id = null, $section_id = null, $language = null) 
     {
         if(empty($article_slug)) {
             return null;
@@ -121,7 +131,8 @@ class Dynamic404HelperMatchArticle
 
         require_once JPATH_SITE.'/components/com_content/helpers/route.php' ;
 
-        if(empty($category_id) || is_numeric($article_slug)) {
+        if(empty($category_id) || is_numeric($article_slug))
+        {
             $db = JFactory::getDBO();
             $query = $db->getQuery(true);
             $query->select($db->quoteName(array('a.id', 'a.alias', 'a.catid')))
@@ -140,10 +151,17 @@ class Dynamic404HelperMatchArticle
         }
 
         if($section_id > 0) {
-            return ContentHelperRoute::getArticleRoute($article_slug, $category_id, $section_id);
+            $link = ContentHelperRoute::getArticleRoute($article_slug, $category_id, $section_id);
         } else {
-            return ContentHelperRoute::getArticleRoute($article_slug, $category_id);
+            $link = ContentHelperRoute::getArticleRoute($article_slug, $category_id);
         }
+
+        if (!empty($language))
+        {
+            $link .= '&lang='.$language;
+        }
+
+        return $link;
     }
 
     /**
@@ -207,11 +225,17 @@ class Dynamic404HelperMatchArticle
         $item->type = 'component';
         $item->name = $item->title;
         $item->rating = $this->params->get('rating_articles', 85);
-        if(isset($item->sectionid)) {
-            $item->url = $this->getArticleLink( $item->id.':'.$item->alias, $item->catid, $item->sectionid );
-        } else {
-            $item->url = $this->getArticleLink( $item->id.':'.$item->alias, $item->catid);
+        if (empty($item->language) || $item->language == '*') $item->language = null;
+
+        if(isset($item->sectionid))
+        {
+            $item->url = $this->getArticleLink($item->id.':'.$item->alias, $item->catid, $item->sectionid, $item->language);
         }
+        else
+        {
+            $item->url = $this->getArticleLink($item->id.':'.$item->alias, $item->catid, null, $item->language);
+        }
+
         return $item;
     }
 }

@@ -285,6 +285,53 @@ class Dynamic404Helper
     }
 
     /**
+     * Method to check whether a certain URL causes a loop or not
+     *
+     * @access public
+     * @param null
+     * @return bool
+     */
+    public function checkNoRedirectLoop($url = null)
+    {
+        if(empty($url)) {
+            return false;
+        }
+
+        $user_agent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : null;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_NOBODY, 0);
+        curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
+        curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+
+        $curl_head = curl_exec($ch);
+        $curl_info = curl_getinfo($ch);
+        $curl_error = curl_error($ch);
+        curl_close($ch);
+
+        if (empty($curl_head))
+        {
+            $this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_ENDLESS_REDIRECT').': '.$curl_error;
+            return false;
+
+        }
+        elseif (isset($curl_info['redirect_url']) && !empty($curl_info['redirect_url']))
+        {
+            $this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_DOUBLE_REDIRECT').': '.$curl_error;
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Method to redirect to a specific match
      *
      * @access public
@@ -365,35 +412,9 @@ class Dynamic404Helper
         // Perform a simple HEAD-test to check for redirects or endless redirects
         if ($this->params->get('prevent_loops',1) == 1 && function_exists('curl_init'))
         {
-
-            $user_agent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : null;
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_HEADER, 1);
-            curl_setopt($ch, CURLOPT_NOBODY, 0);
-            curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-            curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
-            curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
-            curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
-
-            $curl_head = curl_exec($ch);
-            $curl_info = curl_getinfo($ch);
-            $curl_error = curl_error($ch);
-            curl_close($ch);
-
-            if (empty($curl_head))
+            $rt = $this->checkNoRedirectLoop($url);
+            if ($rt == false)
             {
-                $this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_ENDLESS_REDIRECT').': '.$curl_error;
-                return false;
-
-            }
-            elseif (isset($curl_info['redirect_url']) && !empty($curl_info['redirect_url']))
-            {
-                $this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_DOUBLE_REDIRECT').': '.$curl_error;
                 return false;
             }
         }
