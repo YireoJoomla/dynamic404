@@ -19,130 +19,154 @@ defined('_JEXEC') or die();
  */
 class Dynamic404Controller extends YireoController
 {
-    /**
-     * Constructor
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    public function __construct()
-    {
-        $this->_default_view = 'home';
-        parent::__construct();
-    }
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->_default_view = 'home';
 
-    /**
-     * Method to restore the original error.php file
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    public function deleteAll()
-    {
-        $db = JFactory::getDBO();
-        $db->setQuery('DELETE FROM #__dynamic404_logs');
-        $db->query();
+		parent::__construct();
+	}
 
-        // Redirect
-        $msg = 'Removed all logs';
-        $this->setRedirect('index.php?option=com_dynamic404&view=logs', $msg);
-    }
+	/**
+	 * Method to restore the original error.php file
+	 *
+	 * @access public
+	 * @return null
+	 */
+	public function deleteAll()
+	{
+		$db = JFactory::getDBO();
+		$query = $db->getQuery(true);
+		$query->delete($db->quoteName('#__dynamic404_logs'));
 
-    /**
-     * Method to restore the original error.php file
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    public function restore()
-    {
-        // Import file-library
-        jimport('joomla.filesystem.file');
+		$db->setQuery($query);
+		$db->execute();
 
-        // Only restore if the MD5-checksum matches
-        if (is_file(DYNAMIC404_ERROR_BACKUP) && md5_file(DYNAMIC404_ERROR_BACKUP) != md5_file(DYNAMIC404_ERROR_TARGET)) {
+		// Redirect
+		$msg = 'COM_DYNAMIC404_CONTROLLER_DELETEALL_REMOVED_LOGS';
+		$this->setRedirect('index.php?option=com_dynamic404&view=logs', $msg);
+	}
 
-            // Restore the files
-            $rt = JFile::move(DYNAMIC404_ERROR_BACKUP, DYNAMIC404_ERROR_TARGET);
-            if ($rt == true) {
-                $msg = JText::_('Original files restored'); 
-            } else {
-                $msg = JText::_('Failed to restore files'); 
-            }
-        } else {
-            $msg = JText::_('No backup available'); 
-        }
+	/**
+	 * Method to restore the original error.php file
+	 *
+	 * @access public
+	 * @return null
+	 */
+	public function restore()
+	{
+		// Import file-library
+		jimport('joomla.filesystem.file');
 
-        // Redirect
-        $this->setRedirect('index.php?option=com_dynamic404&view=setup', $msg);
-    }
+		// Only restore if the MD5-checksum matches
+		if (is_file(DYNAMIC404_ERROR_BACKUP) && md5_file(DYNAMIC404_ERROR_BACKUP) != md5_file(DYNAMIC404_ERROR_TARGET))
+		{
+			// Restore the files
+			$rt = JFile::move(DYNAMIC404_ERROR_BACKUP, DYNAMIC404_ERROR_TARGET);
 
-    /**
-     * Method to patch the system error.php file
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    public function patch()
-    {
-        // Import the file-library
-        jimport('joomla.filesystem.file');
+			if ($rt == true)
+			{
+				$msg = JText::_('COM_DYNAMIC404_CONTROLLER_DELETEALL_RESTORE_RESTORED_SUCCESS');
+			}
+			else
+			{
+				$msg = JText::_('COM_DYNAMIC404_CONTROLLER_DELETEALL_RESTORE_RESTORED_FAILED');
+			}
+		}
+		else
+		{
+			$msg = JText::_('COM_DYNAMIC404_CONTROLLER_DELETEALL_RESTORE_NO_BACKUP');
+		}
 
-        // Only patch if the files match
-        if (md5_file(DYNAMIC404_ERROR_PATCH) != md5_file(DYNAMIC404_ERROR_TARGET)) {
+		// Redirect
+		$this->setRedirect('index.php?option=com_dynamic404&view=setup', $msg);
+	}
 
-            // Create a backup
-            if (!file_exists(DYNAMIC404_ERROR_BACKUP)) {
-                JFile::copy(DYNAMIC404_ERROR_TARGET, DYNAMIC404_ERROR_BACKUP);
-            }
+	/**
+	 * Method to patch the system error.php file
+	 *
+	 * @access public
+	 * @return null
+	 */
+	public function patch()
+	{
+		// Import the file-library
+		jimport('joomla.filesystem.file');
 
-            // Patch the file
-            JFile::copy(DYNAMIC404_ERROR_PATCH, DYNAMIC404_ERROR_TARGET);
-        }
+		// Only patch if the files match
+		if (md5_file(DYNAMIC404_ERROR_PATCH) != md5_file(DYNAMIC404_ERROR_TARGET))
+		{
+			// Create a backup
+			if (!file_exists(DYNAMIC404_ERROR_BACKUP))
+			{
+				JFile::copy(DYNAMIC404_ERROR_TARGET, DYNAMIC404_ERROR_BACKUP);
+			}
 
-        // Redirect
-        $this->setRedirect('index.php?option=com_dynamic404&view=setup');
-    }
+			// Patch the file
+			JFile::copy(DYNAMIC404_ERROR_PATCH, DYNAMIC404_ERROR_TARGET);
+		}
 
-    /**
-     * Method to enable the Dynamic404 System Plugin
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    public function pluginD404()
-    {
-        // Perform the database query
-        $db = JFactory::getDBO();
-        $query = 'UPDATE #__extensions SET `enabled`=1 WHERE `type`="plugin" AND `element`="dynamic404" AND `folder`="system"';
-        $db->setQuery($query);
-        $db->query();
+		// Redirect
+		$this->setRedirect('index.php?option=com_dynamic404&view=setup');
+	}
 
-        // Redirect
-        $this->setRedirect('index.php?option=com_dynamic404&view=setup');
-    }
+	/**
+	 * Method to enable the Dynamic404 System Plugin
+	 *
+	 * @access public
+	 * @return null
+	 */
+	public function pluginD404()
+	{
+		// Perform the database query
+		$db = JFactory::getDBO();
+		$query = $db->getQuery(true);
+		$query
+			->update($db->quoteName('#__extensions'))
+			->set($db->quoteName('enabled') . '=1')
+			->where(
+				array(
+					$db->quoteName('type') . '=' . $db->quote('plugin'),
+					$db->quoteName('element') . '=' . $db->quote('dynamic404'),
+					$db->quoteName('folder') . '=' . $db->quote('system')
+				)
+			);
 
-    /**
-     * Method to enable the Dynamic404 System Plugin
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    public function pluginRedirect()
-    {
-        // Perform the database query
-        $db = JFactory::getDBO();
-        $query = 'UPDATE #__extensions SET `enabled`=0 WHERE `type`="plugin" AND `element`="redirect" AND `folder`="system"';
-        $db->setQuery($query);
-        $db->query();
+		$db->setQuery($query);
+		$db->execute();
 
-        // Redirect
-        $this->setRedirect('index.php?option=com_dynamic404&view=setup');
-    }
+		// Redirect
+		$this->setRedirect('index.php?option=com_dynamic404&view=setup');
+	}
+
+	/**
+	 * Method to enable the Dynamic404 System Plugin
+	 *
+	 * @access public
+	 * @return null
+	 */
+	public function pluginRedirect()
+	{
+		// Perform the database query
+		$db = JFactory::getDBO();
+		$query = $db->getQuery(true);
+		$query
+			->update($db->quoteName('#__extensions'))
+			->set($db->quoteName('enabled') . '=0')
+			->where(
+				array(
+					$db->quoteName('type') . '=' . $db->quote('plugin'),
+					$db->quoteName('element') . '=' . $db->quote('redirect'),
+					$db->quoteName('folder') . '=' . $db->quote('system')
+				)
+			);
+
+		$db->setQuery($query);
+		$db->execute();
+
+		// Redirect
+		$this->setRedirect('index.php?option=com_dynamic404&view=setup');
+	}
 }

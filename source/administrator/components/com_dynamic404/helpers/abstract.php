@@ -16,39 +16,39 @@ defined('_JEXEC') or die();
  */
 class HelperAbstract
 {
-    /**
-     * Structural data of this component
-     */
-    static public function getStructure()
-    {
-        return array(
-            'title' => 'Dynamic404',
-            'menu' => array(
-                'home' => 'Home',
-                'setup' => 'Setup',
-                'redirects' => 'Redirects',
-                'logs' => 'Logs',
-                'option=com_plugins&view=plugins&filter_folder=dynamic404' => 'Plugins',
-            ),
-            'views' => array(
-                'home' => 'Home',
-                'setup' => 'Setup',
-                'redirect' => 'Redirect Rule',
-                'redirects' => 'Redirect Rules',
-                'log' => 'log',
-                'logs' => 'logs',
-            ),
-            'obsolete_files' => array(
-                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/logs/tmpl/default.php',
-                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/redirects/tmpl/default.php',
-                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/home/tmpl/default.php',
-                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/home/tmpl/default_cpanel.php',
-                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/home/tmpl/default_ads.php',
-                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/home/tmpl/feeds.php',
-                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/setup/tmpl/default_j16.php',
-                JPATH_ADMINISTRATOR.'/components/com_dynamic404/views/setup/tmpl/joomla25',
-                JPATH_ADMINISTRATOR.'/components/com_dynamic404/helpers/acl.php',
-            ),
-        );
-    }
+	/**
+	 * Structural data of this component
+	 */
+	static public function getStructure()
+	{
+		return array(
+			'title' => 'Dynamic404',
+			'menu' => array(
+				'home' => 'Home',
+				'setup' => 'Setup',
+				'redirects' => 'Redirects',
+				'logs' => 'Logs',
+				'option=com_plugins&view=plugins&filter_folder=dynamic404' => 'Plugins',
+			),
+			'views' => array(
+				'home' => 'Home',
+				'setup' => 'Setup',
+				'redirect' => 'Redirect Rule',
+				'redirects' => 'Redirect Rules',
+				'log' => 'log',
+				'logs' => 'logs',
+			),
+			'obsolete_files' => array(
+				JPATH_ADMINISTRATOR . '/components/com_dynamic404/views/logs/tmpl/default.php',
+				JPATH_ADMINISTRATOR . '/components/com_dynamic404/views/redirects/tmpl/default.php',
+				JPATH_ADMINISTRATOR . '/components/com_dynamic404/views/home/tmpl/default.php',
+				JPATH_ADMINISTRATOR . '/components/com_dynamic404/views/home/tmpl/default_cpanel.php',
+				JPATH_ADMINISTRATOR . '/components/com_dynamic404/views/home/tmpl/default_ads.php',
+				JPATH_ADMINISTRATOR . '/components/com_dynamic404/views/home/tmpl/feeds.php',
+				JPATH_ADMINISTRATOR . '/components/com_dynamic404/views/setup/tmpl/default_j16.php',
+				JPATH_ADMINISTRATOR . '/components/com_dynamic404/views/setup/tmpl/joomla25',
+				JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/acl.php',
+			),
+		);
+	}
 }
