@@ -4,7 +4,7 @@
  *
  * @author      Yireo (http://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        http://www.yireo.com/
  */
@@ -30,7 +30,8 @@ class Dynamic404ViewRedirects extends YireoViewList
     public function display($tpl = null)
 	{
         // Hackish way of closing this page when it is a modal box
-        if(JRequest::getInt('modal') == 1) {
+        if(JFactory::getApplication()->input->getInt('modal') == 1)
+        {
             echo '<script>window.parent.SqueezeBox.close();</script>';
             $this->app->close();
         }

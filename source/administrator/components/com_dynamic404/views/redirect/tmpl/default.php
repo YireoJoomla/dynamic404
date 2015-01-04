@@ -4,7 +4,7 @@
  *
  * @author Yireo
  * @package YireoLib
- * @copyright Copyright (C) 2014
+ * @copyright Copyright 2015
  * @license GNU Public License
  * @link http://www.yireo.com/
  */
@@ -19,7 +19,7 @@ jimport('joomla.utilities.utility');
 
 <form method="post" name="adminForm" id="adminForm">
 
-<?php if(JRequest::getInt('modal') == 1): ?>
+<?php if(JFactory::getApplication()->input->getInt('modal') == 1): ?>
 <jdoc:include type="message" />
 <button onclick="Joomla.submitbutton('save');" class="btn btn-small btn-success"><?php echo JText::_('JSUBMIT'); ?></button>
 <input type="hidden" name="modal" value="1" />

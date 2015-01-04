@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="component" version="2.5" method="upgrade">
+<extension type="component" version="3.3" method="upgrade">
     <name>COM_DYNAMIC404</name>
     <author>Yireo</author>
     <authoremail>support@yireo.com</authoremail>
     <authorurl>http://www.yireo.com</authorurl>
-    <creationDate>November 2014</creationDate>
-    <copyright>Copyright (C) 2014 Yireo.com. All rights reserved.</copyright>
+    <creationDate>December 2014</creationDate>
+    <copyright>Copyright 2015 Yireo.com. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
-    <version>1.0.41</version>
+    <version>1.0.44</version>
     <description>COM_DYNAMIC404_DESC</description>
 
     <!-- installation part -->

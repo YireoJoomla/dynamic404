@@ -3,7 +3,7 @@
  *
  * @author Yireo (info@yireo.com)
  * @package Yireo
- * @copyright Copyright 2014
+ * @copyright Copyright 2015
  * @link http://www.yireo.com
  */
 
@@ -46,4 +46,8 @@ fieldset.adminform span.input-span {
 
 dd.notice pre {
     white-space: pre-line;
+}
+
+fieldset.btn-group label {
+    font-size: 12px !important;
 }

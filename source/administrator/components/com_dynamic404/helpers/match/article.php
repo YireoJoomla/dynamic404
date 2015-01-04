@@ -4,7 +4,7 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link       http://www.yireo.com/
  */
@@ -33,7 +33,9 @@ class Dynamic404HelperMatchArticle
 	/**
 	 * Method to find matches when the last segment seems to be an ID
 	 *
-	 * @return null
+	 * @param   int  $id  Numerical value to match
+	 *
+	 * @return mixed|null
 	 */
 	public function findNumericMatches($id)
 	{
@@ -90,13 +92,14 @@ class Dynamic404HelperMatchArticle
 				if (Dynamic404HelperMatch::matchTextString($row->alias, $text1) || Dynamic404HelperMatch::matchTextString($row->alias, $text2))
 				{
 					$row = $this->prepareArticle($row);
+
 					if (!empty($row))
 					{
 						$row->match_note = 'article alias';
 						$matches[] = $row;
 					}
-					continue;
 
+					continue;
 				}
 				else
 				{
@@ -149,7 +152,7 @@ class Dynamic404HelperMatchArticle
 				->select($db->quoteName('c.alias', 'catalias'))
 				->from($db->quoteName('#__content', 'a'))
 				->join('INNER', $db->quoteName('#__categories', 'c') . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')')
-				->where($db->quoteName('a.id') . '=' . (int)$article_slug);
+				->where($db->quoteName('a.id') . '=' . (int) $article_slug);
 			$db->setQuery($query);
 			$article = $db->loadObject();
 
@@ -169,7 +172,8 @@ class Dynamic404HelperMatchArticle
 			$link = ContentHelperRoute::getArticleRoute($article_slug, $category_id);
 		}
 
-		if (!empty($language))
+        $currentLanguage = JFactory::getLanguage();
+		if (!empty($language) && $language != '*' && $language != $currentLanguage->getTag())
 		{
 			$link .= '&lang=' . $language;
 		}
@@ -187,9 +191,18 @@ class Dynamic404HelperMatchArticle
 	{
 		$db = JFactory::getDBO();
 		$query = $db->getQuery(true);
+		$query->select('*')
+			->from($db->quoteName('#__content'))
+			->where($db->quoteName('state') . '= 1')
+			->where($db->quoteName('id') . '=' . (int) $id)
+			->order($db->quoteName('ordering') . ' ASC');
+		$db->setQuery($query, 0, 1);
 
-		$db->setQuery('SELECT * FROM #__content WHERE state = 1 AND id = ' . (int)$id . ' ORDER BY ordering LIMIT 1');
-		if ($this->params->get('debug', 0) == 1) echo 'Dynamic404HelperMatchArticle::getArticleById = ' . $db->getQuery() . '<br/>';
+		if ($this->params->get('debug', 0) == 1)
+		{
+			echo 'Dynamic404HelperMatchArticle::getArticleById = ' . $db->getQuery() . '<br/>';
+		}
+
 		return $db->loadObject();
 	}
 
@@ -244,7 +257,7 @@ class Dynamic404HelperMatchArticle
 	 *
 	 * @param   object  $item  Content item object
 	 *
-	 * @return string
+	 * @return object
 	 */
 	private function prepareArticle($item)
 	{

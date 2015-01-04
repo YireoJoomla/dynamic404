@@ -4,7 +4,7 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link       http://www.yireo.com/
  */
@@ -12,6 +12,9 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die();
 
+/**
+ * Class Dynamic404HelperMatchMenu
+ */
 class Dynamic404HelperMatchMenu
 {
 	/*
@@ -21,10 +24,6 @@ class Dynamic404HelperMatchMenu
 
 	/**
 	 * Constructor
-	 *
-	 * @access public
-	 * @param null
-	 * @return null
 	 */
 	public function __construct()
 	{
@@ -34,14 +33,15 @@ class Dynamic404HelperMatchMenu
 	/**
 	 * Method to find matches when the last segment seems to be an ID
 	 *
-	 * @access private
-	 * @param null
-	 * @return null
+	 * @param   int  $id  Numerical value to match
+	 *
+	 * @return mixed|null
 	 */
 	public function findNumericMatches($id)
 	{
 		$rows = $this->getMenuItems();
 		$matches = array();
+
 		if (!empty($rows))
 		{
 			foreach ($rows as $row)
@@ -49,18 +49,26 @@ class Dynamic404HelperMatchMenu
 				if ($row->id == $id)
 				{
 					$row = $this->prepareMenuItem($row);
-					if (!empty($row)) $matches[] = $row;
+
+					if (!empty($row))
+					{
+						$matches[] = $row;
+					}
 				}
 			}
 		}
+
 		return $matches;
 	}
 
 	/**
 	 * Method to find matches within the Menu-Items
 	 *
-	 * @access private
-	 * @param null
+	 * @param   string  $text1      First text to match
+	 * @param   string  $text2      Alternative text to match
+	 * @param   string  $uri        Current URL
+	 * @param   array   $uri_parts  Array of current URL segments
+	 *
 	 * @return null
 	 */
 	public function findTextMatches($text1, $text2, $uri, $uri_parts)
@@ -76,7 +84,6 @@ class Dynamic404HelperMatchMenu
 		{
 			foreach ($items as $item)
 			{
-
 				// Each item is given a rating
 				$item->rating = 10;
 
@@ -97,17 +104,22 @@ class Dynamic404HelperMatchMenu
 					$item->url = $this->getMenuItemUrl($item);
 					$item->match_note = 'menu alias';
 					$item = $this->prepareMenuItem($item);
-					if (!empty($item)) $matches[] = $item;
+
+					if (!empty($item))
+					{
+						$matches[] = $item;
+					}
+
 					continue;
 				}
 
 				// If the items alias is found directly in the URL
 				if (!empty($item->alias) && in_array($item->alias, $uri_parts))
 				{
-
 					// To rate this correctly, we count how many segments in the Menu-Item are the same as in the requested URL
 					$segments = array_unique(explode('/', $item->route));
 					$count = 0;
+
 					foreach ($segments as $segment)
 					{
 						if (in_array($segment, $uri_parts))
@@ -120,30 +132,35 @@ class Dynamic404HelperMatchMenu
 					$item->url = $this->getMenuItemUrl($item);
 					$item->match_note = 'menu route';
 					$item = $this->prepareMenuItem($item);
-					if (!empty($item)) $matches[] = $item;
+
+					if (!empty($item))
+					{
+						$matches[] = $item;
+					}
+
 					continue;
 				}
 
 				// Try to find a match between the requested URL and a Menu-Items route
 				if (Dynamic404HelperMatch::matchTextString($item->route, $uri))
 				{
-
 					// Reset the base-rating
 					if (substr($item->route, 0, strlen($uri)) == $uri)
 					{
 						$item->rating = 89;
-					} else
+					}
+					else
 					{
 						$item->rating = 79;
 					}
 
 					// Try to make an improvement on the base rating
 					$max = strlen($item->route);
+
 					for ($i = 1; $i < $max; $i++)
 					{
 						if (abs(strlen($item->route) - strlen($uri)) <= $i)
 						{
-
 							// Give this match a rating depending on the characters that differ
 							// @todo: Find a way to calculate the total string-length as well
 							$item->rating = $item->rating - ($i * 2);
@@ -160,7 +177,12 @@ class Dynamic404HelperMatchMenu
 					$item->match_note = 'menu fuzzy alias';
 					$item->url = $this->getMenuItemUrl($item);
 					$item = $this->prepareMenuItem($item);
-					if (!empty($item)) $matches[] = $item;
+
+					if (!empty($item))
+					{
+						$matches[] = $item;
+					}
+
 					continue;
 				}
 			}
@@ -172,13 +194,12 @@ class Dynamic404HelperMatchMenu
 	/**
 	 * Method to get a list of menu-items
 	 *
-	 * @access private
-	 * @param null
 	 * @return array
 	 */
 	private function getMenuItems()
 	{
 		static $rows = null;
+
 		if (empty($rows))
 		{
 			$menu = JFactory::getApplication()->getMenu();
@@ -191,8 +212,8 @@ class Dynamic404HelperMatchMenu
 	/**
 	 * Method to get the URL for a specific Menu-Item
 	 *
-	 * @access private
-	 * @param object $item
+	 * @param   object  $item  Menu-Item object
+	 *
 	 * @return string
 	 */
 	private function getMenuItemUrl($item)
@@ -200,14 +221,9 @@ class Dynamic404HelperMatchMenu
 		if ($item->type == 'component')
 		{
 			$link = $item->link . '&Itemid=' . $item->id;
-
-			if (!empty($item->language))
-			{
-				$link .= '&lang=' . $item->language;
-			}
-
 			$item->url = JRoute::_($link);
-		} else
+		}
+		else
 		{
 			$item->url = $item->link;
 		}
@@ -218,24 +234,13 @@ class Dynamic404HelperMatchMenu
 	/**
 	 * Method to prepare a menu-item
 	 *
-	 * @access private
-	 * @param object $item
+	 * @param   object  $item  Menu-Item object
+	 *
 	 * @return string
 	 */
 	private function prepareMenuItem($item)
 	{
-		// Check access for 1.5
-		if (Dynamic404HelperCore::isJoomla15())
-		{
-			$user = & JFactory::getUser();
-			if (isset($item->access) && $item->access > $user->get('aid', 0))
-			{
-				return null;
-			}
-		} else
-		{
-			$item->name = $item->title;
-		}
+		$item->name = $item->title;
 
 		if (empty($item->name))
 		{
@@ -244,6 +249,7 @@ class Dynamic404HelperMatchMenu
 
 		$item->type = 'component';
 		$item->url = $this->getMenuItemUrl($item);
+
 		return $item;
 	}
 }

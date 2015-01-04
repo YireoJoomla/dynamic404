@@ -3,12 +3,17 @@
     <fields>
         <fieldset name="basic" addfieldpath="administrator/components/com_dynamic404/fields">
             <field name="enable_redirect" type="radio" default="1" class="btn-group"
-                label="COM_DYNAMIC404_FIELD_ENABLE_REDIRECT" description="COM_DYNAMIC404_FIELD_ENABLE_REDIRECT_DESC" required="1">
+                label="COM_DYNAMIC404_FIELD_ENABLE_REDIRECT" description="COM_DYNAMIC404_FIELD_ENABLE_REDIRECT_DESC">
                 <option value="0">JNO</option>
                 <option value="1">JYES</option>
             </field>
             <field name="enable_logging" type="radio" default="1" class="btn-group"
-                label="COM_DYNAMIC404_FIELD_ENABLE_LOGGING" description="COM_DYNAMIC404_FIELD_ENABLE_LOGGING_DESC" required="1">
+                label="COM_DYNAMIC404_FIELD_ENABLE_LOGGING" description="COM_DYNAMIC404_FIELD_ENABLE_LOGGING_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="log_all" type="radio" default="0" class="btn-group"
+                label="COM_DYNAMIC404_FIELD_LOG_ALL" description="COM_DYNAMIC404_FIELD_LOG_ALL_DESC">
                 <option value="0">JNO</option>
                 <option value="1">JYES</option>
             </field>
@@ -126,7 +131,7 @@
                 <option value="307">307 Temporary Redirect</option>
             </field>
             <field name="strip_extensions" type="textarea" default="asp,aspx" label="COM_DYNAMIC404_FIELD_STRIP_EXTENSIONS" description="COM_DYNAMIC404_FIELD_STRIP_EXTENSIONS_DESC" />
-            <field name="block_large_requests" type="text" default="1000" label="COM_DYNAMIC404_FIELD_LARGE_REQUESTS" description="COM_DYNAMIC404_FIELD_LARGE_REQUESTS_DESC" />
+            <field name="block_large_requests" type="text" default="1000" label="COM_DYNAMIC404_FIELD_BLOCK_LARGE_REQUESTS" description="COM_DYNAMIC404_FIELD_BLOCK_LARGE_REQUESTS_DESC" />
             <field name="block_nonexisting_components" type="radio" default="1" class="btn-group"
                 label="COM_DYNAMIC404_FIELD_BLOCK_NONEXISTING_COMPONENTS" 
                 description="COM_DYNAMIC404_FIELD_BLOCK_NONEXISTING_COMPONENTS_DESC">

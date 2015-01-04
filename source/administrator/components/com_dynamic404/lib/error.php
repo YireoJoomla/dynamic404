@@ -4,7 +4,7 @@
  *
  * @author      Yireo (http://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        http://www.yireo.com/
  */
@@ -25,6 +25,7 @@ if($this instanceof Dynamic404Helper) {
 // Parse empty variables and/or objects
 if(empty($this->error)) $this->error = $helper->getErrorObject();
 if(empty($this->title)) $this->title = JText::_('COM_DYNAMIC404_NOT_FOUND');
+$errorCode = (is_object($this->error) && isset($this->error->code)) ? $this->error->code : '404'; 
 
 // Get the possible matches
 $matches = $helper->getMatches();
@@ -33,12 +34,13 @@ $matches = $helper->getMatches();
 $search = $helper->getLast();
 
 // Load the article
-$article = $helper->getArticle($this->getErrorObject()->get('code'));
+$article = $helper->getArticle($errorCode);
 if(!empty($article)) {
     $this->title = $article->title;
 }
 
-// Fetch additional errors
+// Fetch additional properties
+$errorMsg = (is_object($this->error) && isset($this->error->message)) ? $this->error->message : $this->title; 
 $additionalErrors = $this->getAdditionalErrors();
 
 // If no redirect is available or performed, show the page below
@@ -46,14 +48,14 @@ $additionalErrors = $this->getAdditionalErrors();
 <!DOCTYPE HTML>
 <html>
 <head>
-	<title><?php echo $this->error->get('code') ?> - <?php echo $this->title; ?></title>
+	<title><?php echo $errorCode ?> - <?php echo $this->title; ?></title>
 	<link rel="stylesheet" href="<?php echo JURI::base(); ?>/templates/system/css/error.css" type="text/css" />
 </head>
 <body>
 	<div align="center">
 		<div id="outline">
 		<div id="errorboxoutline">
-			<div id="errorboxheader"><?php echo $this->error->get('code') ?> - <?php echo $this->error->get('message') ?></div>
+			<div id="errorboxheader"><?php echo $errorCode ?> - <?php echo $errorMsg ?></div>
 			<div id="errorboxbody">
             <?php if(!empty($article)) : ?>
                 <?php echo $article->text; ?>
@@ -91,7 +93,7 @@ $additionalErrors = $this->getAdditionalErrors();
 
 			<p><?php echo JText::_('COM_DYNAMIC404_PROBLEMS'); ?></p>
 			<div id="techinfo">
-			<p><?php echo $this->error->get('message'); ?></p>
+			<p><?php echo $errorMsg; ?></p>
 			<p>
 				<?php if(isset($this->debug) && $this->debug == true) : ?>
 					<?php echo $this->renderBacktrace(); ?>

@@ -4,7 +4,7 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link       http://www.yireo.com/
  */
@@ -94,7 +94,7 @@ class Dynamic404Helper
 
 		$matches = $this->getMatches();
 
-		if ($this->params->get('enable_redirect', 1) && !empty($matches))
+		if ($this->params->get('log_all', 0) == 0 && $this->params->get('enable_redirect', 1) && !empty($matches))
 		{
 			return false;
 		}
@@ -111,7 +111,7 @@ class Dynamic404Helper
 	{
 		$conf = JFactory::getConfig();
 
-		return $conf->getValue('config.sef');
+		return $conf->get('sef');
 	}
 
 	/**
@@ -182,17 +182,17 @@ class Dynamic404Helper
 	 */
 	public function getErrorObject($error = null)
 	{
-		if (empty($error))
-		{
-			$error = JError::getError();
+		if (empty($error) || $error == false)
+        {
+            $error = JError::getError();
+        }
 
-			if (empty($error) || $error == false)
-			{
-				$error = (object) null;
-				$error->code = 404;
-				$error->message = JText::_('Not found');
-			}
-		}
+		if (empty($error) || $error == false)
+        {
+            $error = (object) null;
+            $error->code = 404;
+            $error->message = JText::_('Not found');
+        }
 
 		return $error;
 	}
@@ -287,6 +287,12 @@ class Dynamic404Helper
 	 */
 	public function checkNoRedirectLoop($url = null)
 	{
+		$conf = JFactory::getConfig();
+        if($conf->get('offline') == 1)
+        {
+            return true;
+        }
+
 		if (empty($url))
 		{
 			return false;
@@ -354,8 +360,6 @@ class Dynamic404Helper
 		}
 
 		// Do not redirect, if the HTTP-status is not a 4xx error
-		$error = JError::getError();
-
 		if (empty($error))
 		{
 			$errorCode = '404';
@@ -632,7 +636,7 @@ class Dynamic404Helper
 		// Loop through the items query-values and add them to the request
 		foreach ($item->query as $name => $value)
 		{
-			$this->jinput->setVar($name, $value);
+			$this->jinput->set($name, $value);
 		}
 
 		// Call upon the components entry-file

@@ -14,6 +14,9 @@ defined('JPATH_BASE') or die;
 
 jimport('joomla.plugin.plugin');
 
+// Load the Yireo library
+require_once (JPATH_ADMINISTRATOR.'/components/com_dynamic404/lib/loader.php');
+
 /**
  * Plugin class for reusing redirection of the Dynamic404 component
  *
@@ -232,7 +235,11 @@ class plgSystemDynamic404 extends JPlugin
                 $method = 'onDynamic404Link';
                 if (class_exists($className))
                 {
-		            $dispatcher = JEventDispatcher::getInstance();
+                    if(YireoHelper::isJoomla25()) {
+    		            $dispatcher = JDispatcher::getInstance();
+                    } else {
+    		            $dispatcher = JEventDispatcher::getInstance();
+                    }
                     $plugin = new $className($dispatcher, (array)$plugin);
 
                     if (method_exists($plugin, $method))

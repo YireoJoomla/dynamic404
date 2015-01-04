@@ -4,7 +4,7 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link       http://www.yireo.com/
  */
@@ -12,6 +12,9 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die();
 
+/**
+ * Class Dynamic404HelperMatchCategory
+ */
 class Dynamic404HelperMatchCategory
 {
 	/*
@@ -21,10 +24,6 @@ class Dynamic404HelperMatchCategory
 
 	/**
 	 * Constructor
-	 *
-	 * @access public
-	 * @param null
-	 * @return null
 	 */
 	public function __construct()
 	{
@@ -34,24 +33,31 @@ class Dynamic404HelperMatchCategory
 	/**
 	 * Method to find matches when the last segment seems to be an ID
 	 *
-	 * @access public
-	 * @param null
-	 * @return null
+	 * @param   int  $id  Numerical value to match
+	 *
+	 * @return mixed|null
 	 */
 	public function findNumericMatches($id)
 	{
 		$row = $this->getCategoryById($id);
 		$row = $this->prepareCategory($row);
-		if (empty($row)) return null;
+
+		if (empty($row))
+		{
+			return null;
+		}
+
 		$row->match_note = 'category id';
+
 		return array($row);
 	}
 
 	/**
 	 * Method to find matches within Joomla! categories
 	 *
-	 * @access public
-	 * @param null
+	 * @param   string  $text1  First text to match
+	 * @param   string  $text2  Alternative text to match
+	 *
 	 * @return null
 	 */
 	public function findTextMatches($text1, $text2)
@@ -63,6 +69,7 @@ class Dynamic404HelperMatchCategory
 		{
 			$row = $this->getCategoryById($match[0]);
 			$row = $this->prepareCategory($row);
+
 			if (!empty($row))
 			{
 				$row->rating = 95;
@@ -72,11 +79,11 @@ class Dynamic404HelperMatchCategory
 
 		// Match the alias
 		$rows = $this->getCategoryList($text1, $text2);
+
 		if (!empty($rows))
 		{
 			foreach ($rows as $row)
 			{
-
 				if (!isset($row->alias) || empty($row->alias))
 				{
 					continue;
@@ -85,21 +92,25 @@ class Dynamic404HelperMatchCategory
 				if (Dynamic404HelperMatch::matchTextString($row->alias, $text1) || Dynamic404HelperMatch::matchTextString($row->alias, $text2))
 				{
 					$row = $this->prepareCategory($row);
+
 					if (!empty($row))
 					{
 						$row->match_note = 'category alias';
 						$matches[] = $row;
 					}
-					continue;
 
-				} else
+					continue;
+				}
+				else
 				{
 					$row->match_parts = array();
 					$row->match_parts = array_merge($row->match_parts, Dynamic404HelperMatch::matchTextParts($row->alias, $text1));
 					$row->match_parts = array_merge($row->match_parts, Dynamic404HelperMatch::matchTextParts($row->alias, $text2));
+
 					if (!empty($row->match_parts))
 					{
 						$row = $this->prepareCategory($row);
+
 						if (!empty($row))
 						{
 							$row->match_note = 'category alias';
@@ -117,56 +128,83 @@ class Dynamic404HelperMatchCategory
 	/**
 	 * Method to redirect to a specific match
 	 *
-	 * @access private
-	 * @param string $id
+	 * @param   string  $id  Category ID
+	 *
 	 * @return string
 	 */
 	private function getCategoryLink($id)
 	{
 		require_once JPATH_SITE . '/components/com_content/helpers/route.php';
+
 		return JRoute::_(ContentHelperRoute::getCategoryRoute($id));
 	}
 
 	/**
 	 * Method to get an category by ID
 	 *
-	 * @access private
-	 * @param null
+	 * @param   string  $id  Category ID
+	 *
 	 * @return array
 	 */
 	private function getCategoryById($id)
 	{
 		$db = JFactory::getDBO();
-		$db->setQuery('SELECT id,title,alias,access FROM #__categories WHERE extension = "com_content" AND published = 1 AND id = ' . (int)$id . ' LIMIT 1');
-		if ($this->params->get('debug') == 1) echo 'Dynamic404HelperMatchCategory::getCategoryById = ' . $db->getQuery() . '<br/>';
+		$query = $db->getQuery(true);
+		$query->select($db->quoteName('id', 'title', 'alias', 'access'))
+			->from($db->quoteName('#__categories'))
+			->where($db->quoteName('extension') . '=' . $db->quote('com_content'))
+			->where($db->quoteName('published') . '= 1')
+			->where($db->quoteName('id') . ' = ' . (int) $id);
+		$db->setQuery($query, 0, 1);
+
+		if ($this->params->get('debug') == 1)
+		{
+			echo 'Dynamic404HelperMatchCategory::getCategoryById = ' . $db->getQuery() . '<br/>';
+		}
+
 		return $db->loadObject();
 	}
 
 	/**
 	 * Method to get a list of categories
 	 *
-	 * @access private
-	 * @param null
+	 * @param   string  $text1  First text to match
+	 * @param   string  $text2  Alternative text to match
+	 *
 	 * @return array
 	 */
 	private function getCategoryList($text1, $text2)
 	{
 		static $rows = null;
+
 		if (empty($rows))
 		{
 			$db = JFactory::getDBO();
 
-			$query = 'SELECT * FROM `#__categories` WHERE `published` = 1 ';
+			$query = $db->getQuery(true);
+			$query->select('*')
+				->from('#__categories')
+				->where($db->quoteName('published') . '= 1');
+
 			if ($this->params->get('load_all_categories', 0) == 0)
 			{
-				$text1 = $db->Quote('%' . $text1 . '%');
-				$text2 = $db->Quote('%' . $text2 . '%');
-				$query .= 'AND (`alias` LIKE ' . $text1 . ' OR `alias` LIKE ' . $text2 . ')';
+				$text1 = $db->quote('%' . $text1 . '%');
+				$text2 = $db->quote('%' . $text2 . '%');
+
+				$query->where('('
+					. $db->quoteName('alias') . ' LIKE ' . $text1
+					. ' OR '
+					. $db->quoteName('alias') . ' LIKE ' . $text2
+					. ')');
 			}
-			//$query .= ' ORDER BY `ordering`';
 
 			$db->setQuery($query);
-			if ($this->params->get('debug') == 1) echo 'Dynamic404HelperMatchCategory::getCategoryList = ' . $db->getQuery() . '<br/>';
+
+			if ($this->params->get('debug') == 1)
+			{
+				echo 'Dynamic404HelperMatchCategory::getCategoryList = ' . $db->getQuery() . '<br/>';
+			}
+
 			$rows = $db->loadObjectList();
 		}
 
@@ -176,9 +214,9 @@ class Dynamic404HelperMatchCategory
 	/**
 	 * Method to prepare a category
 	 *
-	 * @access private
-	 * @param object $item
-	 * @return string
+	 * @param   object  $item  Category object
+	 *
+	 * @return object
 	 */
 	private function prepareCategory($item)
 	{
@@ -188,20 +226,11 @@ class Dynamic404HelperMatchCategory
 			return null;
 		}
 
-		// Check access for 1.5
-		if (Dynamic404HelperCore::isJoomla15())
-		{
-			$user = & JFactory::getUser();
-			if (isset($item->access) && $item->access > $user->get('aid', 0))
-			{
-				return null;
-			}
-		}
-
 		$item->type = 'component';
 		$item->name = $item->title;
 		$item->rating = $this->params->get('rating_categories', 85);
 		$item->url = $this->getCategoryLink($item->id . ':' . $item->alias);
+
 		return $item;
 	}
 }

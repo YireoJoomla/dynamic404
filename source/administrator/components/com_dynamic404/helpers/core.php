@@ -4,7 +4,7 @@
  *
  * @author      Yireo (http://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        http://www.yireo.com/
  */
@@ -17,38 +17,6 @@ defined('JPATH_BASE') or die;
  */
 class Dynamic404HelperCore
 {
-    /*
-     * Helper-method to check whether the current Joomla! version is 1.6
-     *
-     * @param null
-     * @return bool
-     */
-    static public function isJoomla16()
-    {
-        JLoader::import( 'joomla.version' );
-        $version = new JVersion();
-        if (version_compare( $version->RELEASE, '1.6', 'eq')) {
-            return true;
-        }
-        return false;
-    }
-    
-    /*
-     * Helper-method to check whether the current Joomla! version is 1.5
-     *
-     * @param null
-     * @return bool
-     */
-    static public function isJoomla15()
-    {
-        JLoader::import( 'joomla.version' );
-        $version = new JVersion();
-        if (version_compare( $version->RELEASE, '1.5', 'eq')) {
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Method to log a 404 occurance to the database
      *

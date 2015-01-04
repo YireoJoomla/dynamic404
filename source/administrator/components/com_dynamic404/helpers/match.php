@@ -4,7 +4,7 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link       http://www.yireo.com/
  */
@@ -343,7 +343,11 @@ class Dynamic404HelperMatch
 
 		// Include Search Plugins
 		JPluginHelper::importPlugin('search');
-		$dispatcher = JEventDispatcher::getInstance();
+        if(YireoHelper::isJoomla25()) {
+            $dispatcher = JDispatcher::getInstance();
+        } else {
+            $dispatcher = JEventDispatcher::getInstance();
+        }
 		$areas = $dispatcher->trigger('onContentSearch', array($search, $match, $ordering, $active));
 
 		// Loop through the search results and add them to the matches
@@ -609,6 +613,14 @@ class Dynamic404HelperMatch
 
 					$match->url = $base_uri . $match->url;
 				}
+
+                $currentPath = JURI::getInstance()->toString(array('path'));
+
+                if ($currentPath == $match->url)
+                {
+                    unset($this->matches[$index]);
+                    continue;
+                }
 
 				$this->matches[$index] = $match;
 			}

@@ -4,7 +4,7 @@
  *
  * @author      Yireo (http://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        http://www.yireo.com/
  */
@@ -23,11 +23,8 @@ class Dynamic404ModelPlugins extends YireoModel
      */
     protected function buildQuery()
     {
-        if (Dynamic404HelperCore::isJoomla15()) {
-            $query = 'SELECT * FROM `#__plugins` WHERE `folder`="dynamic404"';
-        } else {
-            $query = 'SELECT * FROM `#__extensions` WHERE `type`="plugin" AND `folder`="dynamic404"';
-        }
+        $query = 'SELECT * FROM `#__extensions` WHERE `type`="plugin" AND `folder`="dynamic404"';
+
         return $query;
     }
 }

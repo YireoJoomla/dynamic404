@@ -83,7 +83,7 @@ class plgDynamic404K2 extends JPlugin
         static $rows = null;
         if(empty($rows)) {
             $db = JFactory::getDBO();
-            $db->setQuery('SELECT id,alias,access,title AS name FROM #__k2_items WHERE published=1 AND alias LIKE "%'.$alias.'%"');
+            $db->setQuery('SELECT id,alias,access,title AS name,catid FROM #__k2_items WHERE published=1 AND alias LIKE "%'.$alias.'%"');
             $rows = $db->loadObjectList();
 
             if(!empty($rows)) { 
@@ -141,7 +141,7 @@ class plgDynamic404K2 extends JPlugin
 
         // Set common options
         $item->type = 'component';
-        $item->rating = $this->params->get()->get('rating', 85);
+        $item->rating = $this->params->get('rating', 85);
         $item->match_note = 'k2 alias';
 
         // Require the K2 helper
@@ -156,7 +156,7 @@ class plgDynamic404K2 extends JPlugin
 
             case 'item':
             default:
-                $url = K2HelperRoute::getItemRoute($item->id.':'.$item->alias);
+                $url = K2HelperRoute::getItemRoute($item->id.':'.$item->alias, $item->catid);
                 $item->url = JRoute::_($url);
                 break;
         }

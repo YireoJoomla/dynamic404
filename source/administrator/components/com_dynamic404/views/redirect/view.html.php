@@ -4,7 +4,7 @@
  *
  * @author      Yireo (http://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        http://www.yireo.com/
  */
@@ -36,8 +36,9 @@ class Dynamic404ViewRedirect extends YireoViewForm
         $this->fetchItem();
 
         // Complete this item from the URL
-        if(empty($this->item->match)) {
-            $this->item->match = base64_decode(JRequest::getString('match'));
+        if(empty($this->item->match))
+        {
+            $this->item->match = base64_decode(JFactory::getApplication()->input->getString('match'));
         }
 
 		parent::display($tpl);

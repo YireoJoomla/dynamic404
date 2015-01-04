@@ -4,7 +4,7 @@
  *
  * @author      Yireo (http://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (C) 2014 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        http://www.yireo.com/
  */
@@ -62,11 +62,15 @@ class Dynamic404ModelRedirect extends YireoModel
     {
         // Get the parent data
         $data = parent::getData();
+		$jinput = JFactory::getApplication()->input;
 
-        if(JRequest::getInt('modal') == 1 && empty($data->redirect_id)) {
-            $asset_id = JRequest::getInt('asset');
+        if($jinput->getInt('modal') == 1 && empty($data->redirect_id))
+		{
+            $asset_id = $jinput->getInt('asset');
             $asset_data = $this->loadDataByAssetId($asset_id);
-            if(!empty($asset_data) && is_array($asset_data)) {
+
+            if(!empty($asset_data) && is_array($asset_data))
+			{
                 $data = (object)array_merge((array)$data, $asset_data);
             }
         }
