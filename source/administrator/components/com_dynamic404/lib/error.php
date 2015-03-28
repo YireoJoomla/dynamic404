@@ -25,7 +25,7 @@ if($this instanceof Dynamic404Helper) {
 // Parse empty variables and/or objects
 if(empty($this->error)) $this->error = $helper->getErrorObject();
 if(empty($this->title)) $this->title = JText::_('COM_DYNAMIC404_NOT_FOUND');
-$errorCode = (is_object($this->error) && isset($this->error->code)) ? $this->error->code : '404'; 
+$errorCode = $helper->getErrorCode($this->error);
 
 // Get the possible matches
 $matches = $helper->getMatches();

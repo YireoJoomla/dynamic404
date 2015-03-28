@@ -63,6 +63,7 @@ class Dynamic404HelperMatch
 
 		$uri = str_replace('?noredirect=1', '', $uri);
 		$uri = preg_replace('/\/$/', '', $uri);
+		$uri = str_replace('_', '-', $uri);
 
 		// Initialize the variables to
 		$uri_parts = array();

@@ -243,7 +243,7 @@ class Dynamic404HelperMatchArticle
 
 			if ($this->params->get('debug') == 1)
 			{
-				echo 'Dynamic404HelperMatchArticle::getArticleList = ' . $db->getQuery() . '<br/>';
+				$this->debug('Dynamic404HelperMatchArticle::getArticleList = ' . $db->getQuery());
 			}
 
 			$rows = $db->loadObjectList();
@@ -287,4 +287,10 @@ class Dynamic404HelperMatchArticle
 
 		return $item;
 	}
+
+    public function debug($msg, $variable = null)
+    {
+        //$helper = new Dynamic404Helper;
+        //return $helper->debug($msg, $variable);
+    }
 }

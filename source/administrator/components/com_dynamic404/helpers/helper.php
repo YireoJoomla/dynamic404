@@ -69,16 +69,29 @@ class Dynamic404Helper
 			$this->log();
 			$this->doRedirect();
 
-			if ($this->params->get('debug', 0) == 1)
-			{
-				echo 'PHP memory-usage: ' . memory_get_usage();
-			}
+			$this->debug('PHP memory-usage', memory_get_usage());
 
 			$this->setHttpStatus();
 			$this->displayCustomPage();
 			$this->displayErrorPage();
 		}
 	}
+
+    public function debug($msg, $variable = null)
+    {
+		if ($this->params->get('debug', 0) == 0)
+        {
+            return;
+        }
+
+        if(!empty($variable))
+        {
+            $msg .= ' = '.var_export($variable, true);
+        }
+
+        $msg .= "\n";
+        echo $msg.'<br/>';
+    }
 
 	/**
 	 * Method to log a 404 occurance to the database
@@ -356,6 +369,7 @@ class Dynamic404Helper
 
 		if (preg_match('/^(templates|media|images)\//', $url))
 		{
+            $this->debug('No redirect for templates|media|images');
 			return false;
 		}
 
@@ -366,10 +380,11 @@ class Dynamic404Helper
 		}
 		else
 		{
-			$errorCode = (int) $error->get('code');
+			$errorCode = (int) $this->getErrorCode($error);
 
 			if ($this->params->get('redirect_non404', 0) == 0 && preg_match('/^4/', $errorCode) == false)
 			{
+                $this->debug('No redirect for non-404 errors');
 				return false;
 			}
 		}
@@ -394,15 +409,19 @@ class Dynamic404Helper
 		if (empty($match->params))
 		{
 			$match->params = null;
+            $matchRedirect = $this->params->get('enable_redirect', 1);
 		}
+        else
+        {
+		    $params = YireoHelper::toRegistry($match->params);
+            $matchRedirect = $params->get('redirect', $this->params->get('enable_redirect', 1));
+        }
 
-		$params = YireoHelper::toRegistry($match->params);
-
-		if ($params->get('redirect', 2) == 0)
+		if (isset($match->type) && $match->type == 'component' && $matchRedirect == 0)
 		{
 			return false;
 		}
-		elseif ($params->get('redirect', 2) == 2 && $this->params->get('enable_redirect', 1) == 0)
+		elseif ($matchRedirect = 2 && $this->params->get('enable_redirect', 1) == 0)
 		{
 			return false;
 		}
@@ -477,12 +496,13 @@ class Dynamic404Helper
 		$Itemid = null;
 		$article = null;
 		$params = $this->params->toArray();
+        $errorCode = $this->getErrorCode($error);
 
 		foreach ($params as $name => $value)
 		{
 			if ($value > 0 && preg_match('/^menuitem_id_([0-9]+)/', $name, $match))
 			{
-				if ($error->get('code') == $match[1])
+				if ($errorCode == $match[1])
 				{
 					$Itemid = (int) $value;
 				}
@@ -490,7 +510,7 @@ class Dynamic404Helper
 
 			if ($value > 0 && preg_match('/^article_id_([0-9]+)/', $name, $match))
 			{
-				if ($error->get('code') == $match[1])
+				if ($errorCode == $match[1])
 				{
 					$article = (int) $value;
 				}
@@ -542,7 +562,7 @@ class Dynamic404Helper
 		else
 		{
 			// Load the configured article
-			$row = $this->getArticle($error->get('code'));
+			$row = $this->getArticle($errorCode);
 
 			if (empty($row))
 			{
@@ -694,6 +714,7 @@ class Dynamic404Helper
 	public function setHttpStatus()
 	{
 		$error = JError::getError();
+        $errorCode = $this->getErrorCode($error);
 		$document = JFactory::getDocument();
 
 		if (YireoHelper::isJoomla25())
@@ -701,7 +722,6 @@ class Dynamic404Helper
 			$document->setError($error);
 		}
 
-		$errorCode = (is_object($error)) ? $error->get('code') : 'unknown';
 		$document->setTitle(JText::_('Error') . ': ' . $errorCode);
 
 		switch ($errorCode)
@@ -893,4 +913,21 @@ class Dynamic404Helper
 	{
 		return $this->errors;
 	}
+
+    public function getErrorCode($error)
+    {
+        if(is_object($error)) {
+            if(method_exists($error, 'get')) {
+                return $error->get('code');
+            } else {
+                return $error->code;
+            }
+        }
+    
+        if(is_numeric($error)) {
+            return $error;
+        }
+        
+        return 404;
+    }
 }

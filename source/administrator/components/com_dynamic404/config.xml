@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
-    <fields>
-        <fieldset name="basic" addfieldpath="administrator/components/com_dynamic404/fields">
+    <fields addfieldpath="administrator/components/com_dynamic404/fields">
+        <fieldset name="basic">
             <field name="enable_redirect" type="radio" default="1" class="btn-group"
                 label="COM_DYNAMIC404_FIELD_ENABLE_REDIRECT" description="COM_DYNAMIC404_FIELD_ENABLE_REDIRECT_DESC">
                 <option value="0">JNO</option>
@@ -156,7 +156,26 @@
                 <option value="0">JNO</option>
                 <option value="1">JYES</option>
             </field>
-       </fieldset>
+        </fieldset>
+        <fieldset name="redirect" addfieldpath="administrator/components/com_dynamic404/lib/form/fields">
+            <field name="type" type="list" default="full_url" label="COM_DYNAMIC404_CONFIG_REDIRECT_FIELD_TYPE">
+                <option value="full_url">COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_FULL_URL</option>
+                <option value="last_segment">COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_LAST_SEGMENT</option>
+                <option value="any_segment">COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_ANY_SEGMENT</option>
+                <option value="fuzzy">COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_FUZZY</option>
+                <option value="regex">COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_REGEX</option>
+            </field>
+            <field name="http_status" type="list" default="301" label="COM_DYNAMIC404_CONFIG_REDIRECT_FIELD_HTTP_STATUS">
+                <option value="301">COM_DYNAMIC404_REDIRECT_FIELD_HTTP_STATUS_OPTION_301</option>
+                <option value="302">COM_DYNAMIC404_REDIRECT_FIELD_HTTP_STATUS_OPTION_302</option>
+                <option value="303">COM_DYNAMIC404_REDIRECT_FIELD_HTTP_STATUS_OPTION_303</option>
+                <option value="307">COM_DYNAMIC404_REDIRECT_FIELD_HTTP_STATUS_OPTION_307</option>
+                <option value="418">COM_DYNAMIC404_REDIRECT_FIELD_HTTP_STATUS_OPTION_418</option>
+            </field>
+            <field name="redirect" type="yireo.boolean" default="0" label="COM_DYNAMIC404_CONFIG_REDIRECT_PARAM_REDIRECT" />
+            <field name="match_case" type="yireo.boolean" default="0" label="COM_DYNAMIC404_CONFIG_REDIRECT_PARAM_MATCH_CASE" />
+            <field name="show_description" type="yireo.boolean" default="0" label="COM_DYNAMIC404_CONFIG_REDIRECT_PARAM_SHOW_DESCRIPTION" />
+        </fieldset>
     </fields>
     <fieldset name="permissions" description="JCONFIG_PERMISSIONS_DESC" label="JCONFIG_PERMISSIONS_LABEL">
         <field name="rules" type="rules" component="com_dynamic404" filter="rules" validate="rules" label="COM_DYNAMIC404_FIELD_RULES" description="COM_DYNAMIC404_FIELD_RULES_DESC" section="component" />

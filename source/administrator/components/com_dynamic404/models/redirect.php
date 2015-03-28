@@ -137,4 +137,28 @@ class Dynamic404ModelRedirect extends YireoModel
 
         return $data;
     }
+
+	/**
+	 * Method to initialise the data
+	 *
+	 * @access protected
+	 * @subpackage Yireo
+	 * @param null
+	 * @return bool
+	 */
+	protected function getEmpty()
+	{
+		$rt = parent::getEmpty();
+
+		$this->_data->type = $this->params->get('type');
+		$this->_data->http_status = $this->params->get('http_status');
+
+		$params = YireoHelper::toParameter($this->_data->params);
+		$params->set('redirect', $this->params->get('redirect'));
+		$params->set('match_case', $this->params->get('match_case'));
+		$params->set('show_description', $this->params->get('show_description'));
+		$this->_data->params = json_encode($params);
+
+		return $rt;
+	}
 }
