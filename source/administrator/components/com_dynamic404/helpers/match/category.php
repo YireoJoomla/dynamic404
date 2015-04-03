@@ -155,11 +155,12 @@ class Dynamic404HelperMatchCategory
 			->where($db->quoteName('extension') . '=' . $db->quote('com_content'))
 			->where($db->quoteName('published') . '= 1')
 			->where($db->quoteName('id') . ' = ' . (int) $id);
+
 		$db->setQuery($query, 0, 1);
 
 		if ($this->params->get('debug') == 1)
 		{
-			echo 'Dynamic404HelperMatchCategory::getCategoryById = ' . $db->getQuery() . '<br/>';
+			$this->debug('MatchCategory::getCategoryById', $db->getQuery());
 		}
 
 		return $db->loadObject();
@@ -202,7 +203,7 @@ class Dynamic404HelperMatchCategory
 
 			if ($this->params->get('debug') == 1)
 			{
-				echo 'Dynamic404HelperMatchCategory::getCategoryList = ' . $db->getQuery() . '<br/>';
+				$this->debug('MatchCategory::getCategoryList', $db->getQuery());
 			}
 
 			$rows = $db->loadObjectList();
@@ -232,5 +233,16 @@ class Dynamic404HelperMatchCategory
 		$item->url = $this->getCategoryLink($item->id . ':' . $item->alias);
 
 		return $item;
+	}
+
+	/**
+	 * Method alias for debugging
+	 *
+	 * @param   string  $msg       Debugging message
+	 * @param   null    $variable  Optional variable to dump
+	 */
+	public function debug($msg, $variable = null)
+	{
+		Dynamic404HelperDebug::debug($msg, $variable);
 	}
 }

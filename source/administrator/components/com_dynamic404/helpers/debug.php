@@ -12,23 +12,59 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die();
 
+/**
+ * Class Dynamic404HelperDebug
+ */
 class Dynamic404HelperDebug
 {
-    public function debug($msg, $variable = null)
-    {
-		$this->params = JComponentHelper::getParams('com_dynamic404');
+	/**
+	 * Method to output a certain debugging message
+	 *
+	 * @param      $msg
+	 * @param null $variable
+	 *
+	 * @return null
+	 */
+	static public function debug($msg, $variable = null)
+	{
+		$params = JComponentHelper::getParams('com_dynamic404');
 
-		if ($this->params->get('debug', 0) == 0)
-        {
-            return;
-        }
+		if ($params->get('debug', 0) == 0)
+		{
+			return;
+		}
 
-        if(!empty($variable))
-        {
-            $msg .= ' = '.var_export($variable, true);
-        }
+		if (!empty($variable))
+		{
+			$variableDump = self::dump($variable);
+			$msg .= ' = <code>' . trim($variableDump) . '</code>';
+		}
 
-        $msg .= "\n";
-        echo $msg.'<br/>';
-    }
+		$msg .= "\n";
+		echo $msg . '<br/>';
+	}
+
+	/**
+	 * Method to dump a variable to a string
+	 *
+	 * @param  mixed   $variable  Variable to convert into string
+	 *
+	 * @return string
+	 */
+	static public function dump($variable)
+	{
+		if (is_object($variable))
+		{
+			if ($variable instanceof JDatabaseQuery)
+			{
+				return '[JDatabaseQuery] ' . (string) $variable;
+			}
+			elseif ($variable instanceof SimpleXML)
+			{
+				return '[SimpleXML]';
+			}
+		}
+
+		return var_export($variable, true);
+	}
 }

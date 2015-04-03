@@ -173,6 +173,7 @@ class Dynamic404HelperMatchArticle
 		}
 
         $currentLanguage = JFactory::getLanguage();
+
 		if (!empty($language) && $language != '*' && $language != $currentLanguage->getTag())
 		{
 			$link .= '&lang=' . $language;
@@ -200,7 +201,7 @@ class Dynamic404HelperMatchArticle
 
 		if ($this->params->get('debug', 0) == 1)
 		{
-			echo 'Dynamic404HelperMatchArticle::getArticleById = ' . $db->getQuery() . '<br/>';
+			$this->debug('MatchArticle::getArticleById', $db->getQuery());
 		}
 
 		return $db->loadObject();
@@ -243,7 +244,7 @@ class Dynamic404HelperMatchArticle
 
 			if ($this->params->get('debug') == 1)
 			{
-				$this->debug('Dynamic404HelperMatchArticle::getArticleList = ' . $db->getQuery());
+				$this->debug('MatchArticle::getArticleList', $db->getQuery());
 			}
 
 			$rows = $db->loadObjectList();
@@ -288,9 +289,14 @@ class Dynamic404HelperMatchArticle
 		return $item;
 	}
 
-    public function debug($msg, $variable = null)
-    {
-        //$helper = new Dynamic404Helper;
-        //return $helper->debug($msg, $variable);
-    }
+	/**
+	 * Method alias for debugging
+	 *
+	 * @param   string  $msg       Debugging message
+	 * @param   null    $variable  Optional variable to dump
+	 */
+	public function debug($msg, $variable = null)
+	{
+		Dynamic404HelperDebug::debug($msg, $variable);
+	}
 }

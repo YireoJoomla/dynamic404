@@ -17,14 +17,17 @@ require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match/art
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match/category.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match/menu.php';
 
+/**
+ * Class Dynamic404HelperMatch
+ */
 class Dynamic404HelperMatch
 {
-	/*
+	/**
 	 * Component parameters
 	 */
 	private $params = null;
 
-	/*
+	/**
 	 * List of possible matches
 	 */
 	private $matches = array();
@@ -153,6 +156,8 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to get a specific value from the request-array
 	 *
+	 * @param string $name
+	 *
 	 * @return array
 	 */
 	public function getRequest($name)
@@ -204,7 +209,7 @@ class Dynamic404HelperMatch
 				$id = (int) $this->request['uri_lastnum'];
 			}
 
-			if (!$id > 0)
+			if ($id > 0 == false)
 			{
 				return false;
 			}
@@ -337,6 +342,7 @@ class Dynamic404HelperMatch
 
 		// Include old helper if it exists (Joomla! bug?)
 		$helper = JPATH_ADMINISTRATOR . '/components/com_search/helpers/search.php';
+
 		if (file_exists($helper))
 		{
 			require_once $helper;
@@ -344,11 +350,14 @@ class Dynamic404HelperMatch
 
 		// Include Search Plugins
 		JPluginHelper::importPlugin('search');
-        if(YireoHelper::isJoomla25()) {
-            $dispatcher = JDispatcher::getInstance();
-        } else {
-            $dispatcher = JEventDispatcher::getInstance();
-        }
+		if (YireoHelper::isJoomla25())
+		{
+			$dispatcher = JDispatcher::getInstance();
+		}
+		else
+		{
+			$dispatcher = JEventDispatcher::getInstance();
+		}
 		$areas = $dispatcher->trigger('onContentSearch', array($search, $match, $ordering, $active));
 
 		// Loop through the search results and add them to the matches
@@ -367,10 +376,18 @@ class Dynamic404HelperMatch
 
 				// Increase the rating if the title matches directly
 				$keywordMatch = 0;
+
 				foreach ($keywords as $keyword)
 				{
-					if (empty($keyword)) continue;
-					if (stristr($match->name, $keyword)) $keywordMatch++;
+					if (empty($keyword))
+					{
+						continue;
+					}
+
+					if (stristr($match->name, $keyword))
+					{
+						$keywordMatch++;
+					}
 				}
 
 				if ($keywordMatch == count($keywords))
@@ -399,13 +416,19 @@ class Dynamic404HelperMatch
 	{
 		// Fetch all redirects from the Dynamic404 database-tables
 		$db = JFactory::getDBO();
-		$query = 'SELECT `match`, `url`, `http_status`, `type`, `description`, `params` '
-			. ' FROM `#__dynamic404_redirects` WHERE `published`=1 ORDER BY `ordering`';
+
+		$query = $db->getQuery(true);
+		$query->select($db->quoteName(array('match', 'url', 'http_status', 'type', 'description', 'params')))
+			->from('#__dynamic404_redirects')
+			->where($db->quoteName('published') . '= 1')
+			->order($db->quoteName('ordering'));
+
 		$db->setQuery($query);
 		$rows = $db->loadObjectList();
 
 		// Loop through the redirect-rules to see how to apply them
 		$matches = array();
+
 		if (!empty($rows))
 		{
 			foreach ($rows as $row)
@@ -426,7 +449,12 @@ class Dynamic404HelperMatch
 					{
 						$row->name = $menuItem->title;
 						$row->url = $menuItem->link;
-						if (strstr($row->url, 'Itemid=') == false) $row->url .= '&Itemid=' . $menuItem->id;
+
+						if (strstr($row->url, 'Itemid=') == false)
+						{
+							$row->url .= '&Itemid=' . $menuItem->id;
+						}
+
 						$row->url = JRoute::_($row->url);
 						$row->link = $row->url;
 					}
@@ -440,7 +468,12 @@ class Dynamic404HelperMatch
 					{
 						$row->name = $menuItem->title;
 						$row->url = $menuItem->link;
-						if (strstr($row->url, 'Itemid=') == false) $row->url .= '&Itemid=' . $menuItem->id;
+
+						if (strstr($row->url, 'Itemid=') == false)
+						{
+							$row->url .= '&Itemid=' . $menuItem->id;
+						}
+
 						$row->url = JRoute::_($row->url);
 						$row->link = $row->url;
 					}
@@ -525,7 +558,11 @@ class Dynamic404HelperMatch
 
 						foreach ($regexMatch as $regexMatchIndex => $regexMatchParts)
 						{
-							if ($regexMatchIndex == 0) continue;
+							if ($regexMatchIndex == 0)
+							{
+								continue;
+							}
+
 							$row->url = str_replace('\\' . $regexMatchIndex, $regexMatchParts, $row->url);
 						}
 
@@ -549,13 +586,14 @@ class Dynamic404HelperMatch
 		}
 
 		$this->addToMatches($matches);
+
 		return $matches;
 	}
 
 	/**
 	 * Method to add a valid list of matches to the existing matches
 	 *
-	 * @param   array  $matches  List of matches to add
+	 * @param   array $matches List of matches to add
 	 *
 	 * @return null
 	 */
@@ -615,13 +653,13 @@ class Dynamic404HelperMatch
 					$match->url = $base_uri . $match->url;
 				}
 
-                $currentPath = JURI::getInstance()->toString(array('path'));
+				$currentPath = JURI::getInstance()->toString(array('path'));
 
-                if ($currentPath == $match->url)
-                {
-                    unset($this->matches[$index]);
-                    continue;
-                }
+				if ($currentPath == $match->url)
+				{
+					unset($this->matches[$index]);
+					continue;
+				}
 
 				$this->matches[$index] = $match;
 			}
@@ -664,8 +702,8 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to match one string with another
 	 *
-	 * @param   string  $text1  String to match
-	 * @param   string  $text2  String to compare with
+	 * @param   string $text1 String to match
+	 * @param   string $text2 String to compare with
 	 *
 	 * @return bool
 	 */
@@ -685,8 +723,8 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to match certain text parts, chopping a string into parts using a dash (-)
 	 *
-	 * @param   string  $text1  String to match
-	 * @param   string  $text2  String to compare with
+	 * @param   string $text1 String to match
+	 * @param   string $text2 String to compare with
 	 *
 	 * @return array
 	 */
@@ -712,5 +750,16 @@ class Dynamic404HelperMatch
 		}
 
 		return $match_parts;
+	}
+
+	/**
+	 * Method alias for debugging
+	 *
+	 * @param   string  $msg       Debugging message
+	 * @param   null    $variable  Optional variable to dump
+	 */
+	public function debug($msg, $variable = null)
+	{
+		Dynamic404HelperDebug::debug($msg, $variable);
 	}
 }

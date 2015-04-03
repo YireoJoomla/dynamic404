@@ -17,7 +17,7 @@ defined('_JEXEC') or die();
  */
 class Dynamic404HelperMatchMenu
 {
-	/*
+	/**
 	 * Component parameters
 	 */
 	private $params = null;
@@ -73,6 +73,8 @@ class Dynamic404HelperMatchMenu
 	 */
 	public function findTextMatches($text1, $text2, $uri, $uri_parts)
 	{
+		$this->debug('MatchMenu::findTextMatches parameters: ' . $text1 . ', ' . $text2 . ', ' . $uri);
+
 		// Initialize
 		$matches = array();
 
@@ -98,7 +100,7 @@ class Dynamic404HelperMatchMenu
 				}
 
 				// If the items alias is equal to the last part in the requested URL, it is the most likely match
-				if ($item->alias == $text1 || $item->alias == $text2)
+				if (Dynamic404HelperMatch::matchTextString($item->alias, $text1) || Dynamic404HelperMatch::matchTextString($item->alias, $text2))
 				{
 					$item->rating = $this->params->get('rating_menuitems', 80);
 					$item->url = $this->getMenuItemUrl($item);
@@ -107,6 +109,7 @@ class Dynamic404HelperMatchMenu
 
 					if (!empty($item))
 					{
+						$this->debug('MatchMenu::findTextMatches: Match with alias', $item->id);
 						$matches[] = $item;
 					}
 
@@ -135,6 +138,7 @@ class Dynamic404HelperMatchMenu
 
 					if (!empty($item))
 					{
+						$this->debug('MatchMenu::findTextMatches: Match partially with alias');
 						$matches[] = $item;
 					}
 
@@ -180,6 +184,7 @@ class Dynamic404HelperMatchMenu
 
 					if (!empty($item))
 					{
+						$this->debug('MatchMenu::findTextMatches: Fuzzy match with alias');
 						$matches[] = $item;
 					}
 
@@ -204,6 +209,7 @@ class Dynamic404HelperMatchMenu
 		{
 			$menu = JFactory::getApplication()->getMenu();
 			$rows = $menu->getMenu();
+			$this->debug('MatchMenu::getMenuItems() = ' . count($rows) . ' items');
 		}
 
 		return $rows;
@@ -218,9 +224,22 @@ class Dynamic404HelperMatchMenu
 	 */
 	private function getMenuItemUrl($item)
 	{
+        $currentLanguage = JFactory::getLanguage();
+
 		if ($item->type == 'component')
 		{
+            if (in_array($item->component, array('com_hikashop')))
+            {
+                $item->link = 'index.php?option=' . $item->component;
+            }
+
 			$link = $item->link . '&Itemid=' . $item->id;
+
+		    if (!empty($item->language) && $item->language != '*' && $item->language != $currentLanguage->getTag())
+		    {
+	        	$link .= '&lang=' . $item->language;
+	        }
+
 			$item->url = JRoute::_($link);
 		}
 		else
@@ -251,5 +270,16 @@ class Dynamic404HelperMatchMenu
 		$item->url = $this->getMenuItemUrl($item);
 
 		return $item;
+	}
+
+	/**
+	 * Method alias for debugging
+	 *
+	 * @param   string  $msg       Debugging message
+	 * @param   null    $variable  Optional variable to dump
+	 */
+	public function debug($msg, $variable = null)
+	{
+		Dynamic404HelperDebug::debug($msg, $variable);
 	}
 }

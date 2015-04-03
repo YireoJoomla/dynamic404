@@ -25,7 +25,6 @@ class JFormFieldArticle extends JFormField
 	 * The form field type.
 	 *
 	 * @var        string
-	 * @since    1.6
 	 */
 	protected $type = 'Article';
 
@@ -63,7 +62,7 @@ class JFormFieldArticle extends JFormField
 
 		// Load the article title
 		$db = JFactory::getDBO();
-		$db->setQuery('SELECT title FROM #__content WHERE id = ' . (int) $this->value);
+		$db->setQuery('SELECT title FROM #__content WHERE id = ' . (int)$this->value);
 
 		$title = $db->loadResult();
 

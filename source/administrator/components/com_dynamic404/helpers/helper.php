@@ -15,6 +15,7 @@ defined('_JEXEC') or die();
 // Load extra helpers
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/core.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
 
 class Dynamic404Helper
@@ -37,8 +38,8 @@ class Dynamic404Helper
 	/**
 	 * Constructor
 	 *
-	 * @param   bool  $init  Initialize the helper
-	 * @param   int   $max   Maximum amount of entries to fetch
+	 * @param   bool $init Initialize the helper
+	 * @param   int  $max  Maximum amount of entries to fetch
 	 */
 	public function __construct($init = true, $max = null)
 	{
@@ -77,21 +78,16 @@ class Dynamic404Helper
 		}
 	}
 
-    public function debug($msg, $variable = null)
-    {
-		if ($this->params->get('debug', 0) == 0)
-        {
-            return;
-        }
-
-        if(!empty($variable))
-        {
-            $msg .= ' = '.var_export($variable, true);
-        }
-
-        $msg .= "\n";
-        echo $msg.'<br/>';
-    }
+	/**
+	 * Method alias for debugging
+	 *
+	 * @param   string  $msg       Debugging message
+	 * @param   null    $variable  Optional variable to dump
+	 */
+	public function debug($msg, $variable = null)
+	{
+		Dynamic404HelperDebug::debug($msg, $variable);
+	}
 
 	/**
 	 * Method to log a 404 occurance to the database
@@ -196,16 +192,16 @@ class Dynamic404Helper
 	public function getErrorObject($error = null)
 	{
 		if (empty($error) || $error == false)
-        {
-            $error = JError::getError();
-        }
+		{
+			$error = JError::getError();
+		}
 
 		if (empty($error) || $error == false)
-        {
-            $error = (object) null;
-            $error->code = 404;
-            $error->message = JText::_('Not found');
-        }
+		{
+			$error = (object)null;
+			$error->code = 404;
+			$error->message = JText::_('Not found');
+		}
 
 		return $error;
 	}
@@ -226,7 +222,7 @@ class Dynamic404Helper
 		}
 
 		// Do not search for matches, with extremely large requests
-		$block_large_requests_size = (int) $this->params->get('block_large_requests', 1000);
+		$block_large_requests_size = (int)$this->params->get('block_large_requests', 1000);
 
 		if ($block_large_requests_size > 0 && strlen($url) > $block_large_requests_size)
 		{
@@ -276,7 +272,7 @@ class Dynamic404Helper
 		$query = $db->getQuery(true);
 		$query->select('*');
 		$query->from($db->quoteName('#__content'));
-		$query->where($db->quoteName('id') . '=' . (int) $article);
+		$query->where($db->quoteName('id') . '=' . (int)$article);
 
 		$db->setQuery($query);
 		$row = $db->loadObject();
@@ -294,17 +290,17 @@ class Dynamic404Helper
 	/**
 	 * Method to check whether a certain URL causes a loop or not
 	 *
-	 * @param   string  $url  URL
+	 * @param   string $url URL
 	 *
 	 * @return bool
 	 */
 	public function checkNoRedirectLoop($url = null)
 	{
 		$conf = JFactory::getConfig();
-        if($conf->get('offline') == 1)
-        {
-            return true;
-        }
+		if ($conf->get('offline') == 1)
+		{
+			return true;
+		}
 
 		if (empty($url))
 		{
@@ -369,7 +365,8 @@ class Dynamic404Helper
 
 		if (preg_match('/^(templates|media|images)\//', $url))
 		{
-            $this->debug('No redirect for templates|media|images');
+			$this->debug('No redirect for templates|media|images');
+
 			return false;
 		}
 
@@ -380,11 +377,12 @@ class Dynamic404Helper
 		}
 		else
 		{
-			$errorCode = (int) $this->getErrorCode($error);
+			$errorCode = (int)$this->getErrorCode($error);
 
 			if ($this->params->get('redirect_non404', 0) == 0 && preg_match('/^4/', $errorCode) == false)
 			{
-                $this->debug('No redirect for non-404 errors');
+				$this->debug('No redirect for non-404 errors');
+
 				return false;
 			}
 		}
@@ -409,13 +407,13 @@ class Dynamic404Helper
 		if (empty($match->params))
 		{
 			$match->params = null;
-            $matchRedirect = $this->params->get('enable_redirect', 1);
+			$matchRedirect = $this->params->get('enable_redirect', 1);
 		}
-        else
-        {
-		    $params = YireoHelper::toRegistry($match->params);
-            $matchRedirect = $params->get('redirect', $this->params->get('enable_redirect', 1));
-        }
+		else
+		{
+			$params = YireoHelper::toRegistry($match->params);
+			$matchRedirect = $params->get('redirect', $this->params->get('enable_redirect', 1));
+		}
 
 		if (isset($match->type) && $match->type == 'component' && $matchRedirect == 0)
 		{
@@ -496,7 +494,7 @@ class Dynamic404Helper
 		$Itemid = null;
 		$article = null;
 		$params = $this->params->toArray();
-        $errorCode = $this->getErrorCode($error);
+		$errorCode = $this->getErrorCode($error);
 
 		foreach ($params as $name => $value)
 		{
@@ -504,7 +502,7 @@ class Dynamic404Helper
 			{
 				if ($errorCode == $match[1])
 				{
-					$Itemid = (int) $value;
+					$Itemid = (int)$value;
 				}
 			}
 
@@ -512,7 +510,7 @@ class Dynamic404Helper
 			{
 				if ($errorCode == $match[1])
 				{
-					$article = (int) $value;
+					$article = (int)$value;
 				}
 			}
 		}
@@ -631,7 +629,7 @@ class Dynamic404Helper
 	/**
 	 * Method to re-initialize the Joomla! bootstrap and call upon the component again
 	 *
-	 * @param   int  $Itemid  Menu item ID
+	 * @param   int $Itemid Menu item ID
 	 *
 	 * @return null
 	 */
@@ -714,7 +712,7 @@ class Dynamic404Helper
 	public function setHttpStatus()
 	{
 		$error = JError::getError();
-        $errorCode = $this->getErrorCode($error);
+		$errorCode = $this->getErrorCode($error);
 		$document = JFactory::getDocument();
 
 		if (YireoHelper::isJoomla25())
@@ -789,8 +787,7 @@ class Dynamic404Helper
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName('match'))
 			->from($db->quoteName('#__dynamic404_redirects'))
-			->where($db->quoteName('url') . '=' . $db->quote($url))
-			;
+			->where($db->quoteName('url') . '=' . $db->quote($url));
 
 		$db->setQuery($query);
 		$match = $db->loadResult();
@@ -817,8 +814,7 @@ class Dynamic404Helper
 			$query = $db->getQuery(true);
 			$query->insert($db->quoteName('#__dynamic404_redirects'))
 				->columns($db->quoteName($columns))
-				->values(implode(',', $values))
-				;
+				->values(implode(',', $values));
 			$db->setQuery($query);
 			$db->execute();
 		}
@@ -914,20 +910,25 @@ class Dynamic404Helper
 		return $this->errors;
 	}
 
-    public function getErrorCode($error)
-    {
-        if(is_object($error)) {
-            if(method_exists($error, 'get')) {
-                return $error->get('code');
-            } else {
-                return $error->code;
-            }
-        }
-    
-        if(is_numeric($error)) {
-            return $error;
-        }
-        
-        return 404;
-    }
+	public function getErrorCode($error)
+	{
+		if (is_object($error))
+		{
+			if (method_exists($error, 'get'))
+			{
+				return $error->get('code');
+			}
+			else
+			{
+				return $error->code;
+			}
+		}
+
+		if (is_numeric($error))
+		{
+			return $error;
+		}
+
+		return 404;
+	}
 }
