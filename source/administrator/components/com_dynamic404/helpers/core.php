@@ -12,10 +12,9 @@
 // Check to ensure this file is included in Joomla!
 defined('JPATH_BASE') or die;
 
-/*
+/**
  * Core helper
  */
-
 class Dynamic404HelperCore
 {
 	/**
@@ -89,16 +88,23 @@ class Dynamic404HelperCore
 	{
 		$menu = JFactory::getApplication()->getMenu();
 		$component = JComponentHelper::getComponent('com_search');
+
 		if (!empty($menu))
 		{
 			$items = $menu->getItems('component_id', $component->id);
+		}
+		else
+		{
+			return null;
 		}
 
 		if (is_array($items) && !empty($items))
 		{
 			$item = $items[0];
+
 			return $item->id;
 		}
+
 		return null;
 	}
 
@@ -139,6 +145,7 @@ class Dynamic404HelperCore
 	{
 		$file = JPATH_ADMINISTRATOR . '/components/com_dynamic404/dynamic404.xml';
 		$data = JApplicationHelper::parseXMLInstallFile($file);
+
 		return $data['version'];
 	}
 }

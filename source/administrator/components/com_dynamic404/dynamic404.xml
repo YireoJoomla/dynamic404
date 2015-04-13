@@ -4,10 +4,10 @@
     <author>Yireo</author>
     <authoremail>support@yireo.com</authoremail>
     <authorurl>http://www.yireo.com</authorurl>
-    <creationDate>March 2015</creationDate>
+    <creationDate>April 2015</creationDate>
     <copyright>Copyright 2015 Yireo.com. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
-    <version>1.0.49</version>
+    <version>1.0.53</version>
     <description>COM_DYNAMIC404_DESC</description>
 
     <!-- installation part -->

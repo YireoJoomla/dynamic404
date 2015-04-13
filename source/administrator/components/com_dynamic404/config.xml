@@ -19,9 +19,10 @@
             </field>
             <field name="error_page" type="list" default="0" class="btn-group"
                 label="COM_DYNAMIC404_FIELD_ERROR_PAGE" description="COM_DYNAMIC404_FIELD_ERROR_PAGE_DESC" required="1">
-                <option value="0">Dynamic404 error-page</option>
-                <option value="1">Default error-page</option>
-                <option value="2">Menu-Item</option>
+                <option value="0">COM_DYNAMIC404_FIELD_ERROR_PAGE_OPTION_0</option>
+                <option value="1">COM_DYNAMIC404_FIELD_ERROR_PAGE_OPTION_1</option>
+                <option value="2">COM_DYNAMIC404_FIELD_ERROR_PAGE_OPTION_2</option>
+                <option value="3">COM_DYNAMIC404_FIELD_ERROR_PAGE_OPTION_3</option>
             </field>
 
             <field name="@spacer" type="spacer" default="" label="" />
@@ -172,7 +173,7 @@
                 <option value="307">COM_DYNAMIC404_REDIRECT_FIELD_HTTP_STATUS_OPTION_307</option>
                 <option value="418">COM_DYNAMIC404_REDIRECT_FIELD_HTTP_STATUS_OPTION_418</option>
             </field>
-            <field name="redirect" type="yireo.boolean" default="0" label="COM_DYNAMIC404_CONFIG_REDIRECT_PARAM_REDIRECT" />
+            <field name="redirect" type="yireo.boolean" global="2" default="2" label="COM_DYNAMIC404_CONFIG_REDIRECT_PARAM_REDIRECT" />
             <field name="match_case" type="yireo.boolean" default="0" label="COM_DYNAMIC404_CONFIG_REDIRECT_PARAM_MATCH_CASE" />
             <field name="show_description" type="yireo.boolean" default="0" label="COM_DYNAMIC404_CONFIG_REDIRECT_PARAM_SHOW_DESCRIPTION" />
         </fieldset>

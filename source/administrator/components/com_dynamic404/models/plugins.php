@@ -14,17 +14,15 @@ defined('_JEXEC') or die();
 
 class Dynamic404ModelPlugins extends YireoModel
 {
-    /**
-     * Method to build the database query
-     *
-     * @access protected
-     * @param null
-     * @return mixed
-     */
-    protected function buildQuery()
-    {
-        $query = 'SELECT * FROM `#__extensions` WHERE `type`="plugin" AND `folder`="dynamic404"';
+	/**
+	 * Method to build the database query
+	 *
+	 * @return mixed
+	 */
+	protected function buildQuery()
+	{
+		$query = 'SELECT * FROM `#__extensions` WHERE `type`="plugin" AND `folder`="dynamic404"';
 
-        return $query;
-    }
+		return $query;
+	}
 }

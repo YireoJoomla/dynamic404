@@ -55,17 +55,23 @@ class Dynamic404HelperMatchArticle
 	/**
 	 * Method to find matches within Joomla! articles
 	 *
-	 * @param   string  $text1  First text to match
-	 * @param   string  $text2  Alternative text to match
+	 * @param   array  $strings Strings to search for
 	 *
 	 * @return null
 	 */
-	public function findTextMatches($text1, $text2)
+	public function findTextMatches($strings)
 	{
+		if (empty($strings))
+		{
+			return;
+		}
+
 		$matches = array();
 
 		// Match the number only
-		if (preg_match('/^([0-9]+)\-/', $text1, $match))
+		$firstString = $strings[0];
+
+		if (preg_match('/^([0-9]+)\-/', $firstString, $match))
 		{
 			$row = $this->getArticleById($match[0]);
 			$row = $this->prepareArticle($row);
@@ -77,8 +83,33 @@ class Dynamic404HelperMatchArticle
 			}
 		}
 
+		// Sanitize the strings
+		$newStrings = array();
+
+		foreach($strings as $string)
+		{
+			if (strlen($string) < 2)
+			{
+				continue;
+			}
+
+			if (is_numeric($string))
+			{
+				continue;
+			}
+
+			$newStrings[] = $string;
+		}
+
+		$strings = $newStrings;
+
+		if (empty($strings))
+		{
+			return;
+		}
+
 		// Match the alias
-		$rows = $this->getArticleList($text1, $text2);
+		$rows = $this->getArticleListByStrings($strings);
 
 		if (!empty($rows))
 		{
@@ -89,7 +120,17 @@ class Dynamic404HelperMatchArticle
 					continue;
 				}
 
-				if (Dynamic404HelperMatch::matchTextString($row->alias, $text1) || Dynamic404HelperMatch::matchTextString($row->alias, $text2))
+				$matchTextString = false;
+
+				foreach ($strings as $string)
+				{
+					if (Dynamic404HelperMatch::matchTextString($row->alias, $string))
+					{
+						$matchTextString = true;
+					}
+				}
+
+				if ($matchTextString)
 				{
 					$row = $this->prepareArticle($row);
 
@@ -104,8 +145,11 @@ class Dynamic404HelperMatchArticle
 				else
 				{
 					$row->match_parts = array();
-					$row->match_parts = array_merge($row->match_parts, Dynamic404HelperMatch::matchTextParts($row->alias, $text1));
-					$row->match_parts = array_merge($row->match_parts, Dynamic404HelperMatch::matchTextParts($row->alias, $text2));
+
+					foreach ($strings as $string)
+					{
+						$row->match_parts = array_merge($row->match_parts, Dynamic404HelperMatch::matchTextParts($row->alias, $string));
+					}
 
 					if (!empty($row->match_parts))
 					{
@@ -114,7 +158,7 @@ class Dynamic404HelperMatchArticle
 						if (!empty($row))
 						{
 							$row->match_note = 'article alias';
-							$row->rating = $row->rating - 10 + count($row->match_parts);
+							$row->rating = $row->rating - count($strings) + count($row->match_parts);
 							$matches[] = $row;
 						}
 					}
@@ -210,13 +254,17 @@ class Dynamic404HelperMatchArticle
 	/**
 	 * Method to get a list of articles
 	 *
-	 * @param   string  $text1  First text to match
-	 * @param   string  $text2  Alternative text to match
+	 * @param   array  $strings  Array of strings to search for
 	 *
 	 * @return array
 	 */
-	private function getArticleList($text1, $text2)
+	private function getArticleListByStrings($strings)
 	{
+		if (empty($strings))
+		{
+			return false;
+		}
+
 		static $rows = null;
 
 		if (empty($rows))
@@ -230,21 +278,21 @@ class Dynamic404HelperMatchArticle
 
 			if ($this->params->get('load_all_articles', 0) == 0)
 			{
-				$text1 = $db->quote('%' . $text1 . '%');
-				$text2 = $db->quote('%' . $text2 . '%');
+				$whereParts = array();
 
-				$query->where('('
-					. $db->quoteName('alias') . ' LIKE ' . $text1
-					. ' OR '
-					. $db->quoteName('alias') . ' LIKE ' . $text2
-					. ')');
+				foreach ($strings as $string)
+				{
+					$whereParts[] = $db->quoteName('alias') . ' LIKE ' . $db->quote('%' . $string . '%');
+				}
+
+				$query->where('(' . implode(' OR ', $whereParts) . ')');
 			}
 
 			$db->setQuery($query);
 
 			if ($this->params->get('debug') == 1)
 			{
-				$this->debug('MatchArticle::getArticleList', $db->getQuery());
+				$this->debug('MatchArticle::getArticleListByStrings', $db->getQuery());
 			}
 
 			$rows = $db->loadObjectList();
@@ -272,9 +320,16 @@ class Dynamic404HelperMatchArticle
 		$item->name = $item->title;
 		$item->rating = $this->params->get('rating_articles', 85);
 
+		$currentLanguage = JFactory::getLanguage()->getTag();
+
 		if (empty($item->language) || $item->language == '*')
 		{
-			$item->language = null;
+			$item->language = $currentLanguage;
+		}
+
+		if ($currentLanguage != $item->language)
+		{
+			$item->rating -= 1;
 		}
 
 		if (isset($item->sectionid))

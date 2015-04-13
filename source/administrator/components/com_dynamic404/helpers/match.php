@@ -266,19 +266,22 @@ class Dynamic404HelperMatch
 			$text1 = preg_replace('/([\-\_\.]+)$/', '', $text1);
 			$text1 = preg_replace('/^([\-\_\.]+)/', '', $text1);
 
-			// Construct the second text
-			$text2 = str_replace('_', '-', $text1);
-
 			if (empty($text1))
 			{
 				return false;
 			}
 
+			// Construct the second text
+			$text2 = str_replace('_', '-', $text1);
+
+			// Construct text parts
+			$textParts = explode('-', $text2);
+
 			// Call the article-helper
 			if ($this->params->get('search_articles', 1) == 1)
 			{
 				$helper = new Dynamic404HelperMatchArticle($this->params);
-				$this->addToMatches($helper->findTextMatches($text1, $text2));
+				$this->addToMatches($helper->findTextMatches($textParts));
 			}
 
 			// Call the category-helper

@@ -16,14 +16,11 @@ class Dynamic404ModelRedirects extends YireoModel
 {
 	/**
 	 * Constructor
-     *
-     * @access public
-     * @param null
-     * @return null
 	 */
 	public function __construct()
 	{
-        $this->_search = array('match', 'url');
-		parent::__construct('redirect');
+		$this->_search = array('match', 'url');
+
+		return parent::__construct('redirect');
 	}
 }

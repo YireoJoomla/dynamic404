@@ -20,17 +20,37 @@ require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
 
 class Dynamic404Helper
 {
-	/*
+	/**
+	 * Constant for a Dynamic404 error-page
+	 */
+	const ERROR_PAGE_DYNAMIC404 = 0;
+
+	/**
+	 * Constant for a default error-page
+	 */
+	const ERROR_PAGE_DEFAULT = 1;
+
+	/**
+	 * Constant for an error-page using a Menu-Item that is fetched through CURL
+	 */
+	const ERROR_PAGE_MENUITEM_INTERNAL = 2;
+
+	/**
+	 * Constant for an error-page using a Menu-Item that is fetched through AJAX
+	 */
+	const ERROR_PAGE_MENUITEM_JSREDIRECT = 3;
+
+	/**
 	 * Component parameters
 	 */
 	private $params = null;
 
-	/*
+	/**
 	 * List of possible matches
 	 */
 	private $matches = null;
 
-	/*
+	/**
 	 * List of additional errors
 	 */
 	private $errors = null;
@@ -152,6 +172,7 @@ class Dynamic404Helper
 	{
 		$segment = $this->matchHelper->getRequest('uri_last');
 		$strip_extensions = explode(',', $this->params->get('strip_extensions'));
+
 		if (!empty($strip_extensions))
 		{
 			foreach ($strip_extensions as $strip_extension)
@@ -172,6 +193,7 @@ class Dynamic404Helper
 	public function getSearchLink()
 	{
 		$Itemid = Dynamic404HelperCore::getSearchItemid();
+
 		if ($Itemid > 0)
 		{
 			return JRoute::_('index.php?option=com_search&searchword=' . $this->getLastSegment() . '&Itemid=' . $Itemid);
@@ -198,7 +220,7 @@ class Dynamic404Helper
 
 		if (empty($error) || $error == false)
 		{
-			$error = (object)null;
+			$error = (object) null;
 			$error->code = 404;
 			$error->message = JText::_('Not found');
 		}
@@ -222,7 +244,7 @@ class Dynamic404Helper
 		}
 
 		// Do not search for matches, with extremely large requests
-		$block_large_requests_size = (int)$this->params->get('block_large_requests', 1000);
+		$block_large_requests_size = (int) $this->params->get('block_large_requests', 1000);
 
 		if ($block_large_requests_size > 0 && strlen($url) > $block_large_requests_size)
 		{
@@ -256,11 +278,14 @@ class Dynamic404Helper
 	/**
 	 * Method to get the configured article
 	 *
+	 * @param string $error
+	 *
 	 * @return object
 	 */
 	public function getArticle($error = '404')
 	{
 		$params = $this->params->toArray();
+
 		if (empty($params['article_id_' . $error]))
 		{
 			return false;
@@ -272,7 +297,7 @@ class Dynamic404Helper
 		$query = $db->getQuery(true);
 		$query->select('*');
 		$query->from($db->quoteName('#__content'));
-		$query->where($db->quoteName('id') . '=' . (int)$article);
+		$query->where($db->quoteName('id') . '=' . (int) $article);
 
 		$db->setQuery($query);
 		$row = $db->loadObject();
@@ -297,6 +322,7 @@ class Dynamic404Helper
 	public function checkNoRedirectLoop($url = null)
 	{
 		$conf = JFactory::getConfig();
+
 		if ($conf->get('offline') == 1)
 		{
 			return true;
@@ -377,7 +403,7 @@ class Dynamic404Helper
 		}
 		else
 		{
-			$errorCode = (int)$this->getErrorCode($error);
+			$errorCode = (int) $this->getErrorCode($error);
 
 			if ($this->params->get('redirect_non404', 0) == 0 && preg_match('/^4/', $errorCode) == false)
 			{
@@ -403,23 +429,26 @@ class Dynamic404Helper
 			return false;
 		}
 
-		// Do not redirect, if configured not to
+		$globalRedirect = $this->params->get('enable_redirect', 1);
+
+		// Determine the redirection default for this match
 		if (empty($match->params))
 		{
 			$match->params = null;
-			$matchRedirect = $this->params->get('enable_redirect', 1);
+			$matchRedirect = $globalRedirect;
 		}
 		else
 		{
 			$params = YireoHelper::toRegistry($match->params);
-			$matchRedirect = $params->get('redirect', $this->params->get('enable_redirect', 1));
+			$matchRedirect = $params->get('redirect');
 		}
 
-		if (isset($match->type) && $match->type == 'component' && $matchRedirect == 0)
+		if ($matchRedirect == 2)
 		{
-			return false;
+			$matchRedirect = $globalRedirect;
 		}
-		elseif ($matchRedirect = 2 && $this->params->get('enable_redirect', 1) == 0)
+
+		if ($matchRedirect == 0)
 		{
 			return false;
 		}
@@ -470,31 +499,16 @@ class Dynamic404Helper
 	}
 
 	/**
-	 * Method to display a custom page based on an existing Menu-Item
-	 *
-	 * @return bool
+	 * Method to get the Menu-Item error-page URL
 	 */
-	public function displayCustomPage($error = null)
+	public function getMenuItemUrl($error)
 	{
-		// Check for the error
-		if (empty($error))
-		{
-			$error = $this->getErrorObject();
-		}
-
 		// Check the parameters
-		$componentParams = JComponentHelper::getParams('com_dynamic404');
-
-		if ($componentParams->get('error_page', 0) != 2)
-		{
-			return false;
-		}
-
-		// Check the parameters
-		$Itemid = null;
-		$article = null;
 		$params = $this->params->toArray();
 		$errorCode = $this->getErrorCode($error);
+
+		$Itemid = null;
+		$article = null;
 
 		foreach ($params as $name => $value)
 		{
@@ -502,7 +516,7 @@ class Dynamic404Helper
 			{
 				if ($errorCode == $match[1])
 				{
-					$Itemid = (int)$value;
+					$Itemid = (int) $value;
 				}
 			}
 
@@ -510,7 +524,7 @@ class Dynamic404Helper
 			{
 				if ($errorCode == $match[1])
 				{
-					$article = (int)$value;
+					$article = (int) $value;
 				}
 			}
 		}
@@ -529,13 +543,12 @@ class Dynamic404Helper
 
 		// Fetch the system variables
 		$app = JFactory::getApplication();
-		$cache = JFactory::getCache();
 
 		// Determine the URL by Menu-Item
 		if ($Itemid > 0)
 		{
 			// Load the configured Menu-Item
-			$menu = JFactory::getApplication()->getMenu();
+			$menu = $app->getMenu();
 			$item = $menu->getItem($Itemid);
 
 			if (empty($item) || !is_object($item) || !isset($item->query['option']))
@@ -554,8 +567,6 @@ class Dynamic404Helper
 			{
 				$url = JRoute::_('index.php?Itemid=' . $Itemid);
 			}
-
-			// Article
 		}
 		else
 		{
@@ -593,11 +604,57 @@ class Dynamic404Helper
 			$url = (strstr($url, '?')) ? $url . '&lang=' . $languageSef : $url . '?lang=' . $languageSef;
 		}
 
+		return $url;
+	}
+
+	/**
+	 * Helper method to determine whether to use JS to redirect to the Menu-Item page
+	 */
+	public function isMenuItemJsRedirect()
+	{
+		$componentParams = JComponentHelper::getParams('com_dynamic404');
+
+		if ($componentParams->get('error_page', 0) == self::ERROR_PAGE_MENUITEM_JSREDIRECT)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Method to display a custom page based on an existing Menu-Item
+	 *
+	 * @param string $error
+	 *
+	 * @return bool
+	 */
+	public function displayCustomPage($error = null)
+	{
+		// Check for the error
+		if (empty($error))
+		{
+			$error = $this->getErrorObject();
+		}
+
+		// Check the parameters
+		$componentParams = JComponentHelper::getParams('com_dynamic404');
+		$app = JFactory::getApplication();
+		$cache = JFactory::getCache();
+
+		if (!in_array($componentParams->get('error_page', 0), array(self::ERROR_PAGE_MENUITEM_INTERNAL)))
+		{
+			return false;
+		}
+
+		$url = $this->getMenuItemUrl($error);
+		$this->debug('Internal URL', $url);
+
 		// Fetch the content
 		if ($this->params->get('caching', 1) == 1)
 		{
 			$cache->setCaching(1);
-			$contents = $cache->call(array('Dynamic404Helper', 'fetchPage'), $url); // @todo: This violates E_STRICT
+			$contents = $cache->call(array('Dynamic404Helper', 'fetchPage'), $url);
 		}
 		else
 		{
@@ -621,9 +678,30 @@ class Dynamic404Helper
 	 */
 	static public function fetchPage($url, $useragent = null)
 	{
-		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
+		if (function_exists('curl_init') == false)
+		{
+			die('CURL not installed');
+		}
 
-		return YireoHelper::fetchRemote($url, $useragent);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
+		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
+		curl_setopt($ch, CURLOPT_USERAGENT, (!empty($useragent)) ? $useragent : $_SERVER['HTTP_USER_AGENT']);
+
+		$contents = curl_exec($ch);
+
+		if($contents === false)
+		{
+			die('CURL error: ' . curl_error($ch));
+		}
+
+		return $contents;
 	}
 
 	/**
@@ -678,6 +756,8 @@ class Dynamic404Helper
 		$application = JFactory::getApplication();
 		$document = JFactory::getDocument();
 
+		$this->title = 'Error -';
+
 		// Add some common variables to the error-page
 		$this->error = $this->getErrorObject();
 		$this->baseurl = JURI::base();
@@ -687,7 +767,7 @@ class Dynamic404Helper
 		// Check the parameters
 		$componentParams = JComponentHelper::getParams('com_dynamic404');
 
-		if ($componentParams->get('error_page', 0) == 1)
+		if ($componentParams->get('error_page', 0) == self::ERROR_PAGE_DEFAULT)
 		{
 			$file = JPATH_SITE . '/templates/' . $application->getTemplate() . '/error.php';
 		}
@@ -699,6 +779,7 @@ class Dynamic404Helper
 
 		JResponse::allowCache(false);
 		require_once $file;
+
 		$application->close(0);
 
 		return null;
@@ -722,55 +803,47 @@ class Dynamic404Helper
 
 		$document->setTitle(JText::_('Error') . ': ' . $errorCode);
 
-		switch ($errorCode)
+		$httpStatusText = $this->getHttpStatusText($errorCode);
+		header('HTTP/1.0 ' . $httpStatusText);
+
+		return;
+	}
+
+	public function getHttpStatusText($code)
+	{
+		switch ($code)
 		{
 			case '400':
-				header('HTTP/1.0 400 Bad Request');
-				break;
+				return '400 Bad Request';
 			case '401':
-				header('HTTP/1.0 401 Unauthorized');
-				break;
+				return '401 Unauthorized';
 			case '402':
-				header('HTTP/1.0 402 Payment Required');
-				break;
+				return '402 Payment Required';
 			case '403':
-				header('HTTP/1.0 403 Forbidden');
-				break;
+				return '403 Forbidden';
 			case '404':
-				header('HTTP/1.0 404 Not Found');
-				break;
+				return '404 Not Found';
 			case '405':
-				header('HTTP/1.0 405 Method Not Allowed');
-				break;
+				return '405 Method Not Allowed';
 			case '406':
-				header('HTTP/1.0 406 Not Acceptable');
-				break;
+				return '406 Not Acceptable';
 			case '408':
-				header('HTTP/1.0 408 Request Timeout');
-				break;
+				return '408 Request Timeout';
 			case '409':
-				header('HTTP/1.0 409 Conflict');
-				break;
+				return '409 Conflict';
 			case '410':
-				header('HTTP/1.0 410 Gone');
-				break;
+				return '410 Gone';
 			case '500':
-				header('HTTP/1.0 500 Internal Server Error');
-				break;
+				return '500 Internal Server Error';
 			case '501':
-				header('HTTP/1.0 501 Not Implemented');
-				break;
+				return '501 Not Implemented';
 			case '502':
-				header('HTTP/1.0 502 Bad Gateway');
-				break;
+				return '502 Bad Gateway';
 			case '503':
-				header('HTTP/1.0 503 Service Unavailable');
-				break;
-			default:
-				header('HTTP/1.0 404 Not Found');
-				break;
+				return '503 Service Unavailable';
 		}
-		return;
+
+		return '404 Not Found';
 	}
 
 	/*
@@ -896,8 +969,6 @@ class Dynamic404Helper
 
 		header('HTTP/1.1 403 Forbidden');
 		die('Access Forbidden');
-
-		return null;
 	}
 
 	/**

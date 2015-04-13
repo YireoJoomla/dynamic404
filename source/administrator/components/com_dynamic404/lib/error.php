@@ -10,21 +10,32 @@
  */
 
 // No direct access
-defined( '_JEXEC' ) or die( 'Restricted access' );
+defined('_JEXEC') or die('Restricted access');
 
 // Include the 404 Helper
-require_once JPATH_ADMINISTRATOR.'/components/com_dynamic404/helpers/helper.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/helper.php';
 
 // Instantiate the helper with the argument of how many matches to show
-if($this instanceof Dynamic404Helper) {
-    $helper = $this;
-} else {
-    $helper = new Dynamic404Helper($this->error);
+if ($this instanceof Dynamic404Helper)
+{
+	$helper = $this;
+}
+else
+{
+	$helper = new Dynamic404Helper($this->error);
 }
 
 // Parse empty variables and/or objects
-if(empty($this->error)) $this->error = $helper->getErrorObject();
-if(empty($this->title)) $this->title = JText::_('COM_DYNAMIC404_NOT_FOUND');
+if (empty($this->error))
+{
+	$this->error = $helper->getErrorObject();
+}
+
+if (empty($this->title))
+{
+	$this->title = JText::_('COM_DYNAMIC404_NOT_FOUND');
+}
+
 $errorCode = $helper->getErrorCode($this->error);
 
 // Get the possible matches
@@ -35,12 +46,14 @@ $search = $helper->getLast();
 
 // Load the article
 $article = $helper->getArticle($errorCode);
-if(!empty($article)) {
+
+if(!empty($article))
+{
     $this->title = $article->title;
 }
 
 // Fetch additional properties
-$errorMsg = (is_object($this->error) && isset($this->error->message)) ? $this->error->message : $this->title; 
+$errorMsg = (is_object($this->error) && isset($this->error->message)) ? $this->error->message : $this->title;
 $additionalErrors = $this->getAdditionalErrors();
 
 // If no redirect is available or performed, show the page below
@@ -52,20 +65,26 @@ $additionalErrors = $this->getAdditionalErrors();
 	<link rel="stylesheet" href="<?php echo JURI::base(); ?>/templates/system/css/error.css" type="text/css" />
 </head>
 <body>
+	<?php if ($helper->isMenuItemJsRedirect()) : ?>
+		<?php $url = $helper->getMenuItemUrl($errorCode); ?>
+		<script type="text/javascript">
+			window.location.replace("<?php echo $this->getMenuItemUrl($errorCode); ?>");
+		</script>
+	<?php else: ?>
 	<div align="center">
 		<div id="outline">
 		<div id="errorboxoutline">
 			<div id="errorboxheader"><?php echo $errorCode ?> - <?php echo $errorMsg ?></div>
 			<div id="errorboxbody">
-            <?php if(!empty($article)) : ?>
+            <?php if (!empty($article)) : ?>
                 <?php echo $article->text; ?>
             <?php endif; ?>
             <p>
                 <?php if(!empty($matches)): ?>
                 <?php echo JText::_('COM_DYNAMIC404_MATCHES_FOUND'); ?>:
                 <ul>
-                    <?php foreach($matches as $item) { ?>
-                    <?php if(!empty($item->match_note)): ?><!-- Match note: "<?php echo $item->match_note ?>" --><?php endif; ?>
+                    <?php foreach ($matches as $item) { ?>
+                    <?php if (!empty($item->match_note)): ?><!-- Match note: "<?php echo $item->match_note ?>" --><?php endif; ?>
                     <li><a href="<?php echo $item->url; ?>"><?php echo $item->name; ?></a> (<?php echo $item->rating; ?>%)</li>
                     <?php } ?>
                 </ul>
@@ -85,7 +104,7 @@ $additionalErrors = $this->getAdditionalErrors();
             <?php if (!empty($additionalErrors)) : ?>
 			    <p><?php echo JText::_('COM_DYNAMIC404_ADDITIONAL_ERRORS'); ?></p>
                 <ul>
-                    <?php foreach($additionalErrors as $additionalError) : ?>
+                    <?php foreach ($additionalErrors as $additionalError) : ?>
                     <li><?php echo $additionalError; ?></li>
                     <?php endforeach; ?>
                 </ul>
@@ -95,7 +114,7 @@ $additionalErrors = $this->getAdditionalErrors();
 			<div id="techinfo">
 			<p><?php echo $errorMsg; ?></p>
 			<p>
-				<?php if(isset($this->debug) && $this->debug == true) : ?>
+				<?php if (isset($this->debug) && $this->debug == true) : ?>
 					<?php echo $this->renderBacktrace(); ?>
 				<?php endif; ?>
 			</p>
@@ -104,5 +123,6 @@ $additionalErrors = $this->getAdditionalErrors();
 		</div>
 		</div>
 	</div>
+	<?php endif; ?>
 </body>
 </html>

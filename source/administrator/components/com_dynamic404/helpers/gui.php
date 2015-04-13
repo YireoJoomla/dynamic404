@@ -12,92 +12,110 @@
 // No direct access
 defined('_JEXEC') or die('Restricted access');
 
-class Dynamic404HelperGUI 
+/**
+ * Class Dynamic404HelperGUI
+ */
+class Dynamic404HelperGUI
 {
-    /**
-     * Method to get the different match-types
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    static public function getMatchTypes() 
-    {
-        $options = array(
-            array( 'value' => 'full_url', 'title' => JText::_( 'COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_FULL_URL' )),
-            array( 'value' => 'last_segment', 'title' => JText::_( 'COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_LAST_SEGMENT' )),
-            array( 'value' => 'any_segment', 'title' => JText::_( 'COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_ANY_SEGMENT' )),
-            array( 'value' => 'fuzzy', 'title' => JText::_( 'COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_FUZZY' )),
-        );
-        return $options;
-    }
+	/**
+	 * Method to get the different match-types
+	 *
+	 * @param null
+	 *
+	 * @return null
+	 */
+	static public function getMatchTypes()
+	{
+		$options = array(
+			array('value' => 'full_url', 'title' => JText::_('COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_FULL_URL')),
+			array('value' => 'last_segment', 'title' => JText::_('COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_LAST_SEGMENT')),
+			array('value' => 'any_segment', 'title' => JText::_('COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_ANY_SEGMENT')),
+			array('value' => 'fuzzy', 'title' => JText::_('COM_DYNAMIC404_REDIRECT_FIELD_TYPE_OPTION_FUZZY')),
+		);
 
-    /**
-     * Method to get the different redirect-types
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    static public function getRedirectTypes() 
-    {
-        $types = array(301, 302, 303, 307);
-        $options = array();
-        foreach ($types as $type) {
-            $options[] = array('value' => $type, 'title' => Dynamic404HelperCore::getHttpStatusDescription($type));
-        }
-        return $options;
-    }
+		return $options;
+	}
 
-    /**
-     * Method to get a specific type-title
-     *
-     * @access public
-     * @param string $type
-     * @return null
-     */
-    static public function getTypeTitle($value) 
-    {
-        $types = Dynamic404HelperGUI::getMatchTypes();
-        foreach ($types as $type) {
-            if ($type['value'] == $value) return $type['title'];
-        }
-        return null;
-    }
+	/**
+	 * Method to get the different redirect-types
+	 *
+	 * @param null
+	 *
+	 * @return null
+	 */
+	static public function getRedirectTypes()
+	{
+		$types = array(301, 302, 303, 307);
+		$options = array();
 
-    /**
-     * Method to set the title for the administration pages
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    static public function getItemMatchLink($match = null, $type = null)
-    {
-        if ($type != 'full_url') {
-            return null;
-        }
+		foreach ($types as $type)
+		{
+			$options[] = array('value' => $type, 'title' => Dynamic404HelperCore::getHttpStatusDescription($type));
+		}
 
-        $uri = JURI::getInstance();
-        $base = $uri->toString(array('scheme', 'host', 'port', 'prefix'));
-        return $base.'/'.preg_replace('/^\//', '', $match);
-    }
+		return $options;
+	}
 
-    /**
-     * Method to set the title for the administration pages
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    static public function getItemUrlLink($url = null)
-    {
-        if (preg_match('/^(http|https|ftp):\/\//', $url)) {
-            return $url;
-        }
+	/**
+	 * Method to get a specific type-title
+	 *
+	 * @param string $value
+	 *
+	 * @return null
+	 */
+	static public function getTypeTitle($value)
+	{
+		$types = self::getMatchTypes();
 
-        $uri = JURI::getInstance();
-        $base = $uri->toString(array('scheme', 'host', 'port', 'prefix'));
-        return $base.'/'.preg_replace('/^\//', '', $url);
-    }
+		foreach ($types as $type)
+		{
+			if ($type['value'] == $value)
+			{
+				return $type['title'];
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Method to set the title for the administration pages
+	 *
+	 * @param string $match
+	 * @param string $type
+	 *
+	 * @return null
+	 */
+	static public function getItemMatchLink($match = null, $type = null)
+	{
+		if ($type != 'full_url')
+		{
+			return null;
+		}
+
+		$uri = JURI::getInstance();
+		$base = $uri->toString(array('scheme', 'host', 'port', 'prefix'));
+
+		return $base . '/' . preg_replace('/^\//', '', $match);
+	}
+
+	/**
+	 * Method to set the title for the administration pages
+	 *
+	 * @param string $url
+	 *
+	 * @return null
+	 */
+	static public function getItemUrlLink($url = null)
+	{
+		if (preg_match('/^(http|https|ftp):\/\//', $url))
+		{
+			return $url;
+		}
+
+		$uri = JURI::getInstance();
+		$base = $uri->toString(array('scheme', 'host', 'port', 'prefix'));
+
+		return $base . '/' . preg_replace('/^\//', '', $url);
+	}
 }

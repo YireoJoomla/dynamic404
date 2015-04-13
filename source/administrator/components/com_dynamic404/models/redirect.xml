@@ -32,7 +32,7 @@
     </fields>
     <fields name="params">
         <fieldset name="params">
-            <field name="redirect" type="yireo.boolean" default="0" label="COM_DYNAMIC404_REDIRECT_PARAM_REDIRECT" />
+            <field name="redirect" type="yireo.boolean" global="2" default="2" label="COM_DYNAMIC404_REDIRECT_PARAM_REDIRECT" />
             <field name="match_case" type="yireo.boolean" default="0" label="COM_DYNAMIC404_REDIRECT_PARAM_MATCH_CASE" />
             <field name="show_description" type="yireo.boolean" default="0" label="COM_DYNAMIC404_REDIRECT_PARAM_SHOW_DESCRIPTION" />
             <field name="rating" type="yireo.text" label="COM_DYNAMIC404_REDIRECT_PARAM_RATING" />

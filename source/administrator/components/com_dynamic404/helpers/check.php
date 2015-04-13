@@ -12,12 +12,16 @@
 // Check to ensure this file is included in Joomla!
 defined('JPATH_BASE') or die;
 
-/*
+/**
  * Check helper
  */
-
 class Dynamic404HelperCheck
 {
+	/**
+	 * Check for the Dynamic404 System Plugin
+	 *
+	 * @return array
+	 */
 	static public function checkDynamic404SystemPlugin()
 	{
 		$db = JFactory::getDBO();
@@ -56,6 +60,11 @@ class Dynamic404HelperCheck
 		);
 	}
 
+	/**
+	 * Check for the core's Redirect System Plugin
+	 *
+	 * @return array
+	 */
 	static public function checkRedirectSystemPlugin()
 	{
 		$db = JFactory::getDBO();
@@ -88,6 +97,11 @@ class Dynamic404HelperCheck
 		);
 	}
 
+	/**
+	 * Check whether SEF is enabled or not
+	 *
+	 * @return array
+	 */
 	static public function checkSefEnabled()
 	{
 		$sef = (bool) JFactory::getConfig()->get('sef');
@@ -110,6 +124,11 @@ class Dynamic404HelperCheck
 		);
 	}
 
+	/**
+	 * Check whether SEF Rewrites are enabled or not
+	 *
+	 * @return array
+	 */
 	static public function checkSefRewritesEnabled()
 	{
 		$sefRewrites = (bool) JFactory::getConfig()->get('sef_rewrite');
@@ -132,6 +151,11 @@ class Dynamic404HelperCheck
 		);
 	}
 
+	/**
+	 * Check whether Dynamic404 autoredirection is enabled
+	 *
+	 * @return array
+	 */
 	static public function checkAutoRedirectEnabled()
 	{
 		$autoRedirect = (bool) JComponentHelper::getParams('com_dynamic404')->get('enable_redirect', 1);

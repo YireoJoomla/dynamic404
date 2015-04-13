@@ -57,7 +57,11 @@ class Dynamic404HelperDebug
 		{
 			if ($variable instanceof JDatabaseQuery)
 			{
-				return '[JDatabaseQuery] ' . (string) $variable;
+				$db = JFactory::getDBO();
+				$query = (string) $variable;
+				$query = str_replace('#__', $db->getPrefix(), $query);
+
+				return '[JDatabaseQuery] ' . $query;
 			}
 			elseif ($variable instanceof SimpleXML)
 			{
