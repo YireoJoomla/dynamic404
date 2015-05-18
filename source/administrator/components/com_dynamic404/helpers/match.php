@@ -24,26 +24,147 @@ class Dynamic404HelperMatch
 {
 	/**
 	 * Component parameters
+	 *
+	 * @var JRegistry
 	 */
-	private $params = null;
+	protected $params = null;
 
 	/**
 	 * List of possible matches
+	 *
+	 * @var array
 	 */
-	private $matches = array();
+	protected $matches = array();
+
+	/**
+	 * URL to search matches for
+	 *
+	 * @var null
+	 */
+	protected $uri = null;
 
 	/**
 	 * Constructor
 	 */
-	public function __construct()
+	public function __construct($uri = null)
 	{
 		// Read the component parameters
 		$this->params = JComponentHelper::getParams('com_dynamic404');
 
-		$this->jinput = JFactory::getApplication()->input;
+		// Load the model
+		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/models/match.php';
+
+		// Internal parameters
+		$this->app = JFactory::getApplication();
+		$this->jinput = $this->app->input;
+
+		// Set the URI
+		$this->setUri($uri);
 
 		// Initialize this helper
-		$this->parseRequest();
+		$this->parseUri();
+	}
+
+	/**
+	 * Method to set the internal URI
+	 *
+	 * @param null $uri
+	 */
+	public function setUri($uri = null)
+	{
+		if (empty($uri))
+		{
+			$uri = base64_decode($this->jinput->getString('uri'));
+		}
+
+		if (empty($uri))
+		{
+			$uri = JURI::current();
+		}
+
+		$this->uri = $uri;
+	}
+
+	public function parseNonSefUri($uri, $match)
+	{
+		$id = $match[1];
+		$id = explode(':', $id);
+		$uri_lastnum = null;
+		$uri_last = null;
+
+		if (is_numeric($id[0]))
+		{
+			$uri_lastnum = $id[0];
+		}
+
+		if (is_string($id[0]))
+		{
+			$uri_last = $id[0];
+		}
+
+		if (!empty($id[1]))
+		{
+			$uri_last = $id[1];
+		}
+
+		$this->request = array(
+			'uri' => $uri,
+			'uri_parts' => array(),
+			'uri_last' => $uri_last,
+			'uri_lastnum' => $uri_lastnum,
+		);
+	}
+
+	public function parseSefUri($uri)
+	{
+		// Fetch the current request and parse it
+		$uri = preg_replace('/^\//', '', $uri);
+		$uri = preg_replace('/\.(html|htm|php)$/', '', $uri);
+		$uri = preg_replace('/\?lang=([a-zA-Z0-9]+)$/', '', $uri);
+		$uri = preg_replace('/\&Itemid=([0-9]?)$/', '', $uri);
+
+		$uri_parts = explode('/', $uri);
+
+		if (!empty($uri_parts))
+		{
+			foreach ($uri_parts as $i => $part)
+			{
+				if (empty($part))
+				{
+					unset($uri_parts[$i]);
+				}
+			}
+		}
+
+		$uri_parts = array_values($uri_parts);
+		$uri_lastnum = null;
+		$uri_last = null;
+		$total = count($uri_parts);
+
+		for ($i = $total; $i > 0; $i--)
+		{
+			if (!isset($uri_parts[$i - 1]))
+			{
+				continue;
+			}
+
+			if (!is_numeric($uri_parts[$i - 1]))
+			{
+				$uri_last = $uri_parts[$i - 1];
+				break;
+			}
+			elseif (is_numeric($uri_parts[$i - 1]))
+			{
+				$uri_lastnum = $uri_parts[$i - 1];
+			}
+		}
+
+		$this->request = array(
+			'uri' => $uri,
+			'uri_parts' => $uri_parts,
+			'uri_last' => $uri_last,
+			'uri_lastnum' => $uri_lastnum,
+		);
 	}
 
 	/**
@@ -51,19 +172,11 @@ class Dynamic404HelperMatch
 	 *
 	 * @return null
 	 */
-	public function parseRequest()
+	public function parseUri()
 	{
-		// System variables
-		$application = JFactory::getApplication();
+		$uri = $this->uri;
 
-		// Get the URI
-		$uri = base64_decode($this->jinput->getString('uri'));
-
-		if (empty($uri))
-		{
-			$uri = JURI::current();
-		}
-
+		// Replace non-sense strings
 		$uri = str_replace('?noredirect=1', '', $uri);
 		$uri = preg_replace('/\/$/', '', $uri);
 		$uri = str_replace('_', '-', $uri);
@@ -76,80 +189,11 @@ class Dynamic404HelperMatch
 		// If this looks like a SEF-URL, parse it
 		if (strstr($uri, 'index.php?option=') == false && strstr($uri, 'index.php?Itemid=') == false)
 		{
-			// Fetch the current request and parse it
-			$uri = preg_replace('/^\//', '', $uri);
-			$uri = preg_replace('/\.(html|htm|php)$/', '', $uri);
-			$uri = preg_replace('/\?lang=([a-zA-Z0-9]+)$/', '', $uri);
-			$uri = preg_replace('/\&Itemid=([0-9]?)$/', '', $uri);
-
-			$uri_parts = explode('/', $uri);
-
-			if (!empty($uri_parts))
-			{
-				foreach ($uri_parts as $i => $part)
-				{
-					if (empty($part))
-					{
-						unset($uri_parts[$i]);
-					}
-				}
-			}
-
-			$uri_parts = array_values($uri_parts);
-			$total = count($uri_parts);
-
-			for ($i = $total; $i > 0; $i--)
-			{
-				if (!isset($uri_parts[$i - 1]))
-				{
-					continue;
-				}
-
-				if (!is_numeric($uri_parts[$i - 1]))
-				{
-					$uri_last = $uri_parts[$i - 1];
-					break;
-				}
-				elseif (is_numeric($uri_parts[$i - 1]))
-				{
-					$uri_lastnum = $uri_parts[$i - 1];
-				}
-			}
-
-			$this->request = array(
-				'uri' => $uri,
-				'uri_parts' => $uri_parts,
-				'uri_last' => $uri_last,
-				'uri_lastnum' => $uri_lastnum,
-			);
+			$this->parseSefUri($uri);
 		}
-		else
+		elseif (preg_match('/id=([a-zA-Z0-9\.\-\_\:]+)/', $uri, $match))
 		{
-			// Non-SEF URL
-			$id = $this->jinput->getString('id');
-			$id = explode(':', $id);
-
-			if (is_numeric($id[0]))
-			{
-				$uri_lastnum = $id[0];
-			}
-
-			if (is_string($id[0]))
-			{
-				$uri_last = $id[0];
-			}
-
-			if (!empty($id[1]))
-			{
-				$uri_last = $id[1];
-			}
-
-			$this->request = array(
-				'uri' => $uri,
-				'uri_parts' => $uri_parts,
-				'uri_last' => $uri_last,
-				'uri_lastnum' => $uri_lastnum,
-			);
+			$this->parseNonSefUri($uri, $match);
 		}
 	}
 
@@ -370,7 +414,7 @@ class Dynamic404HelperMatch
 			foreach ($area as $row)
 			{
 				// Construct the match
-				$match = (object) null;
+				$match = new Dynamic404ModelMatch;
 				$match->rating = $this->params->get('rating_search_plugins', 80);
 				$match->match_note = 'search plugin';
 				$match->type = 'component';
@@ -395,11 +439,11 @@ class Dynamic404HelperMatch
 
 				if ($keywordMatch == count($keywords))
 				{
-					$match->rating += 2;
+					$match->increaseRating(2);
 				}
 				elseif ($keywordMatch > 0)
 				{
-					$match->rating += 1;
+					$match->increaseRating(1);
 				}
 
 				$matches[] = $match;
@@ -617,48 +661,15 @@ class Dynamic404HelperMatch
 	{
 		if (!empty($this->matches))
 		{
-			$uri = JURI::getInstance();
-			$config = JFactory::getConfig();
-			$sef_rewrite = (bool) $config->get('sef_rewrite');
-
 			foreach ($this->matches as $index => $match)
 			{
-				if (preg_match('/^index.php\?option=com_/', $match->url))
-				{
-					$match->url = JRoute::_($match->url);
-				}
-				elseif (preg_match('/^([a-zA-Z]+)/', $match->url) && preg_match('/^(http|https):\/\//', $match->url) == false)
-				{
-					$base_uri = JURI::base();
+				// Cast this match to the right class
+				$match = Dynamic404ModelMatch::getInstance($match);
 
-					if ($sef_rewrite == false)
-					{
-						$base_uri .= 'index.php/';
-					}
+				// Parse the current match
+				$match->parse();
 
-					$match->url = $base_uri . $match->url;
-				}
-
-				if (preg_match('/^(http|https):\/\//', $match->url) == false && preg_match('/^\//', $match->url) == false)
-				{
-					$base_uri = JURI::base();
-
-					if ($sef_rewrite == false)
-					{
-						$base_uri .= 'index.php/';
-					}
-
-					if (preg_match('/^\//', $match->url))
-					{
-						$base_uri = preg_replace('/\/$/', '', $base_uri);
-					}
-
-					$match->url = $base_uri . $match->url;
-				}
-
-				$currentPath = JURI::getInstance()->toString(array('path'));
-
-				if ($currentPath == $match->url)
+				if (JURI::getInstance()->toString(array('path')) == $match->url)
 				{
 					unset($this->matches[$index]);
 					continue;

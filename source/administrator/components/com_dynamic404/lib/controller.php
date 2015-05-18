@@ -85,43 +85,44 @@ class YireoCommonController extends YireoAbstractController
         parent::__construct();
     }
 
-	static public function getControllerInstance($option, $name)
-	{
-		// Check for a child controller
-		if (is_file(JPATH_COMPONENT . '/controllers/' . $name . '.php'))
-		{
-			require_once JPATH_COMPONENT . '/controllers/' . $name . '.php';
+    static public function getControllerInstance($option, $name)
+    {
 
-			$controllerClass = ucfirst($option) . 'Controller' . ucfirst($name);
+        // Check for a child controller
+        if (is_file(JPATH_COMPONENT . '/controllers/' . $name . '.php'))
+        {
+            require_once JPATH_COMPONENT . '/controllers/' . $name . '.php';
 
-			if (class_exists($controllerClass))
-			{
-				$controller = new $controllerClass;
-				return $controller;
-			}
-		}
+            $controllerClass = ucfirst($option) . 'Controller' . ucfirst($name);
 
-		return self::getDefaultControllerInstance($option, $name);
-	}
+            if (class_exists($controllerClass))
+            {
+                $controller = new $controllerClass;
+                return $controller;
+            }
+        }
 
-	static public function getDefaultControllerInstance($option, $name)
-	{
-		// Require the base controller
-		if (is_file(JPATH_COMPONENT . '/controller.php'))
-		{
-			require_once JPATH_COMPONENT . '/controller.php';
-		}
+        return self::getDefaultControllerInstance($option, $name);
+    }
 
-		$controllerClass = ucfirst($option) . 'Controller';
+    static public function getDefaultControllerInstance($option, $name)
+    {
+        // Require the base controller
+        if (is_file(JPATH_COMPONENT . '/controller.php'))
+        {
+            require_once JPATH_COMPONENT . '/controller.php';
+        }
 
-		if (class_exists($controllerClass))
-		{
-			$controller = new $controllerClass;
-			return $controller;
-		}
+        $controllerClass = ucfirst($option) . 'Controller';
 
-		throw new Exception(JText::_('LIB_YIREO_NO_CONTROLLER_FOUND'));
-	}
+        if (class_exists($controllerClass))
+        {
+            $controller = new $controllerClass;
+            return $controller;
+        }
+
+        throw new Exception(JText::_('LIB_YIREO_NO_CONTROLLER_FOUND'));
+    }
 }
 
 /**

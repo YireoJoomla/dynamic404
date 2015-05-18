@@ -56,18 +56,21 @@ class plgSystemDynamic404 extends JPlugin
 	{
 		// Get the application object.
 		$application = JFactory::getApplication();
-		$error = JError::getError();
+
+        if (empty($error) || $error == false)
+        {
+		    $error = JError::getError();
+        }
 
 		// Include the 404 Helper-class
 		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/helper.php';
 
 		// Instantiate the helper with the argument of how many matches to show
-		$helper = new Dynamic404Helper();
+		$helper = new Dynamic404Helper(true, null, $error);
 
 		// Make sure the error is a 404 and we are not in the administrator.
 		if (!$application->isAdmin() and ($error->get('code') == 404))
 		{
-
 			// Log the 404 entry
 			$helper->log();
 
@@ -90,7 +93,7 @@ class plgSystemDynamic404 extends JPlugin
 		}
 		else
 		{
-			$helper->displayErrorPage($error);
+			$helper->displayErrorPage();
 			$application->close(0);
 		}
 	}

@@ -7,6 +7,7 @@
                 <option value="0">JNO</option>
                 <option value="1">JYES</option>
             </field>
+            <field name="redirect_minimum" type="text" default="99" label="COM_DYNAMIC404_FIELD_REDIRECT_MINIMUM" description="COM_DYNAMIC404_FIELD_REDIRECT_MINIMUM_DESC" />
             <field name="enable_logging" type="radio" default="1" class="btn-group"
                 label="COM_DYNAMIC404_FIELD_ENABLE_LOGGING" description="COM_DYNAMIC404_FIELD_ENABLE_LOGGING_DESC">
                 <option value="0">JNO</option>

@@ -47,7 +47,7 @@ class Dynamic404HelperMatchArticle
 			return null;
 		}
 
-		$row->match_note = 'article id';
+		$row->handler = 'article';
 
 		return array($row);
 	}
@@ -57,13 +57,13 @@ class Dynamic404HelperMatchArticle
 	 *
 	 * @param   array  $strings Strings to search for
 	 *
-	 * @return null
+	 * @return array
 	 */
 	public function findTextMatches($strings)
 	{
 		if (empty($strings))
 		{
-			return;
+			return array();
 		}
 
 		$matches = array();
@@ -86,7 +86,7 @@ class Dynamic404HelperMatchArticle
 		// Sanitize the strings
 		$newStrings = array();
 
-		foreach($strings as $string)
+		foreach ($strings as $string)
 		{
 			if (strlen($string) < 2)
 			{
@@ -105,7 +105,7 @@ class Dynamic404HelperMatchArticle
 
 		if (empty($strings))
 		{
-			return;
+			return array();
 		}
 
 		// Match the alias
@@ -136,7 +136,7 @@ class Dynamic404HelperMatchArticle
 
 					if (!empty($row))
 					{
-						$row->match_note = 'article alias';
+						$row->match_note = 'find by alias';
 						$matches[] = $row;
 					}
 
@@ -157,8 +157,8 @@ class Dynamic404HelperMatchArticle
 
 						if (!empty($row))
 						{
-							$row->match_note = 'article alias';
-							$row->rating = $row->rating - count($strings) + count($row->match_parts);
+							$row->match_note = 'find by alias';
+							$row->rating = $row->rating - (count($strings) + count($row->match_parts));
 							$matches[] = $row;
 						}
 					}
@@ -316,21 +316,16 @@ class Dynamic404HelperMatchArticle
 			return null;
 		}
 
+		// Cast this match to the right class
+		$item = Dynamic404ModelMatch::getInstance($item);
+
 		$item->type = 'component';
+		$item->handler = 'article';
 		$item->name = $item->title;
 		$item->rating = $this->params->get('rating_articles', 85);
 
-		$currentLanguage = JFactory::getLanguage()->getTag();
-
-		if (empty($item->language) || $item->language == '*')
-		{
-			$item->language = $currentLanguage;
-		}
-
-		if ($currentLanguage != $item->language)
-		{
-			$item->rating -= 1;
-		}
+		// Parse the language of this item
+		$item->parseLanguage();
 
 		if (isset($item->sectionid))
 		{

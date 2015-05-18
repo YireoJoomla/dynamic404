@@ -61,7 +61,7 @@ class Dynamic404Helper
 	 * @param   bool $init Initialize the helper
 	 * @param   int  $max  Maximum amount of entries to fetch
 	 */
-	public function __construct($init = true, $max = null)
+	public function __construct($init = true, $max = null, $error = null)
 	{
 		// Read the component parameters
 		$this->params = JComponentHelper::getParams('com_dynamic404');
@@ -69,6 +69,11 @@ class Dynamic404Helper
 		if ($this->params->get('debug', 0) == 1)
 		{
 			ini_set('display_errors', 1);
+		}
+
+		if (!empty($error) && is_object($error))
+		{
+			$this->setErrorObject($error);
 		}
 
 		// Initialize some other variables
@@ -101,8 +106,8 @@ class Dynamic404Helper
 	/**
 	 * Method alias for debugging
 	 *
-	 * @param   string  $msg       Debugging message
-	 * @param   null    $variable  Optional variable to dump
+	 * @param   string $msg      Debugging message
+	 * @param   null   $variable Optional variable to dump
 	 */
 	public function debug($msg, $variable = null)
 	{
@@ -205,27 +210,39 @@ class Dynamic404Helper
 	}
 
 	/**
+	 * Method to set the current error object
+	 *
+	 * @param   $error  null|mixed  Error object
+	 *
+	 * @return string
+	 */
+	public function setErrorObject($error = null)
+	{
+		$this->error = $error;
+	}
+
+	/**
 	 * Method to get a default error-object for error.php
 	 *
 	 * @param   $error  null|mixed  Error object
 	 *
 	 * @return string
 	 */
-	public function getErrorObject($error = null)
+	public function getErrorObject()
 	{
-		if (empty($error) || $error == false)
+		if (empty($this->error) || $this->error == false)
 		{
-			$error = JError::getError();
+			$this->error = JError::getError();
 		}
 
-		if (empty($error) || $error == false)
+		if (empty($this->error) || $this->error == false)
 		{
-			$error = (object) null;
-			$error->code = 404;
-			$error->message = JText::_('Not found');
+			$code = 404;
+			$message = JText::_('Not found');
+			$this->error = new Exception($message, $code);
 		}
 
-		return $error;
+		return $this->error;
 	}
 
 	/**
@@ -343,6 +360,8 @@ class Dynamic404Helper
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
 		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
 		curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
@@ -370,14 +389,12 @@ class Dynamic404Helper
 	}
 
 	/**
-	 * Method to redirect to a specific match
+	 * Method to check whether we are able to redirect or not
 	 *
 	 * @return bool
 	 */
-	public function doRedirect()
+	public function allowRedirect($errorCode, $match)
 	{
-		$application = JFactory::getApplication();
-
 		// Do not redirect, if the redirect flag is off
 		$redirect = $this->jinput->getInt('noredirect');
 
@@ -387,9 +404,9 @@ class Dynamic404Helper
 		}
 
 		// Do not redirect, if this is not a valid URL
-		$url = $this->matchHelper->getRequest('uri');
+		$currentUrl = $this->matchHelper->getRequest('uri');
 
-		if (preg_match('/^(templates|media|images)\//', $url))
+		if (preg_match('/^(templates|media|images)\//', $currentUrl))
 		{
 			$this->debug('No redirect for templates|media|images');
 
@@ -397,20 +414,67 @@ class Dynamic404Helper
 		}
 
 		// Do not redirect, if the HTTP-status is not a 4xx error
-		if (empty($error))
+		if ($this->params->get('redirect_non404', 0) == 0 && preg_match('/^4/', $errorCode) == false)
 		{
-			$errorCode = '404';
+			$this->debug('No redirect for non-404 errors');
+
+			return false;
+		}
+
+		// Fetch the global direct values
+		$globalRedirect = (bool) $this->params->get('enable_redirect', 1);
+		$redirectMinimum = (int) $this->params->get('redirect_minimum', 99);
+
+		// Check the rating boundary
+		if ($globalRedirect == false && $match->rating >= $redirectMinimum)
+		{
+			return $match;
+		}
+
+		// Determine the redirection default for this match
+		if (empty($match->params))
+		{
+			$match->params = null;
+			$matchRedirect = $globalRedirect;
 		}
 		else
 		{
+			$params = YireoHelper::toRegistry($match->params);
+			$matchRedirect = $params->get('redirect');
+		}
+
+		// Set global redirect value
+		if ($matchRedirect == 2)
+		{
+			$matchRedirect = $globalRedirect;
+		}
+
+		// Check match redirect
+		if ($matchRedirect == 0)
+		{
+			return false;
+		}
+
+		return $match;
+	}
+
+	/**
+	 * Method to redirect to a specific match
+	 *
+	 * @return bool
+	 */
+	public function doRedirect()
+	{
+		$application = JFactory::getApplication();
+
+		// Set the error-code
+		if (!empty($error))
+		{
 			$errorCode = (int) $this->getErrorCode($error);
-
-			if ($this->params->get('redirect_non404', 0) == 0 && preg_match('/^4/', $errorCode) == false)
-			{
-				$this->debug('No redirect for non-404 errors');
-
-				return false;
-			}
+		}
+		else
+		{
+			$errorCode = '404';
 		}
 
 		// Check for matches
@@ -429,26 +493,9 @@ class Dynamic404Helper
 			return false;
 		}
 
-		$globalRedirect = $this->params->get('enable_redirect', 1);
+		$allowRedirect = $this->allowRedirect($errorCode, $match);
 
-		// Determine the redirection default for this match
-		if (empty($match->params))
-		{
-			$match->params = null;
-			$matchRedirect = $globalRedirect;
-		}
-		else
-		{
-			$params = YireoHelper::toRegistry($match->params);
-			$matchRedirect = $params->get('redirect');
-		}
-
-		if ($matchRedirect == 2)
-		{
-			$matchRedirect = $globalRedirect;
-		}
-
-		if ($matchRedirect == 0)
+		if ($allowRedirect == false)
 		{
 			return false;
 		}
@@ -478,16 +525,7 @@ class Dynamic404Helper
 			}
 		}
 
-		// Set the HTTP Redirect-status
-		if (isset($match->http_status) && $match->http_status > 0)
-		{
-			$http_status = $match->http_status;
-		}
-		else
-		{
-			$params = JComponentHelper::getParams('com_dynamic404');
-			$http_status = $params->get('http_status', 301);
-		}
+		$http_status = $this->getHttpStatusByMatch($match);
 
 		// Perform the actual redirect
 		header('HTTP/1.1 ' . Dynamic404HelperCore::getHttpStatusDescription($http_status));
@@ -629,12 +667,12 @@ class Dynamic404Helper
 	 *
 	 * @return bool
 	 */
-	public function displayCustomPage($error = null)
+	public function displayCustomPage()
 	{
 		// Check for the error
-		if (empty($error))
+		if (empty($this->error))
 		{
-			$error = $this->getErrorObject();
+			$this->error = $this->getErrorObject();
 		}
 
 		// Check the parameters
@@ -647,7 +685,7 @@ class Dynamic404Helper
 			return false;
 		}
 
-		$url = $this->getMenuItemUrl($error);
+		$url = $this->getMenuItemUrl($this->error);
 		$this->debug('Internal URL', $url);
 
 		// Fetch the content
@@ -690,18 +728,43 @@ class Dynamic404Helper
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
 		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
 		curl_setopt($ch, CURLOPT_USERAGENT, (!empty($useragent)) ? $useragent : $_SERVER['HTTP_USER_AGENT']);
 
 		$contents = curl_exec($ch);
 
-		if($contents === false)
+		if ($contents === false)
 		{
 			die('CURL error: ' . curl_error($ch));
 		}
 
 		return $contents;
+	}
+
+	/**
+	 * @param $match
+	 *
+	 * @return mixed
+	 */
+	public function getHttpStatusByMatch($match)
+	{
+		// Set the HTTP Redirect-status
+		if (isset($match->http_status) && $match->http_status > 0)
+		{
+			$http_status = $match->http_status;
+
+			return $http_status;
+		}
+		else
+		{
+			$params = JComponentHelper::getParams('com_dynamic404');
+			$http_status = $params->get('http_status', 301);
+
+			return $http_status;
+		}
 	}
 
 	/**
@@ -858,9 +921,7 @@ class Dynamic404Helper
 	{
 		$db = JFactory::getDBO();
 		$query = $db->getQuery(true);
-		$query->select($db->quoteName('match'))
-			->from($db->quoteName('#__dynamic404_redirects'))
-			->where($db->quoteName('url') . '=' . $db->quote($url));
+		$query->select($db->quoteName('match'))->from($db->quoteName('#__dynamic404_redirects'))->where($db->quoteName('url') . '=' . $db->quote($url));
 
 		$db->setQuery($query);
 		$match = $db->loadResult();
@@ -869,25 +930,11 @@ class Dynamic404Helper
 		{
 			$match = self::generateRandomString();
 
-			$columns = array(
-				'match',
-				'url',
-				'http_status',
-				'type',
-				'published',
-			);
-			$values = array(
-				$db->quote($match),
-				$db->quote($url),
-				0,
-				$db->quote('full_url'),
-				1,
-			);
+			$columns = array('match', 'url', 'http_status', 'type', 'published',);
+			$values = array($db->quote($match), $db->quote($url), 0, $db->quote('full_url'), 1,);
 
 			$query = $db->getQuery(true);
-			$query->insert($db->quoteName('#__dynamic404_redirects'))
-				->columns($db->quoteName($columns))
-				->values(implode(',', $values));
+			$query->insert($db->quoteName('#__dynamic404_redirects'))->columns($db->quoteName($columns))->values(implode(',', $values));
 			$db->setQuery($query);
 			$db->execute();
 		}
@@ -989,7 +1036,11 @@ class Dynamic404Helper
 			{
 				return $error->get('code');
 			}
-			else
+			elseif ($error instanceof Exception)
+			{
+				return 500;
+			}
+			elseif (isset($error->code))
 			{
 				return $error->code;
 			}

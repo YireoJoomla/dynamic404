@@ -114,7 +114,7 @@ class JFormFieldArticle extends JFormField
 			$html[] = '<span class="input-append">';
 			$html[] = '<input type="text" class="input-medium" id="' . $this->id . '_name" value="' . $title . '" disabled="disabled" size="35" />';
 			$html[] = '<a class="modal btn" href="' . $link . '" rel="{handler: \'iframe\', size: {x: 800, y: 450}}"><i class="icon-file"></i> ' . JText::_('JSELECT') . '</a>';
-			$html[] = '<button id="' . $this->id . '_clear" class="btn" onclick="return jResetArticle_' . $this->id . '();"><span class="icon-remove"></span>' . JText::_('JCLEAR') . '</button>';
+			$html[] = '<button id="' . $this->id . '_clear" class="btn" onclick="jResetArticle_' . $this->id . '(); return false;"><span class="icon-remove"></span>' . JText::_('JCLEAR') . '</button>';
 			$html[] = '</span>';
 
 		}
