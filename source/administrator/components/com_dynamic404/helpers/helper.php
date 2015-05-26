@@ -819,7 +819,10 @@ class Dynamic404Helper
 		$application = JFactory::getApplication();
 		$document = JFactory::getDocument();
 
-		$this->title = 'Error -';
+		if (empty($this->title))
+		{
+			$this->title = 'Page not found';
+		}
 
 		// Add some common variables to the error-page
 		$this->error = $this->getErrorObject();
