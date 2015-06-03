@@ -73,79 +73,47 @@ class Dynamic404HelperMatchArticle
 
 		if (preg_match('/^([0-9]+)\-/', $firstString, $match))
 		{
-			$row = $this->getArticleById($match[0]);
-			$row = $this->prepareArticle($row);
+			$article = $this->getArticleById($match[0]);
+			$article = $this->prepareArticle($article);
 
-			if (!empty($row))
+			if (!empty($article))
 			{
-				$row->rating = 95;
-				$matches[] = $row;
+				$article->rating = 95;
+				$article->match_note = 'article ID';
+				$matches[] = $article;
 			}
-		}
-
-		// Sanitize the strings
-		$newStrings = array();
-
-		foreach ($strings as $string)
-		{
-			if (strlen($string) < 2)
-			{
-				continue;
-			}
-
-			if (is_numeric($string))
-			{
-				continue;
-			}
-
-			$newStrings[] = $string;
-		}
-
-		$strings = $newStrings;
-
-		if (empty($strings))
-		{
-			return array();
 		}
 
 		// Match the alias
-		$rows = $this->getArticleListByStrings($strings);
+		$articles = $this->getArticleListByStrings($strings);
 
-		if (!empty($rows))
+		if (!empty($articles))
 		{
-			foreach ($rows as $row)
+			foreach ($articles as $article)
 			{
-				if (!isset($row->alias) || empty($row->alias))
+				if (!isset($article->alias) || empty($article->alias))
 				{
 					continue;
 				}
 
-				$matchTextString = false;
+				$article->search_parts = $strings;
+				$article->match_parts = array();
 
 				foreach ($strings as $string)
 				{
-					if (Dynamic404HelperMatch::matchTextString($row->alias, $string))
-					{
-						$matchTextString = true;
-					}
+					$article->match_parts = array_merge($article->match_parts, Dynamic404HelperMatch::matchTextParts($article->alias, $string));
 				}
 
-				$row->match_parts = array();
-
-				foreach ($strings as $string)
+				if (!empty($article->match_parts))
 				{
-					$row->match_parts = array_merge($row->match_parts, Dynamic404HelperMatch::matchTextParts($row->alias, $string));
-				}
+					$article = $this->prepareArticle($article);
 
-				if (!empty($row->match_parts))
-				{
-					$row = $this->prepareArticle($row);
-
-					if (!empty($row))
+					if (!empty($article))
 					{
-						$row->match_note = 'article alias';
-						$row->rating = $row->rating - count($strings) + count($row->match_parts);
-						$matches[] = $row;
+						$article->match_note = 'article alias "' . $article->alias . '""';
+						$ratingParts = count(array_intersect($article->match_parts, $article->search_parts));
+						$article->rating = $article->rating + $ratingParts;
+						$matches[] = $article;
 					}
 				}
 			}

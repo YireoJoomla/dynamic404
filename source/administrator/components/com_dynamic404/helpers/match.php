@@ -323,8 +323,11 @@ class Dynamic404HelperMatch
 		{
 			// Construct the first text
 			$text1 = $this->request['uri_last'];
+			$text1 = strtolower($text1);
 			$text1 = preg_replace('/([\-\_\.]+)$/', '', $text1);
 			$text1 = preg_replace('/^([\-\_\.]+)/', '', $text1);
+			$text1 = str_replace('.', '-', $text1);
+			$text1 = str_replace('_', '-', $text1);
 
 			if (empty($text1))
 			{

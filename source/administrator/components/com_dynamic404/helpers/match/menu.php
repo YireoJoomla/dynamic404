@@ -33,7 +33,7 @@ class Dynamic404HelperMatchMenu
 	/**
 	 * Method to find matches when the last segment seems to be an ID
 	 *
-	 * @param   int  $id  Numerical value to match
+	 * @param   int $id Numerical value to match
 	 *
 	 * @return mixed|null
 	 */
@@ -64,10 +64,10 @@ class Dynamic404HelperMatchMenu
 	/**
 	 * Method to find matches within the Menu-Items
 	 *
-	 * @param   string  $text1      First text to match
-	 * @param   string  $text2      Alternative text to match
-	 * @param   string  $uri        Current URL
-	 * @param   array   $uri_parts  Array of current URL segments
+	 * @param   string $text1     First text to match
+	 * @param   string $text2     Alternative text to match
+	 * @param   string $uri       Current URL
+	 * @param   array  $uri_parts Array of current URL segments
 	 *
 	 * @return null
 	 */
@@ -104,7 +104,7 @@ class Dynamic404HelperMatchMenu
 				{
 					$item->rating = $this->params->get('rating_menuitems', 80);
 					$item->url = $this->getMenuItemUrl($item);
-					$item->match_note = 'menu alias';
+					$item->match_note = 'menu alias "' . $item->alias . '"';
 					$item = $this->prepareMenuItem($item);
 
 					if (!empty($item))
@@ -207,8 +207,10 @@ class Dynamic404HelperMatchMenu
 
 		if (empty($rows))
 		{
-			$menu = JFactory::getApplication()->getMenu();
+			$app = JApplicationCms::getInstance('site');
+			$menu = $app->getMenu();
 			$rows = $menu->getMenu();
+
 			$this->debug('MatchMenu::getMenuItems() = ' . count($rows) . ' items');
 		}
 
@@ -218,27 +220,27 @@ class Dynamic404HelperMatchMenu
 	/**
 	 * Method to get the URL for a specific Menu-Item
 	 *
-	 * @param   object  $item  Menu-Item object
+	 * @param   object $item Menu-Item object
 	 *
 	 * @return string
 	 */
 	private function getMenuItemUrl($item)
 	{
-        $currentLanguage = JFactory::getLanguage();
+		$currentLanguage = JFactory::getLanguage();
 
 		if ($item->type == 'component')
 		{
-            if (in_array($item->component, array('com_hikashop')))
-            {
-                $item->link = 'index.php?option=' . $item->component;
-            }
+			if (in_array($item->component, array('com_hikashop')))
+			{
+				$item->link = 'index.php?option=' . $item->component;
+			}
 
 			$link = $item->link . '&Itemid=' . $item->id;
 
-		    if (!empty($item->language) && $item->language != '*' && $item->language != $currentLanguage->getTag())
-		    {
-	        	$link .= '&lang=' . $item->language;
-	        }
+			if (!empty($item->language) && $item->language != '*' && $item->language != $currentLanguage->getTag())
+			{
+				$link .= '&lang=' . $item->language;
+			}
 
 			$item->url = JRoute::_($link);
 		}
@@ -253,7 +255,7 @@ class Dynamic404HelperMatchMenu
 	/**
 	 * Method to prepare a menu-item
 	 *
-	 * @param   object  $item  Menu-Item object
+	 * @param   object $item Menu-Item object
 	 *
 	 * @return string
 	 */
@@ -266,8 +268,15 @@ class Dynamic404HelperMatchMenu
 			return null;
 		}
 
+		// Cast this match to the right class
+		$item = Dynamic404ModelMatch::getInstance($item);
+
+		// Parse the language of this item
+		$item->parseLanguage();
+
 		$item->type = 'component';
 		$item->url = $this->getMenuItemUrl($item);
+
 
 		return $item;
 	}
@@ -275,8 +284,8 @@ class Dynamic404HelperMatchMenu
 	/**
 	 * Method alias for debugging
 	 *
-	 * @param   string  $msg       Debugging message
-	 * @param   null    $variable  Optional variable to dump
+	 * @param   string $msg      Debugging message
+	 * @param   null   $variable Optional variable to dump
 	 */
 	public function debug($msg, $variable = null)
 	{

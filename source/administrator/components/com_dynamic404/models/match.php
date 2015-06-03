@@ -130,12 +130,12 @@ class Dynamic404ModelMatch
 		{
 			if ($app->isAdmin())
 			{
-				JFactory::$application = JApplication::getInstance('site');
+				JFactory::$application = JApplicationCms::getInstance('site');
 
-				$this->url = $this->url = JRoute::_($this->url);
+				$this->url = JRoute::_($this->url);
 				$this->url = JURI::root() . str_replace('/administrator/', '', $this->url);
 
-				JFactory::$application = JApplication::getInstance('administrator');
+				JFactory::$application = JApplicationCms::getInstance('administrator');
 			}
 			else
 			{
