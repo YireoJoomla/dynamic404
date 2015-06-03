@@ -130,37 +130,22 @@ class Dynamic404HelperMatchArticle
 					}
 				}
 
-				if ($matchTextString)
+				$row->match_parts = array();
+
+				foreach ($strings as $string)
+				{
+					$row->match_parts = array_merge($row->match_parts, Dynamic404HelperMatch::matchTextParts($row->alias, $string));
+				}
+
+				if (!empty($row->match_parts))
 				{
 					$row = $this->prepareArticle($row);
 
 					if (!empty($row))
 					{
-						$row->match_note = 'find by alias';
+						$row->match_note = 'article alias';
+						$row->rating = $row->rating - count($strings) + count($row->match_parts);
 						$matches[] = $row;
-					}
-
-					continue;
-				}
-				else
-				{
-					$row->match_parts = array();
-
-					foreach ($strings as $string)
-					{
-						$row->match_parts = array_merge($row->match_parts, Dynamic404HelperMatch::matchTextParts($row->alias, $string));
-					}
-
-					if (!empty($row->match_parts))
-					{
-						$row = $this->prepareArticle($row);
-
-						if (!empty($row))
-						{
-							$row->match_note = 'find by alias';
-							$row->rating = $row->rating - (count($strings) + count($row->match_parts));
-							$matches[] = $row;
-						}
 					}
 				}
 			}

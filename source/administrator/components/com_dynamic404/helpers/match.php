@@ -85,6 +85,12 @@ class Dynamic404HelperMatch
 		$this->uri = $uri;
 	}
 
+	/**
+	 * Parse a non-SEF URI
+	 *
+	 * @param $uri
+	 * @param $match
+	 */
 	public function parseNonSefUri($uri, $match)
 	{
 		$id = $match[1];
@@ -115,6 +121,11 @@ class Dynamic404HelperMatch
 		);
 	}
 
+	/**
+	 * Parse a SEF URI
+	 *
+	 * @param $uri
+	 */
 	public function parseSefUri($uri)
 	{
 		// Fetch the current request and parse it
@@ -238,8 +249,13 @@ class Dynamic404HelperMatch
 	 */
 	protected function findNumericMatches()
 	{
+		if ($this->params->get('search_ids', 1) == 0)
+		{
+			return false;
+		}
+
 		// Try to find numerical matches
-		if ($this->params->get('search_ids', 1) && (is_numeric($this->request['uri_lastnum']) || preg_match('/^(m|a)([0-9]+)$/', $this->request['uri_last'], $match)))
+		if (is_numeric($this->request['uri_lastnum']) || preg_match('/^(m|a)([0-9]+)$/', $this->request['uri_last'], $match))
 		{
 			// Find the right type for this segment (a is article, m is menu-item)
 			if (isset($match) && isset($match[1]) && isset($match[2]))
@@ -372,6 +388,7 @@ class Dynamic404HelperMatch
 		}
 
 		$keywords = array();
+
 		if (!empty($this->request['uri_last']))
 		{
 			$keywords = explode('-', $this->request['uri_last']);
@@ -397,6 +414,7 @@ class Dynamic404HelperMatch
 
 		// Include Search Plugins
 		JPluginHelper::importPlugin('search');
+
 		if (YireoHelper::isJoomla25())
 		{
 			$dispatcher = JDispatcher::getInstance();
@@ -405,10 +423,12 @@ class Dynamic404HelperMatch
 		{
 			$dispatcher = JEventDispatcher::getInstance();
 		}
+
 		$areas = $dispatcher->trigger('onContentSearch', array($search, $match, $ordering, $active));
 
 		// Loop through the search results and add them to the matches
 		$matches = array();
+
 		foreach ($areas as $area)
 		{
 			foreach ($area as $row)
@@ -598,6 +618,7 @@ class Dynamic404HelperMatch
 					$regex = trim($row->match);
 					$regex = str_replace('/', '\/', $regex);
 
+					// Add the @ operator on purpose, because we don't know if the regex is valid
 					if (@preg_match('/' . $regex . '/i', '/' . $uri, $regexMatch))
 					{
 						$row->type = 'regex';
@@ -681,7 +702,7 @@ class Dynamic404HelperMatch
 	}
 
 	/**
-	 * Method to sort all the matches according to their rating
+	 * Method to sort all the matches by their rating
 	 *
 	 * @return null
 	 */
@@ -690,7 +711,6 @@ class Dynamic404HelperMatch
 		if (!empty($this->matches))
 		{
 			$sort = array();
-			$urls = array();
 
 			foreach ($this->matches as $match)
 			{

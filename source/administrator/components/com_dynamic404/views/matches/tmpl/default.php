@@ -11,7 +11,7 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die();
 ?>
-<form action="<?php echo JRoute::_('index.php?option=com_dynamic404&view=matches'); ?>" method="post" name="adminForm" id="adminForm">
+<form action="index.php?option=com_dynamic404&view=matches" method="post" name="adminForm" id="adminForm">
 
 	<div class="clearfix">
 		<div class="js-stools-container-bar">
@@ -37,6 +37,9 @@ defined('_JEXEC') or die();
 				<?php echo JText::_('COM_DYNAMIC404_REDIRECT_FIELD_TYPE'); ?>
 			</th>
 			<th class="nowrap hidden-phone">
+				<?php echo JText::_('COM_DYNAMIC404_REDIRECT_FIELD_NOTE'); ?>
+			</th>
+			<th class="nowrap hidden-phone">
 				<?php echo JText::_('COM_DYNAMIC404_REDIRECT_PARAM_RATING'); ?>
 			</th>
 		</thead>
@@ -51,6 +54,9 @@ defined('_JEXEC') or die();
 					</td>
 					<td>
 						<?php echo $match->type; ?>
+					</td>
+					<td>
+						<?php echo $match->match_note; ?>
 					</td>
 					<td>
 						<?php echo $match->rating; ?>%

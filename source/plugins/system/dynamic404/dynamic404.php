@@ -28,10 +28,8 @@ class plgSystemDynamic404 extends JPlugin
 	/**
 	 * Constructor.
 	 *
-	 * @param object &$subject The object to observe.
-	 * @param array  $config   An optional associative array of configuration settings.
-	 *
-	 * @return null
+	 * @param   object  &$subject  The object to observe.
+	 * @param   array   $config    An optional associative array of configuration settings.
 	 */
 	public function __construct(&$subject, $config)
 	{
@@ -49,8 +47,6 @@ class plgSystemDynamic404 extends JPlugin
 	 * Method to catch Joomla! error-handling
 	 *
 	 * @param object &$error JError object
-	 *
-	 * @return null
 	 */
 	static public function handleError(&$error)
 	{
@@ -86,6 +82,7 @@ class plgSystemDynamic404 extends JPlugin
 
 		// Render the error page.
 		$params = JComponentHelper::getParams('com_dynamic404');
+
 		if ($params->get('error_page', 0) == 1)
 		{
 			JError::customErrorPage($error);
@@ -118,12 +115,15 @@ class plgSystemDynamic404 extends JPlugin
 
 		// Redirect non-www to www
 		$redirect_www = $this->params->get('redirect_www', 0);
+
 		if ($redirect_www == 1)
 		{
 			$uri = JURI::current();
+
 			if (preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
 			{
 				$hostname = $match[2];
+
 				if (preg_match('/^www\./', $hostname) == false)
 				{
 					$newUrl = $match[1] . '://www.' . $hostname . $match[3];
@@ -135,12 +135,36 @@ class plgSystemDynamic404 extends JPlugin
 			}
 		}
 
+		// Redirect to the enforced domain
+		$enforce_domain = trim($this->params->get('enforce_domain'));
+
+		if (!empty($enforce_domain))
+		{
+			$uri = JURI::current();
+
+			if (preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
+			{
+				$hostname = $match[2];
+
+				if ($hostname != $enforce_domain)
+				{
+					$newUrl = str_replace($hostname, $enforce_domain, $uri);
+					header('HTTP/1.1 301 Moved Permanently');
+					header('Location: ' . $newUrl);
+					$application->close();
+					exit;
+				}
+			}
+		}
+
 		// Force lowercase
 		$force_lowercase = $this->params->get('force_lowercase', 0);
+
 		if ($force_lowercase == 1)
 		{
 			$uri = JURI::current();
 			$lowercase_uri = strtolower($uri);
+
 			if ($uri != $lowercase_uri)
 			{
 				header('HTTP/1.1 301 Moved Permanently');
@@ -152,15 +176,18 @@ class plgSystemDynamic404 extends JPlugin
 
 		// Test for non-existent components
 		$uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
+
 		if (preg_match('/\/component\/([a-zA-Z0-9\.\-\_]+)\//', $uri, $componentMatch))
 		{
 			$component = preg_replace('/^com_/', '', $componentMatch[1]);
+
 			if (!is_dir(JPATH_SITE . '/components/com_' . $component))
 			{
 
 				// Fetch the last segment of this URL
 				$segments = explode('/', $uri);
 				$lastSegment = trim(array_pop($segments));
+
 				if (empty($lastSegment))
 				{
 					$lastSegment = trim(array_pop($segments));
@@ -221,6 +248,7 @@ class plgSystemDynamic404 extends JPlugin
 		// Expand URLs
 		$url = JURI::current();
 		$params = JComponentHelper::getParams('com_dynamic404');
+
 		if ($params->get('expand_ids', 1) == 1 && preg_match('/\/([0-9]+)/', $url))
 		{
 			$this->doExpandUrl();
@@ -255,10 +283,12 @@ class plgSystemDynamic404 extends JPlugin
 		{
 			// Call upon the plugins for help
 			$plugins = JPluginHelper::getPlugin('dynamic404');
+
 			foreach ($plugins as $plugin)
 			{
 				$className = 'plg' . $plugin->type . $plugin->name;
 				$method = 'onDynamic404Link';
+
 				if (class_exists($className))
 				{
 					if (YireoHelper::isJoomla25())
@@ -269,6 +299,7 @@ class plgSystemDynamic404 extends JPlugin
 					{
 						$dispatcher = JEventDispatcher::getInstance();
 					}
+
 					$plugin = new $className($dispatcher, (array)$plugin);
 
 					if (method_exists($plugin, $method))
@@ -302,9 +333,11 @@ class plgSystemDynamic404 extends JPlugin
 	public function onAfterRender()
 	{
 		$app = JFactory::getApplication();
+
 		if (method_exists($app, 'getMessageQueue'))
 		{
 			$messageQueue = $app->getMessageQueue();
+
 			if (!empty($messageQueue))
 			{
 				foreach ($messageQueue as $message)
@@ -313,6 +346,7 @@ class plgSystemDynamic404 extends JPlugin
 					{
 						continue;
 					}
+
 					if (stristr($message['message'], JText::_('JGLOBAL_CATEGORY_NOT_FOUND')))
 					{
 						$errorCode = 404;
@@ -345,6 +379,7 @@ class plgSystemDynamic404 extends JPlugin
 		JLoader::import('joomla.application.component.helper');
 		$component = JComponentHelper::getComponent($componentName);
 		$support_key = $component->params->get('support_key', '');
+
 		if (empty($support_key))
 		{
 			return false;
@@ -358,6 +393,7 @@ class plgSystemDynamic404 extends JPlugin
 		$tmpUrl = $url . $url_addition . '&validate=1';
 		$http = JHttpFactory::getHttp();
 		$response = $http->get($tmpUrl, array());
+
 		if (empty($response))
 		{
 			return false;

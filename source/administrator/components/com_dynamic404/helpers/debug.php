@@ -41,7 +41,16 @@ class Dynamic404HelperDebug
 		}
 
 		$msg .= "\n";
-		echo $msg . '<br/>';
+
+		if (JFactory::getApplication()->isSite())
+		{
+			echo $msg . '<br/>';
+		}
+		elseif (JFactory::getApplication()->isAdmin())
+		{
+			JFactory::getApplication()->enqueueMessage($msg);
+		}
+
 	}
 
 	/**

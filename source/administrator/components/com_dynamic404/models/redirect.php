@@ -39,6 +39,11 @@ class Dynamic404ModelRedirect extends YireoModel
 	 */
 	public function store($data)
 	{
+		if (isset($data['url']))
+        {
+            $data['url'] = trim($data['url']);
+        }
+
 		if (isset($data['match']) && $data['match'] != '/')
 		{
 			$data['match'] = preg_replace('/^\//', '', $data['match']);
