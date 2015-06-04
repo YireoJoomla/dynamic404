@@ -713,10 +713,18 @@ class Dynamic404HelperMatch
 	{
 		if (!empty($this->matches))
 		{
+            $foundUrls = array();
 			$sort = array();
 
 			foreach ($this->matches as $match)
 			{
+                if (in_array($match->url, $foundUrls))
+                {
+                    continue;
+                }
+
+                $foundUrls[] = $match->url;
+
 				$index = urlencode($match->rating . '-' . $match->url);
 				$sort[$index] = array('rating' => $match->rating, 'match' => $match);
 			}
