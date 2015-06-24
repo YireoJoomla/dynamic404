@@ -2,7 +2,7 @@
 <extension version="2.5" type="plugin" group="dynamic404" method="upgrade">
     <name>PLG_DYNAMIC404_VIRTUEMART</name>
     <author>Yireo</author>
-    <creationDate>May 2013</creationDate>
+    <creationDate>June 2015</creationDate>
     <copyright>Copyright 2015 Yireo.com. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
     <authorEmail>info@yireo.com</authorEmail>
@@ -18,6 +18,13 @@
     <config>
         <fields name="params">
             <fieldset name="basic">
+                <field name="vm_version" type="list" default="3" class="btn-group"
+                    label="PLG_DYNAMIC404_VIRTUEMART_FIELD_VM_VERSION"
+                    description="PLG_DYNAMIC404_VIRTUEMART_FIELD_VM_VERSION_DESC">
+                    <option value="1">VirtueMart 1</option>
+                    <option value="2">VirtueMart 2</option>
+                    <option value="3">VirtueMart 3</option>
+                </field>
                 <field name="rating" type="text" default="85" size="4" label="PLG_DYNAMIC404_VIRTUEMART_FIELD_RATING" description="PLG_DYNAMIC404_VIRTUEMART_FIELD_RATING_DESC" />
             </fieldset>
         </fields>

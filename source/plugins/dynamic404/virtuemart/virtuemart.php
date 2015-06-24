@@ -64,10 +64,12 @@ class plgDynamic404VirtueMart extends JPlugin
      */
     private function isVm1()
     {
-        if(!is_dir(JPATH_SITE.'/components/com_virtuemart/views')) {
-            return false;
+        if ($this->params->get('vm_version') == 1)
+        {
+            return true;
         }
-        return true;
+
+        return false;
     }
 
     /**
@@ -122,14 +124,14 @@ class plgDynamic404VirtueMart extends JPlugin
         if($this->isVm1()) {
             $query = "SELECT c.category_name FROM `#__vm_category` AS c "
                 . " WHERE c.`category_id`=".(int)$category_id
-                ." LIMIT 0,1"
+                ." LIMIT 1"
             ;
         } else {
             $query = "SELECT l.category_name FROM `#__virtuemart_categories_".$this->getLanguageCode()."` AS l "
                 . " LEFT JOIN `#__virtuemart_categories` AS c ON c.`virtuemart_category_id` = l.`virtuemart_category_id`" 
                 . " WHERE (l.`virtuemart_category_id`=".(int)$product_id." OR l.`slug` LIKE '%".$urilast."%')"
                 . " AND c.`published`=1 "
-                . " LIMIT 0,1"
+                . " LIMIT 1"
             ;
         }
 
@@ -167,7 +169,7 @@ class plgDynamic404VirtueMart extends JPlugin
             $query = "SELECT p.`product_name`, x.`category_id` FROM `#__vm_product` AS p "
                 . " LEFT JOIN `#__vm_product_category_xref` AS x ON x.`product_id` = p.`product_id` "
                 . " WHERE p.`product_id`=".(int)$product_id." AND `product_publish`='Y' "
-                . " LIMIT 0,1"
+                . " LIMIT 1"
             ;
         } else {
             $query = "SELECT l.product_name, c.`virtuemart_category_id` AS category_id FROM `#__virtuemart_products_".$this->getLanguageCode()."` AS l "
@@ -175,7 +177,7 @@ class plgDynamic404VirtueMart extends JPlugin
                 . " LEFT JOIN `#__virtuemart_product` AS p ON p.`virtuemart_product_id` = l.`virtuemart_product_id`" 
                 . " WHERE (l.`virtuemart_product_id`=".(int)$product_id." OR l.`slug` LIKE '%".$urilast."%')"
                 . " AND p.`published`=1 "
-                . " LIMIT 0,1"
+                . " LIMIT 1"
             ;
         }
 
