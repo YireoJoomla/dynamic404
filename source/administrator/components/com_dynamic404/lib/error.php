@@ -15,6 +15,12 @@ defined('_JEXEC') or die('Restricted access');
 // Include the 404 Helper
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/helper.php';
 
+// Correct header
+if (!headers_sent())
+{
+    header('Content-Type: text/html; charset=utf-8');
+}
+
 // Instantiate the helper with the argument of how many matches to show
 if ($this instanceof Dynamic404Helper)
 {

@@ -133,6 +133,8 @@ class Dynamic404HelperMatch
 		$uri = preg_replace('/\.(html|htm|php)$/', '', $uri);
 		$uri = preg_replace('/\?lang=([a-zA-Z0-9]+)$/', '', $uri);
 		$uri = preg_replace('/\&Itemid=([0-9]?)$/', '', $uri);
+		$uri = preg_replace('/^(http|https):\/\//', '', $uri);
+        $uri = preg_replace('/^'.JURI::getInstance()->getHost().'\//', '', $uri);
 
 		$uri_parts = explode('/', $uri);
 
@@ -206,6 +208,8 @@ class Dynamic404HelperMatch
 		{
 			$this->parseNonSefUri($uri, $match);
 		}
+
+		$this->debug('Current URI', $this->request['uri']);
 	}
 
 	/**
@@ -488,7 +492,7 @@ class Dynamic404HelperMatch
 		$db = JFactory::getDBO();
 
 		$query = $db->getQuery(true);
-		$query->select($db->quoteName(array('match', 'url', 'http_status', 'type', 'description', 'params')))
+		$query->select($db->quoteName(array('redirect_id', 'match', 'url', 'http_status', 'type', 'description', 'params')))
 			->from('#__dynamic404_redirects')
 			->where($db->quoteName('published') . '= 1')
 			->order($db->quoteName('ordering'));
@@ -508,6 +512,11 @@ class Dynamic404HelperMatch
 				{
 					continue;
 				}
+
+				// Add a match note
+				$row->handler = 'rule';
+				$row->match_note = 'manual redirect #' . $row->redirect_id;
+				$row->title = $row->description;
 
 				// Construct the URL
 				if (is_numeric(trim($row->url)))
@@ -586,10 +595,16 @@ class Dynamic404HelperMatch
 				}
 
 				// Match the full URLs
-				if ($row->type == 'full_url' && !empty($uri) && (strstr($row->match, $uri) || strstr($uri, $row->match)))
+				if ($row->type == 'full_url' && !empty($uri) && strstr($row->match, $uri))
 				{
 					$row->type = 'component';
-					$row->rating = $params->get('rating', $this->params->get('rating_custom_full_url', 95));
+					$row->rating = $params->get('rating', 0);
+
+					if (empty($row->rating))
+					{
+						$row->rating = $this->params->get('rating_custom_full_url', 95);
+					}
+
 					$matches[] = $row;
 					break;
 
@@ -598,7 +613,13 @@ class Dynamic404HelperMatch
 				elseif ($row->type == 'last_segment' && !empty($uri_last) && $row->match == $uri_last)
 				{
 					$row->type = 'component';
-					$row->rating = $params->get('rating', $this->params->get('rating_custom_last_segment', 94));
+					$row->rating = $params->get('rating', 0);
+
+					if (empty($row->rating))
+					{
+						$row->rating = $this->params->get('rating_custom_last_segment', 94);
+					}
+
 					$matches[] = $row;
 					break;
 
@@ -609,7 +630,13 @@ class Dynamic404HelperMatch
 					if ((!empty($uri_last) && strstr($row->match, $uri_last)) || (!empty($uri_last) && strstr($uri_last, $row->match)))
 					{
 						$row->type = 'component';
-						$row->rating = $params->get('rating', $this->params->get('rating_custom_fuzzy', 90));
+						$row->rating = $params->get('rating', 0);
+
+						if (empty($row->rating))
+						{
+							$row->rating = $this->params->get('rating_custom_fuzzy', 90);
+						}
+
 						$matches[] = $row;
 						break;
 					}
@@ -625,7 +652,12 @@ class Dynamic404HelperMatch
 					if (@preg_match('/' . $regex . '/i', '/' . $uri, $regexMatch))
 					{
 						$row->type = 'regex';
-						$row->rating = $params->get('rating', $this->params->get('rating_custom_regex', 90));
+						$row->rating = $params->get('rating', 0);
+
+						if (empty($row->rating))
+						{
+							$row->rating = $this->params->get('rating_custom_regex', 90);
+						}
 
 						foreach ($regexMatch as $regexMatchIndex => $regexMatchParts)
 						{
@@ -648,7 +680,13 @@ class Dynamic404HelperMatch
 				elseif ($row->type == 'any_segment' && !empty($uri_parts) && in_array($row->match, $uri_parts))
 				{
 					$row->type = 'component';
-					$row->rating = $params->get('rating', $this->params->get('rating_custom_any_segment', 90));
+					$row->rating = $params->get('rating', 0);
+
+					if (empty($row->rating))
+					{
+						$row->rating = $this->params->get('rating_custom_any_segment', 90);
+					}
+
 					$matches[] = $row;
 					break;
 

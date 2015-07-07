@@ -222,7 +222,7 @@ class Dynamic404HelperMatchCategory
 	private function prepareCategory($item)
 	{
 		// Sanity checks
-		if (empty($item) || !is_object($item))
+		if (empty($item) || !is_object($item) || empty($item->id))
 		{
 			return null;
 		}

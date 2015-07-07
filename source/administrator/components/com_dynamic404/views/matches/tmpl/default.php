@@ -44,7 +44,8 @@ defined('_JEXEC') or die();
 			</th>
 		</thead>
 		<tbody>
-			<?php foreach($this->matches as $match) : ?>
+			<?php if(!empty($this->matches)) : ?>
+				<?php foreach($this->matches as $match) : ?>
 				<tr>
 					<td>
 						<?php echo $match->title; ?>
@@ -62,7 +63,14 @@ defined('_JEXEC') or die();
 						<?php echo $match->rating; ?>%
 					</td>
 				</tr>
-			<?php endforeach; ?>
+				<?php endforeach; ?>
+			<?php else: ?>
+				<tr>
+					<td colspan="5">
+						<?php echo JText::_('COM_DYNAMIC404_NO_MATCHES'); ?>
+					</td>
+				</tr>
+			<?php endif; ?>
 		</tbody>
 	</table>
 </form>

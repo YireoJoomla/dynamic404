@@ -875,6 +875,13 @@ class Dynamic404Helper
 		return;
 	}
 
+	/**
+	 * Return a HTTP status text per HTTP status code
+	 *
+	 * @param string $code
+	 *
+	 * @return string
+	 */
 	public function getHttpStatusText($code)
 	{
 		switch ($code)
@@ -1031,6 +1038,13 @@ class Dynamic404Helper
 		return $this->errors;
 	}
 
+	/**
+	 * Method to return the correct HTTP status code based on the current error
+	 *
+	 * @param mixed $error
+	 *
+	 * @return int
+	 */
 	public function getErrorCode($error)
 	{
 		if (is_object($error))

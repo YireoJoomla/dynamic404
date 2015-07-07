@@ -118,10 +118,24 @@ class plgDynamic404EasyBlog extends JPlugin
     
             case 'item':
             default:
-                require_once JPATH_SITE.'/components/com_easyblog/helpers/router.php';
+                $this->includeFiles();
                 $item->url = EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id='.(int)$item->id);
                 break;
         }
         return $item;
+    }
+
+    private function includeFiles()
+    {
+        $files = array(
+            JPATH_SITE.'/administrator/components/com_easyblog/includes/easyblog.php',
+            JPATH_SITE.'/components/com_easyblog/helpers/router.php',
+        );
+
+        foreach($files as $file) {
+            if (file_exists($file)) {
+                require_once $file;
+            }
+        }
     }
 }
