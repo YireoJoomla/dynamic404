@@ -48,7 +48,7 @@ class Dynamic404HelperDebug
 		}
 		elseif (JFactory::getApplication()->isAdmin())
 		{
-			JFactory::getApplication()->enqueueMessage($msg);
+			JFactory::getApplication()->enqueueMessage($msg, 'notice');
 		}
 
 	}

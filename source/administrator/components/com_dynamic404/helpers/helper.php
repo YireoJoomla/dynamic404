@@ -686,6 +686,12 @@ class Dynamic404Helper
 		}
 
 		$url = $this->getMenuItemUrl($this->error);
+
+        if (empty($url))
+        {
+            return false;
+        }
+
 		$this->debug('Internal URL', $url);
 
 		// Fetch the content

@@ -169,4 +169,10 @@ class Dynamic404Controller extends YireoController
 		// Redirect
 		$this->setRedirect('index.php?option=com_dynamic404&view=setup');
 	}
+
+    public function ajax()
+    {
+        echo 'Success';
+        exit;
+    }
 }

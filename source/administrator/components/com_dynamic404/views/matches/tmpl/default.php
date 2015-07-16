@@ -48,7 +48,7 @@ defined('_JEXEC') or die();
 				<?php foreach($this->matches as $match) : ?>
 				<tr>
 					<td>
-						<?php echo $match->title; ?>
+						<?php echo $match->name; ?>
 					</td>
 					<td>
 						<a href="<?php echo $match->url; ?>"><?php echo $match->uri; ?></a>

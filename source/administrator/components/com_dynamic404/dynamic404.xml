@@ -44,6 +44,7 @@
             <menu link="option=com_dynamic404&amp;view=home">COM_DYNAMIC404_VIEW_HOME</menu>
             <menu link="option=com_dynamic404&amp;view=setup">COM_DYNAMIC404_VIEW_SETUP</menu>
             <menu link="option=com_dynamic404&amp;view=redirects">COM_DYNAMIC404_VIEW_REDIRECTS</menu>
+            <menu link="option=com_dynamic404&amp;view=matches">COM_DYNAMIC404_VIEW_MATCHES</menu>
             <menu link="option=com_dynamic404&amp;view=logs">COM_DYNAMIC404_VIEW_LOGS</menu>
         </submenu>
 

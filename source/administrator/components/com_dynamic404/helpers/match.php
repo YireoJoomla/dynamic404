@@ -190,6 +190,7 @@ class Dynamic404HelperMatch
 		$uri = $this->uri;
 
 		// Replace non-sense strings
+		$uri = str_replace('administrator/index.php', '', $uri);
 		$uri = str_replace('?noredirect=1', '', $uri);
 		$uri = preg_replace('/\/$/', '', $uri);
 		$uri = str_replace('_', '-', $uri);
