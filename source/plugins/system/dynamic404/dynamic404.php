@@ -14,32 +14,48 @@ defined('JPATH_BASE') or die;
 
 jimport('joomla.plugin.plugin');
 
-// Load the Yireo library
-require_once(JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php');
-
 /**
  * Plugin class for reusing redirection of the Dynamic404 component
  *
  * @package       Dynamic404
  * @subpackage    plgSystemDynamic404
  */
-class plgSystemDynamic404 extends JPlugin
+class PlgSystemDynamic404 extends JPlugin
 {
+	/**
+	 * Instance of JApplication
+	 */
+	protected $app = null;
+
+	/**
+	 * File path to the Dynamic404 library loader
+	 *
+	 * @var string
+	 */
+	protected $loaderFile = null;
+
 	/**
 	 * Constructor.
 	 *
-	 * @param   object  &$subject  The object to observe.
-	 * @param   array   $config    An optional associative array of configuration settings.
+	 * @param   object &$subject The object to observe.
+	 * @param   array  $config   An optional associative array of configuration settings.
 	 */
 	public function __construct(&$subject, $config)
 	{
+		// Internal variables
+		$this->app = JFactory::getApplication();
+		$this->loaderFile = JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
+
+		// Include the parent library
+		$this->includeLibrary();
+
 		parent::__construct($subject, $config);
 
 		// Set the error handler for E_ERROR to be the class handleError method.
-		if (JFactory::getApplication()->isSite())
+		if ($this->app->isSite() && $this->hasComponent())
 		{
-			JError::setErrorHandling(E_ERROR, 'callback', array('plgSystemDynamic404', 'handleError'));
-			set_exception_handler(array('plgSystemDynamic404', 'handleError'));
+			JError::setErrorHandling(E_ERROR, 'callback', array('PlgSystemDynamic404', 'handleError'));
+			set_exception_handler(array('PlgSystemDynamic404', 'handleError'));
 		}
 	}
 
@@ -50,31 +66,38 @@ class plgSystemDynamic404 extends JPlugin
 	 */
 	static public function handleError(&$error)
 	{
-		// Get the application object.
-		$application = JFactory::getApplication();
-
-        if (empty($error) || $error == false)
-        {
-		    $error = JError::getError();
-        }
+		if (empty($error) || $error == false)
+		{
+			$error = JError::getError();
+		}
 
 		// Include the 404 Helper-class
 		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/helper.php';
 
 		// Instantiate the helper with the argument of how many matches to show
 		$helper = new Dynamic404Helper(true, null, $error);
+		$app = JFactory::getApplication();
 
-		// Make sure the error is a 404 and we are not in the administrator.
-		if (!$application->isAdmin() and ($error->get('code') == 404))
+        if (method_exists($error, 'getCode'))
+        {
+            $errorCode = $error->getCode();
+        }
+        else
+        {
+            $errorCode = $error->get('code');    
+        }
+
+        // Make sure the error is a 404 and we are not in the administrator.
+        if (!$app->isAdmin() and $errorCode == 404)
 		{
 			// Log the 404 entry
 			$helper->log();
 
 			// Get the possible matches
-			$matches = $helper->getMatches();
+			$helper->getMatches();
 
 			// Get the last segment - nice for searching
-			$urilast = $helper->getLast();
+			$helper->getLast();
 
 			// Redirect to the first found match
 			$helper->doRedirect();
@@ -86,12 +109,11 @@ class plgSystemDynamic404 extends JPlugin
 		if ($params->get('error_page', 0) == 1)
 		{
 			JError::customErrorPage($error);
-
 		}
 		else
 		{
 			$helper->displayErrorPage();
-			$application->close(0);
+			$app->close(0);
 		}
 	}
 
@@ -104,77 +126,33 @@ class plgSystemDynamic404 extends JPlugin
 	 */
 	public function onAfterInitialise()
 	{
-		// Get the application object.
-		$application = JFactory::getApplication();
-
 		// Make sure we are not in the administrator.
-		if ($application->isSite() == false)
+		if ($this->app->isSite() == false)
 		{
 			return null;
 		}
 
 		// Redirect non-www to www
-		$redirect_www = $this->params->get('redirect_www', 0);
-
-		if ($redirect_www == 1)
-		{
-			$uri = JURI::current();
-
-			if (preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
-			{
-				$hostname = $match[2];
-
-				if (preg_match('/^www\./', $hostname) == false)
-				{
-					$newUrl = $match[1] . '://www.' . $hostname . $match[3];
-					header('HTTP/1.1 301 Moved Permanently');
-					header('Location: ' . $newUrl);
-					$application->close();
-					exit;
-				}
-			}
-		}
+		$this->redirectToWww();
 
 		// Redirect to the enforced domain
-		$enforce_domain = trim($this->params->get('enforce_domain'));
-
-		if (!empty($enforce_domain))
-		{
-			$uri = JURI::current();
-
-			if (preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
-			{
-				$hostname = $match[2];
-
-				if ($hostname != $enforce_domain)
-				{
-					$newUrl = str_replace($hostname, $enforce_domain, $uri);
-					header('HTTP/1.1 301 Moved Permanently');
-					header('Location: ' . $newUrl);
-					$application->close();
-					exit;
-				}
-			}
-		}
+		$this->enforceDomain();
 
 		// Force lowercase
-		$force_lowercase = $this->params->get('force_lowercase', 0);
-
-		if ($force_lowercase == 1)
-		{
-			$uri = JURI::current();
-			$lowercase_uri = strtolower($uri);
-
-			if ($uri != $lowercase_uri)
-			{
-				header('HTTP/1.1 301 Moved Permanently');
-				header('Location: ' . $lowercase_uri);
-				$application->close();
-				exit;
-			}
-		}
+		$this->forceLowerCase();
 
 		// Test for non-existent components
+		$this->stopNonexistingComponents();
+
+		// Redirect static rules
+		$this->redirectStatic();
+	}
+
+	/**
+	 * Prevent calls to non-existing components
+	 */
+	protected function stopNonexistingComponents()
+	{
 		$uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
 
 		if (preg_match('/\/component\/([a-zA-Z0-9\.\-\_]+)\//', $uri, $componentMatch))
@@ -183,7 +161,6 @@ class plgSystemDynamic404 extends JPlugin
 
 			if (!is_dir(JPATH_SITE . '/components/com_' . $component))
 			{
-
 				// Fetch the last segment of this URL
 				$segments = explode('/', $uri);
 				$lastSegment = trim(array_pop($segments));
@@ -205,26 +182,116 @@ class plgSystemDynamic404 extends JPlugin
 				exit;
 			}
 		}
+	}
 
-		/*
-		 * @todo: Add setting to enable this behaviour
-		if (false) {
+	/**
+	 * Method to force the current URL to be in lower-case
+	 */
+	protected function forceLowerCase()
+	{
+		$force_lowercase = $this->params->get('force_lowercase', 0);
 
-			// Include the 404 Helper-class
-			require_once JPATH_ADMINISTRATOR.'/components/com_dynamic404/helpers/helper.php';
+		if ($force_lowercase == 1)
+		{
+			$uri = JURI::current();
+			$lowercase_uri = strtolower($uri);
 
-			// Instantiate the helper with the argument of how many matches to show
-			$helper = new Dynamic404Helper(false);
-
-			// Get the possible matches
-			$matches = $helper->getDirectMatches();
-
-			// Redirect to the first found match
-			if(!empty($matches)) {
-				$helper->doRedirect();
+			if ($uri != $lowercase_uri)
+			{
+				header('HTTP/1.1 301 Moved Permanently');
+				header('Location: ' . $lowercase_uri);
+				$this->app->close();
+				exit;
 			}
 		}
-		*/
+	}
+
+	/**
+	 * Method to enforce a certain domain upon the current URL
+	 */
+	protected function enforceDomain()
+	{
+		$enforce_domain = trim($this->params->get('enforce_domain'));
+
+		if (!empty($enforce_domain))
+		{
+			$uri = JURI::current();
+
+			if (preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
+			{
+				$hostname = $match[2];
+
+				if ($hostname != $enforce_domain)
+				{
+					$newUrl = str_replace($hostname, $enforce_domain, $uri);
+					header('HTTP/1.1 301 Moved Permanently');
+					header('Location: ' . $newUrl);
+					$this->app->close();
+					exit;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Method to redirect the current domain to an alternative with www prefix
+	 */
+	protected function redirectToWww()
+	{
+		$redirect_www = $this->params->get('redirect_www', 0);
+
+		if ($redirect_www == 1)
+		{
+			$uri = JURI::current();
+
+			if (preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
+			{
+				$hostname = $match[2];
+
+				if (preg_match('/^www\./', $hostname) == false)
+				{
+					$newUrl = $match[1] . '://www.' . $hostname . $match[3];
+					header('HTTP/1.1 301 Moved Permanently');
+					header('Location: ' . $newUrl);
+					$this->app->close();
+					exit;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Method to redirect based on rules that are marked as static
+	 */
+	protected function redirectStatic()
+	{
+		$redirect_static = $this->params->get('redirect_static', 0);
+
+		if ($redirect_static == 0)
+		{
+			return false;
+		}
+
+		$db = JFactory::getDbo();
+		$query = $db->getQuery(true);
+		$query->select('COUNT(redirect_id)')
+			->from($db->quoteName('#__dynamic404_redirects'))
+			->where($db->quoteName('static') . '=1');
+		$db->setQuery($query);
+		$rs = $db->loadResult();
+
+		if ($rs == 0)
+		{
+			return false;
+		}
+
+		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
+		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/helper.php';
+		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match.php';
+
+		$helper = new Dynamic404Helper(false, null, null, true);
+		$helper->getMatches();
+		$helper->doRedirect();
 	}
 
 	/**
@@ -236,20 +303,22 @@ class plgSystemDynamic404 extends JPlugin
 	 */
 	public function onAfterRoute()
 	{
-		// Get the application object.
-		$application = JFactory::getApplication();
-
 		// Make sure we are not in the administrator.
-		if ($application->isSite() == false)
+		if ($this->app->isSite() == false)
 		{
 			return null;
+		}
+
+		if ($this->hasComponent() == false)
+		{
+			return;
 		}
 
 		// Expand URLs
 		$url = JURI::current();
 		$params = JComponentHelper::getParams('com_dynamic404');
 
-		if ($params->get('expand_ids', 1) == 1 && preg_match('/\/([0-9]+)/', $url))
+		if (!empty($params) && $params->get('expand_ids', 1) == 1 && preg_match('/\/([0-9]+)/', $url))
 		{
 			$this->doExpandUrl();
 		}
@@ -264,20 +333,25 @@ class plgSystemDynamic404 extends JPlugin
 	 */
 	public function doExpandUrl()
 	{
+		if ($this->hasComponent() == false)
+		{
+			return;
+		}
+
 		$url = JURI::current();
-		$application = JFactory::getApplication();
-		$component = $application->input->get('option');
-		$view = $application->input->get('view');
-		$id = $application->input->get('id');
+		$component = $this->app->input->get('option');
+		$view = $this->app->input->get('view');
+		$id = $this->app->input->get('id');
 		$newUrl = null;
 
 		// Check for the article view
 		if ($component == 'com_content' && $view == 'article')
 		{
 			require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match/article.php';
-			$matchHelper = new Dynamic404HelperMatchArticle();
+
+			$matchHelper = new Dynamic404HelperMatchArticle;
 			$newUrl = JRoute::_($matchHelper->getArticleLink($id));
-			$newUrl = JURI::base() . substr($newUrl, strlen(JURI::base(true)) + 1);
+			$newUrl = JURI::base() . substr($newUrl, YireoHelper::strlen(JURI::base(true)) + 1);
 		}
 		else
 		{
@@ -300,11 +374,12 @@ class plgSystemDynamic404 extends JPlugin
 						$dispatcher = JEventDispatcher::getInstance();
 					}
 
-					$plugin = new $className($dispatcher, (array)$plugin);
+					$plugin = new $className($dispatcher, (array) $plugin);
 
 					if (method_exists($plugin, $method))
 					{
 						$result = $plugin->$method($component, $view, $id);
+
 						if (!empty($result))
 						{
 							$newUrl = $result;
@@ -318,8 +393,8 @@ class plgSystemDynamic404 extends JPlugin
 		// Redirect if needed
 		if (!empty($newUrl) && $newUrl != $url)
 		{
-			$application->redirect($newUrl);
-			$application->close();
+			$this->app->redirect($newUrl);
+			$this->app->close();
 		}
 	}
 
@@ -331,6 +406,35 @@ class plgSystemDynamic404 extends JPlugin
 	 * @return null
 	 */
 	public function onAfterRender()
+	{
+        require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
+		$debug = Dynamic404HelperDebug::getInstance();
+		$debugMessages = $debug->getMessages();
+
+		if (!empty($debugMessages))
+		{
+			$body = JResponse::getBody();
+			$debugHtml = array();
+
+			foreach ($debugMessages as $debugMessage)
+			{
+				$debugHtml[] = 'console.log("[dynamic404] ' . htmlentities(trim($debugMessage)) . '")';
+			}
+
+			$debugHtml = '<script>' . implode('', $debugHtml) . '</script>';
+			$body = str_replace('</body>', $debugHtml . '</body>', $body);
+			JResponse::setBody($body);
+		}
+
+		$this->handleMessageQueue();
+	}
+
+	/**
+	 * Method to handle the message queue to see if any stupid errors await there
+	 *
+	 * @throws Exception
+	 */
+	protected function handleMessageQueue()
 	{
 		$app = JFactory::getApplication();
 
@@ -366,19 +470,23 @@ class plgSystemDynamic404 extends JPlugin
 	 */
 	public function onInstallerBeforePackageDownload(&$url, &$headers)
 	{
-		// Extension
-		$componentName = 'com_dynamic404';
+		if ($this->hasComponent() == false)
+		{
+			return true;
+		}
 
-		// Are we trying to update our extension?
-		if (preg_match('/' . $componentName . '/', $url) == false)
+		// Extension definitions
+		$componentName = 'com_dynamic404';
+		$pluginName = 'plg_system_dynamic404';
+
+		// Exit when we trying to update another extension
+		if (preg_match('/' . $componentName . '/', $url) == false && preg_match('/' . $pluginName . '/', $url) == false)
 		{
 			return true;
 		}
 
 		// Fetch the support key
-		JLoader::import('joomla.application.component.helper');
-		$component = JComponentHelper::getComponent($componentName);
-		$support_key = $component->params->get('support_key', '');
+		$support_key = $this->getSupportKey($componentName);
 
 		if (empty($support_key))
 		{
@@ -408,5 +516,48 @@ class plgSystemDynamic404 extends JPlugin
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get the support key stored with the component
+	 *
+	 * @param $componentName
+	 *
+	 * @return mixed
+	 */
+	public function getSupportKey($componentName)
+	{
+		// Fetch the support key
+		JLoader::import('joomla.application.component.helper');
+		$component = JComponentHelper::getComponent($componentName);
+		$support_key = $component->params->get('support_key', '');
+
+		return $support_key;
+	}
+
+	/**
+	 * Check whether the component has been installed
+	 *
+	 * @return bool
+	 */
+	public function hasComponent()
+	{
+		if (file_exists($this->loaderFile))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check whether the Dynamic404 can be included and if not, try to include
+	 */
+	public function includeLibrary()
+	{
+		if ($this->hasComponent())
+		{
+			require_once $this->loaderFile;
+		}
 	}
 }

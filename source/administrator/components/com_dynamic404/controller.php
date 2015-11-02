@@ -170,6 +170,25 @@ class Dynamic404Controller extends YireoController
 		$this->setRedirect('index.php?option=com_dynamic404&view=setup');
 	}
 
+
+	/**
+	 * Method to run SQL-update queries
+	 */
+	public function updateQueries()
+	{
+		// Run the update-queries
+		require_once JPATH_COMPONENT . '/helpers/update.php';
+		Dynamic404Update::runUpdateQueries();
+
+		// Redirect
+		$link = 'index.php?option=com_dynamic404&view=home';
+		$msg = JText::_('LIB_YIREO_CONTROLLER_DB_UPGRADED');
+		$this->setRedirect($link, $msg);
+	}
+
+	/**
+	 *
+	 */
     public function ajax()
     {
         echo 'Success';

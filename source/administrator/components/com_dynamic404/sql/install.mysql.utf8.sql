@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS `#__dynamic404_redirects` (
     `http_status` int(3) NOT NULL,
     `description` text NOT NULL,
     `type` varchar(50) NOT NULL,
+    `static` tinyint(1) NOT NULL DEFAULT '0',
     `checked_out` int(11) NOT NULL DEFAULT '0',
     `checked_out_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
     `published` tinyint(1) NOT NULL DEFAULT '0',
@@ -26,6 +27,8 @@ CREATE TABLE IF NOT EXISTS `#__dynamic404_redirects` (
 CREATE TABLE IF NOT EXISTS `#__dynamic404_logs` (
     `log_id` int(11) NOT NULL auto_increment,
     `request` varchar(255) NOT NULL,
+    `http_status` varchar(10) NOT NULL,
+    `message` varchar(255) NOT NULL,
     `timestamp` int(11) NOT NULL default '0',
     `hits` int(11) NOT NULL default '0',
     `ordering` int(11) NOT NULL DEFAULT '0',

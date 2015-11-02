@@ -35,11 +35,8 @@ class Dynamic404ViewBrowse extends YireoView
 		JToolBarHelper::custom( 'refresh', 'preview.png', 'preview_f2.png', 'Browse', false );
 
 		$uri = JURI::getInstance();
-		$url = JURI::root();
-		$host = $uri->toString(array('host'));
-
-		$this->assignRef('url', $url);
-		$this->assignRef('host', $host);
+		$this->url = JURI::root();
+		$this->host = $uri->toString(array('host'));
 
 		parent::display();
 	}

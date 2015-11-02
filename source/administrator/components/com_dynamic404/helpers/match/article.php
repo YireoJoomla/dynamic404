@@ -96,25 +96,14 @@ class Dynamic404HelperMatchArticle
 					continue;
 				}
 
-				$article->search_parts = $strings;
-				$article->match_parts = array();
+				$match = $this->prepareArticle($article);
 
-				foreach ($strings as $string)
+				if (!empty($match))
 				{
-					$article->match_parts = array_merge($article->match_parts, Dynamic404HelperMatch::matchTextParts($article->alias, $string));
-				}
-
-				if (!empty($article->match_parts))
-				{
-					$article = $this->prepareArticle($article);
-
-					if (!empty($article))
-					{
-						$article->match_note = 'article alias "' . $article->alias . '""';
-						$ratingParts = count(array_intersect($article->match_parts, $article->search_parts));
-						$article->rating = $article->rating + $ratingParts;
-						$matches[] = $article;
-					}
+					$match->search_parts = $strings;
+					$match->rating = $match->rating + $match->getAdditionalRatingFromMatchedParts($match->alias, $strings);
+					$match->match_note = 'article alias "' . $match->alias . '""';
+					$matches[] = $match;
 				}
 			}
 		}
@@ -143,15 +132,7 @@ class Dynamic404HelperMatchArticle
 
 		if (empty($category_id) || is_numeric($article_slug))
 		{
-			$db = JFactory::getDBO();
-			$query = $db->getQuery(true);
-			$query->select($db->quoteName(array('a.id', 'a.alias', 'a.catid')))
-				->select($db->quoteName('c.alias', 'catalias'))
-				->from($db->quoteName('#__content', 'a'))
-				->join('INNER', $db->quoteName('#__categories', 'c') . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')')
-				->where($db->quoteName('a.id') . '=' . (int) $article_slug);
-			$db->setQuery($query);
-			$article = $db->loadObject();
+			$article = $this->getArticleSlugDetailsById($article_slug);
 
 			if (!empty($article))
 			{
@@ -177,6 +158,26 @@ class Dynamic404HelperMatchArticle
 		}
 
 		return $link;
+	}
+
+	/**
+	 * @param $id
+	 *
+	 * @return mixed
+	 */
+	private function getArticleSlugDetailsById($id)
+	{
+		$db = JFactory::getDBO();
+		$query = $db->getQuery(true);
+		$query->select($db->quoteName(array('a.id', 'a.alias', 'a.catid')))
+			->select($db->quoteName('c.alias', 'catalias'))
+			->from($db->quoteName('#__content', 'a'))
+			->join('INNER', $db->quoteName('#__categories', 'c') . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')')
+			->where($db->quoteName('a.id') . '=' . (int) $id);
+		$db->setQuery($query);
+		$article = $db->loadObject();
+
+		return $article;
 	}
 
 	/**

@@ -43,11 +43,8 @@ class Dynamic404ViewMatches extends YireoView
 	{
 		JToolBarHelper::custom( 'refresh', 'preview.png', 'preview_f2.png', 'Browse', false );
 
-		$url = $this->application->input->getVar('url');
-		$this->assignRef('url', $url);
-
-		$matches = $this->getMatches($url);
-		$this->assignRef('matches', $matches);
+		$this->url = $this->application->input->get('url', null, 'raw');
+		$this->matches = $this->getMatches($this->url);
 
 		parent::display();
 	}

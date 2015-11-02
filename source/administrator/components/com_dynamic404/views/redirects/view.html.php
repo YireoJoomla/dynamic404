@@ -11,33 +11,39 @@
 
 // Check to ensure this file is included in Joomla!  
 defined('_JEXEC') or die();
-        
+
 /**
- * HTML View class 
+ * HTML View class
  *
  * @static
  * @package     Dynamic404
  */
 class Dynamic404ViewRedirects extends YireoViewList
 {
-    /*
-     * Method to prepare for HTML output
-     *
-     * @access public
-     * @param string $tpl
-     * @return null
-     */
-    public function display($tpl = null)
+	/*
+	 * Method to prepare for HTML output
+	 *
+	 * @access public
+	 * @param string $tpl
+	 * @return null
+	 */
+	public function display($tpl = null)
 	{
-        // Hackish way of closing this page when it is a modal box
-        if(JFactory::getApplication()->input->getInt('modal') == 1)
-        {
-            echo '<script>window.parent.SqueezeBox.close();</script>';
-            $this->app->close();
-        }
+		// Hackish way of closing this page when it is a modal box
+		if (JFactory::getApplication()->input->getInt('modal') == 1)
+		{
+			echo '<script>window.parent.SqueezeBox.close();</script>';
+			$this->app->close();
+		}
 
-        // Automatically fetch items, total and pagination - and assign them to the template
-        $this->fetchItems();
+		// Automatically fetch items, total and pagination - and assign them to the template
+		$this->fetchItems();
+
+		foreach ($this->items as $item)
+		{
+			$item->match = urldecode($item->match);
+			$item->url = urldecode($item->url);
+		}
 
 		parent::display($tpl);
 	}

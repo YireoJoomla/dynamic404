@@ -20,25 +20,34 @@ class Dynamic404HelperCore
 	/**
 	 * Method to log a 404 occurance to the database
 	 *
-	 * @access public
-	 *
-	 * @param null
+	 * @param string $uri
+	 * @param int $httpStatus
+	 * @param string $message
 	 *
 	 * @return bool
 	 */
-	static public function log($uri = null)
+	static public function log($uri = null, $httpStatus = 404, $message = '')
 	{
 		$db = JFactory::getDBO();
 
 		// Try to load the current row
 		$query = $db->getQuery(true);
-		$query->select('*')
+		$query->select($db->quoteName(array('log_id', 'request', 'http_status', 'message', 'hits')))
 			->from($db->quoteName('#__dynamic404_logs'))
 			->where($db->quoteName('request') . '=' . $db->quote($uri))
+			->where($db->quoteName('http_status') . '=' . $db->quote($httpStatus))
 			->where($db->quoteName('log_id') . '> 0');
 
 		$db->setQuery($query);
-		$row = $db->loadObject();
+
+		try
+		{
+			$row = $db->loadObject();
+		}
+		catch (RuntimeException $e)
+		{
+			return false;
+		}
 
 		// Update or insert
 		if (!empty($row))
@@ -47,6 +56,8 @@ class Dynamic404HelperCore
 
 			$query = $db->getQuery(true);
 			$fields = array(
+				$db->quoteName('http_status') . ' = ' . $db->quote($httpStatus),
+				$db->quoteName('message') . ' = ' . $db->quote($message),
 				$db->quoteName('timestamp') . ' = ' . time(),
 				$db->quoteName('hits') . ' = ' . $hits
 			);
@@ -62,8 +73,8 @@ class Dynamic404HelperCore
 		}
 		else
 		{
-			$columns = array('request', 'hits', 'timestamp');
-			$values = array($db->quote($uri), 1, time());
+			$columns = array('request', 'http_status', 'message', 'hits', 'timestamp');
+			$values = array($db->quote($uri), $db->quote($httpStatus), $db->quote($message), 1, time());
 			$query
 				->insert($db->quoteName('#__dynamic404_logs'))
 				->columns($db->quoteName($columns))
@@ -72,17 +83,14 @@ class Dynamic404HelperCore
 
 		$db->setQuery($query);
 		$db->execute();
+
 		return true;
 	}
 
 	/**
 	 * Method to get the Itemid of the search-component
 	 *
-	 * @access public
-	 *
-	 * @param null
-	 *
-	 * @return bool
+	 * @return int
 	 */
 	static public function getSearchItemid()
 	{
@@ -95,7 +103,7 @@ class Dynamic404HelperCore
 		}
 		else
 		{
-			return null;
+			return 0;
 		}
 
 		if (is_array($items) && !empty($items))
@@ -105,13 +113,11 @@ class Dynamic404HelperCore
 			return $item->id;
 		}
 
-		return null;
+		return 0;
 	}
 
 	/**
 	 * Method to get the description for a certain HTTP Status code
-	 *
-	 * @access public
 	 *
 	 * @param int $http_status
 	 *
@@ -134,10 +140,6 @@ class Dynamic404HelperCore
 
 	/**
 	 * Method to get the current version
-	 *
-	 * @access public
-	 *
-	 * @param null
 	 *
 	 * @return bool
 	 */

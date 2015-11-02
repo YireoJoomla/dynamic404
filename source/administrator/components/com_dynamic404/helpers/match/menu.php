@@ -149,7 +149,7 @@ class Dynamic404HelperMatchMenu
 				if (Dynamic404HelperMatch::matchTextString($item->route, $uri))
 				{
 					// Reset the base-rating
-					if (substr($item->route, 0, strlen($uri)) == $uri)
+					if (substr($item->route, 0, YireoHelper::strlen($uri)) == $uri)
 					{
 						$item->rating = 89;
 					}
@@ -159,11 +159,11 @@ class Dynamic404HelperMatchMenu
 					}
 
 					// Try to make an improvement on the base rating
-					$max = strlen($item->route);
+					$max = YireoHelper::strlen($item->route);
 
 					for ($i = 1; $i < $max; $i++)
 					{
-						if (abs(strlen($item->route) - strlen($uri)) <= $i)
+						if (abs(YireoHelper::strlen($item->route) - YireoHelper::strlen($uri)) <= $i)
 						{
 							// Give this match a rating depending on the characters that differ
 							// @todo: Find a way to calculate the total string-length as well

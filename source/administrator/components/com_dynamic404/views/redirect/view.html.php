@@ -13,33 +13,33 @@
 defined('_JEXEC') or die();
 
 /**
- * HTML View class 
+ * HTML View class
  *
  * @static
  * @package     Dynamic404
  */
 class Dynamic404ViewRedirect extends YireoViewForm
 {
-    /*
-     * Method to prepare for HTML output
-     *
-     * @access public
-     * @param string $tpl
-     * @return null
-     */
-    public function display($tpl = null)
+	/*
+	 * Method to prepare for HTML output
+	 *
+	 * @access public
+	 * @param string $tpl
+	 * @return null
+	 */
+	public function display($tpl = null)
 	{
-        // Load Bootstrap
-        YireoHelper::bootstrap();
+		// Load Bootstrap
+		YireoHelper::bootstrap();
 
-        // Automatically fetch the item and assign it to the layout
-        $this->fetchItem();
+		// Automatically fetch the item and assign it to the layout
+		$this->fetchItem();
 
-        // Complete this item from the URL
-        if(empty($this->item->match))
-        {
-            $this->item->match = base64_decode(JFactory::getApplication()->input->getString('match'));
-        }
+		// Complete this item from the URL
+		if (empty($this->item->match))
+		{
+			$this->item->match = base64_decode(JFactory::getApplication()->input->getString('match'));
+		}
 
 		parent::display($tpl);
 	}

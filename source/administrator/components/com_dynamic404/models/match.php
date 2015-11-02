@@ -89,6 +89,39 @@ class Dynamic404ModelMatch
 	}
 
 	/**
+	 * Calculate an additional rating by matching two string patterns and seeing how much they match
+	 *
+	 * @param $matchString
+	 * @param $searchParts
+	 *
+	 * @return int
+	 */
+	public function getAdditionalRatingFromMatchedParts($matchString, $searchParts)
+	{
+		if (is_string($searchParts))
+		{
+			$searchParts = explode('-', $searchParts);
+		}
+
+		$rating = 0;
+		$matchParts = array();
+
+		foreach ($searchParts as $searchPart)
+		{
+			$matchParts = array_merge($matchParts, Dynamic404HelperMatch::matchTextParts($matchString, $searchPart));
+		}
+
+		if (!empty($matchParts))
+		{
+			$rating = count(array_intersect($matchParts, $searchParts));
+		}
+
+		$this->debug('Additional rating for "' . $matchString . '" [' . $rating . ']', $searchParts);
+
+		return $rating;
+	}
+
+	/**
 	 * Method to parse the properties of this match for output
 	 */
 	public function parse()
@@ -173,5 +206,16 @@ class Dynamic404ModelMatch
 				$this->$key = $value;
 			}
 		}
+	}
+
+	/**
+	 * Method alias for debugging
+	 *
+	 * @param   string  $msg       Debugging message
+	 * @param   null    $variable  Optional variable to dump
+	 */
+	public function debug($msg, $variable = null)
+	{
+		Dynamic404HelperDebug::debug($msg, $variable);
 	}
 }

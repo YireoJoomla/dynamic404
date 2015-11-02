@@ -18,6 +18,123 @@ defined('_JEXEC') or die();
 class Dynamic404HelperDebug
 {
 	/**
+	 * @var JRegistry
+	 */
+	protected $params = null;
+
+	/**
+	 * @var messages
+	 */
+	protected $messages = array();
+
+	/**
+	 * Singleton method
+	 *
+	 * @return Dynamic404HelperDebug
+	 */
+	public static function getInstance()
+	{
+		static $instance = null;
+
+		if ($instance === null)
+		{
+			$instance = new Dynamic404HelperDebug;
+
+			/** @var JRegistry $params */
+			$params = JComponentHelper::getParams('com_dynamic404');
+			$instance->setParams($params);
+		}
+
+		return $instance;
+	}
+
+	/**
+	 * Method to set parameters internally
+	 *
+	 * @param JRegistry $params
+	 */
+	public function setParams($params)
+	{
+		$this->params = $params;
+	}
+
+	/**
+	 * Method to output a certain debugging message
+	 *
+	 * @param string $message
+	 * @param null|mixed $variable
+	 *
+	 * @return null
+	 */
+	public function doDebug($message, $variable = null)
+	{
+		if ($this->params->get('debug', 0) == 0)
+		{
+			return;
+		}
+
+		if (!empty($variable))
+		{
+			$variableDump = self::dump($variable);
+			$message .= ' = ' . trim($variableDump);
+		}
+
+		$message .= "\n";
+
+		if (JFactory::getApplication()->isSite())
+		{
+			$this->messages[] = $message;
+		}
+		elseif (JFactory::getApplication()->isAdmin())
+		{
+			JFactory::getApplication()->enqueueMessage($message, 'notice');
+		}
+	}
+
+	/**
+	 * Method to dump a variable to a string
+	 *
+	 * @param  mixed   $variable  Variable to convert into string
+	 *
+	 * @return string
+	 */
+	public function doDump($variable)
+	{
+		if (is_object($variable))
+		{
+			if ($variable instanceof JDatabaseQuery)
+			{
+				$db = JFactory::getDBO();
+				$query = (string) $variable;
+				$query = str_replace('#__', $db->getPrefix(), $query);
+
+				$breakWords = array('WHERE', 'OR', 'FROM', 'LEFT JOIN');
+
+				foreach ($breakWords as $breakWord)
+				{
+					$query = str_replace(' ' . $breakWord . ' ', ' <br/>' . $breakWord . ' ', $query);
+				}
+
+				return '[JDatabaseQuery] ' . $query;
+			}
+			elseif ($variable instanceof SimpleXML)
+			{
+				return '[SimpleXML]';
+			}
+		}
+
+		return var_export($variable, true);
+	}
+
+	/**
+	 * Get all messages
+	 */
+	public function getMessages()
+	{
+		return $this->messages;
+	}
+
+	/**
 	 * Method to output a certain debugging message
 	 *
 	 * @param      $msg
@@ -27,30 +144,7 @@ class Dynamic404HelperDebug
 	 */
 	static public function debug($msg, $variable = null)
 	{
-		$params = JComponentHelper::getParams('com_dynamic404');
-
-		if ($params->get('debug', 0) == 0)
-		{
-			return;
-		}
-
-		if (!empty($variable))
-		{
-			$variableDump = self::dump($variable);
-			$msg .= ' = <code>' . trim($variableDump) . '</code>';
-		}
-
-		$msg .= "\n";
-
-		if (JFactory::getApplication()->isSite())
-		{
-			echo $msg . '<br/>';
-		}
-		elseif (JFactory::getApplication()->isAdmin())
-		{
-			JFactory::getApplication()->enqueueMessage($msg, 'notice');
-		}
-
+		return self::getInstance()->doDebug($msg, $variable);
 	}
 
 	/**
@@ -62,22 +156,6 @@ class Dynamic404HelperDebug
 	 */
 	static public function dump($variable)
 	{
-		if (is_object($variable))
-		{
-			if ($variable instanceof JDatabaseQuery)
-			{
-				$db = JFactory::getDBO();
-				$query = (string) $variable;
-				$query = str_replace('#__', $db->getPrefix(), $query);
-
-				return '[JDatabaseQuery] ' . $query;
-			}
-			elseif ($variable instanceof SimpleXML)
-			{
-				return '[SimpleXML]';
-			}
-		}
-
-		return var_export($variable, true);
+		return self::getInstance()->doDump($variable);
 	}
 }

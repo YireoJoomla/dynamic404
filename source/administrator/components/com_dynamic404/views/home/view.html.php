@@ -42,6 +42,8 @@ class Dynamic404ViewHome extends YireoViewHome
 		$urls['jed'] = 'http://extensions.joomla.org/extensions/extension/site-management/error-pages/dynamic404';
 		$this->assignRef('urls', $urls);
 
+		JToolBarHelper::custom('updateQueries', 'archive', '', 'DB Upgrade', false);
+
 		parent::display($tpl);
 	}
 }

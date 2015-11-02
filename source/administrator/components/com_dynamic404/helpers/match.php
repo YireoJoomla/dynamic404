@@ -44,9 +44,14 @@ class Dynamic404HelperMatch
 	protected $uri = null;
 
 	/**
+	 * Only allow static redirects
+	 */
+	protected $staticRulesOnly = false;
+
+	/**
 	 * Constructor
 	 */
-	public function __construct($uri = null)
+	public function __construct($uri = null, $staticRulesOnly = false)
 	{
 		// Read the component parameters
 		$this->params = JComponentHelper::getParams('com_dynamic404');
@@ -60,6 +65,9 @@ class Dynamic404HelperMatch
 
 		// Set the URI
 		$this->setUri($uri);
+
+		// Set the static flag
+		$this->staticRulesOnly = $staticRulesOnly;
 
 		// Initialize this helper
 		$this->parseUri();
@@ -117,8 +125,7 @@ class Dynamic404HelperMatch
 			'uri' => $uri,
 			'uri_parts' => array(),
 			'uri_last' => $uri_last,
-			'uri_lastnum' => $uri_lastnum,
-		);
+			'uri_lastnum' => $uri_lastnum,);
 	}
 
 	/**
@@ -128,13 +135,15 @@ class Dynamic404HelperMatch
 	 */
 	public function parseSefUri($uri)
 	{
+		$juri = JURI::getInstance();
+
 		// Fetch the current request and parse it
 		$uri = preg_replace('/^\//', '', $uri);
 		$uri = preg_replace('/\.(html|htm|php)$/', '', $uri);
 		$uri = preg_replace('/\?lang=([a-zA-Z0-9]+)$/', '', $uri);
 		$uri = preg_replace('/\&Itemid=([0-9]?)$/', '', $uri);
 		$uri = preg_replace('/^(http|https):\/\//', '', $uri);
-        $uri = preg_replace('/^'.JURI::getInstance()->getHost().'\//', '', $uri);
+		$uri = preg_replace('/^' . $juri->getHost() . '\//', '', $uri);
 
 		$uri_parts = explode('/', $uri);
 
@@ -176,8 +185,7 @@ class Dynamic404HelperMatch
 			'uri' => $uri,
 			'uri_parts' => $uri_parts,
 			'uri_last' => $uri_last,
-			'uri_lastnum' => $uri_lastnum,
-		);
+			'uri_lastnum' => $uri_lastnum,);
 	}
 
 	/**
@@ -236,10 +244,17 @@ class Dynamic404HelperMatch
 	public function getMatches()
 	{
 		// Call the internal matches
-		$this->findNumericMatches();
-		$this->findTextMatches();
-		$this->findSearchPluginMatches();
-		$this->findRedirectMatches();
+		if ($this->staticRulesOnly == true)
+		{
+			$this->findRedirectMatches();
+		}
+		else
+		{
+			$this->findNumericMatches();
+			$this->findTextMatches();
+			$this->findSearchPluginMatches();
+			$this->findRedirectMatches();
+		}
 
 		$this->parseMatches();
 		$this->sortMatches();
@@ -329,6 +344,8 @@ class Dynamic404HelperMatch
 			// Construct the first text
 			$text1 = $this->request['uri_last'];
 			$text1 = strtolower($text1);
+			$text1 = str_replace(' ', '-', $text1);
+			$text1 = str_replace('%20', '-', $text1);
 			$text1 = preg_replace('/([\-\_\.]+)$/', '', $text1);
 			$text1 = preg_replace('/^([\-\_\.]+)/', '', $text1);
 			$text1 = str_replace('.', '-', $text1);
@@ -479,6 +496,7 @@ class Dynamic404HelperMatch
 		}
 
 		$this->addToMatches($matches);
+
 		return $matches;
 	}
 
@@ -491,12 +509,25 @@ class Dynamic404HelperMatch
 	{
 		// Fetch all redirects from the Dynamic404 database-tables
 		$db = JFactory::getDBO();
+		$app = JFactory::getApplication();
 
 		$query = $db->getQuery(true);
-		$query->select($db->quoteName(array('redirect_id', 'match', 'url', 'http_status', 'type', 'description', 'params')))
+		$query->select($db->quoteName(array(
+			'redirect_id',
+			'match',
+			'url',
+			'http_status',
+			'type',
+			'description',
+			'params')))
 			->from('#__dynamic404_redirects')
 			->where($db->quoteName('published') . '= 1')
 			->order($db->quoteName('ordering'));
+
+		if ($this->staticRulesOnly)
+		{
+			$query->where($db->quoteName('static') . '=1');
+		}
 
 		$db->setQuery($query);
 		$rows = $db->loadObjectList();
@@ -522,7 +553,7 @@ class Dynamic404HelperMatch
 				// Construct the URL
 				if (is_numeric(trim($row->url)))
 				{
-					$menu = JFactory::getApplication()->getMenu();
+					$menu = $app->getMenu();
 					$menuItem = $menu->getItem($row->url);
 
 					if (!empty($menuItem))
@@ -541,7 +572,7 @@ class Dynamic404HelperMatch
 				}
 				elseif (preg_match('/Itemid=([0-9]+)/', $row->url, $match))
 				{
-					$menu = JFactory::getApplication()->getMenu();
+					$menu = $app->getMenu();
 					$menuItem = $menu->getItem($match[1]);
 
 					if (!empty($menuItem))
@@ -732,7 +763,9 @@ class Dynamic404HelperMatch
 				// Parse the current match
 				$match->parse();
 
-				if (JURI::getInstance()->toString(array('path')) == $match->url)
+				if (JURI::getInstance()
+						->toString(array('path')) == $match->url
+				)
 				{
 					unset($this->matches[$index]);
 					continue;
@@ -752,17 +785,17 @@ class Dynamic404HelperMatch
 	{
 		if (!empty($this->matches))
 		{
-            $foundUrls = array();
+			$foundUrls = array();
 			$sort = array();
 
 			foreach ($this->matches as $match)
 			{
-                if (in_array($match->url, $foundUrls))
-                {
-                    continue;
-                }
+				if (in_array($match->url, $foundUrls))
+				{
+					continue;
+				}
 
-                $foundUrls[] = $match->url;
+				$foundUrls[] = $match->url;
 
 				$index = urlencode($match->rating . '-' . $match->url);
 				$sort[$index] = array('rating' => $match->rating, 'match' => $match);
@@ -839,8 +872,8 @@ class Dynamic404HelperMatch
 	/**
 	 * Method alias for debugging
 	 *
-	 * @param   string  $msg       Debugging message
-	 * @param   null    $variable  Optional variable to dump
+	 * @param   string $msg Debugging message
+	 * @param   null   $variable Optional variable to dump
 	 */
 	public function debug($msg, $variable = null)
 	{

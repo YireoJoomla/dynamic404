@@ -28,6 +28,7 @@
         <fieldset name="other" label="COM_DYNAMIC404_REDIRECT_FIELDSET_OTHER">
             <field name="description" type="yireo.text" label="COM_DYNAMIC404_REDIRECT_FIELD_DESCRIPTION" />
             <field name="published" type="yireo.published" default="1" />
+            <field name="static" type="yireo.boolean" default="0" label="COM_DYNAMIC404_REDIRECT_PARAM_STATIC" />
         </fieldset>
     </fields>
     <fields name="params">

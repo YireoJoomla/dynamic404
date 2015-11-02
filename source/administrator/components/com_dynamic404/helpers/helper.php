@@ -24,17 +24,14 @@ class Dynamic404Helper
 	 * Constant for a Dynamic404 error-page
 	 */
 	const ERROR_PAGE_DYNAMIC404 = 0;
-
 	/**
 	 * Constant for a default error-page
 	 */
 	const ERROR_PAGE_DEFAULT = 1;
-
 	/**
 	 * Constant for an error-page using a Menu-Item that is fetched through CURL
 	 */
 	const ERROR_PAGE_MENUITEM_INTERNAL = 2;
-
 	/**
 	 * Constant for an error-page using a Menu-Item that is fetched through AJAX
 	 */
@@ -56,12 +53,17 @@ class Dynamic404Helper
 	private $errors = null;
 
 	/**
+	 * Only allow static redirects
+	 */
+	protected $staticRulesOnly = false;
+
+	/**
 	 * Constructor
 	 *
 	 * @param   bool $init Initialize the helper
 	 * @param   int  $max  Maximum amount of entries to fetch
 	 */
-	public function __construct($init = true, $max = null, $error = null)
+	public function __construct($init = true, $max = null, $error = null, $staticRulesOnly = false)
 	{
 		// Read the component parameters
 		$this->params = JComponentHelper::getParams('com_dynamic404');
@@ -82,12 +84,15 @@ class Dynamic404Helper
 		// Prevent common hacks
 		$this->preventHacks();
 
+		// Set the static flag
+		$this->staticRulesOnly = $staticRulesOnly;
+
 		// Initialize the redirect-helper
-		$this->matchHelper = new Dynamic404HelperMatch;
+		$this->matchHelper = new Dynamic404HelperMatch(null, $this->staticRulesOnly);
 
 		// Load the language-file
 		$language = JFactory::getLanguage();
-		$language->load('com_dynamic404', JPATH_SITE, JFactory::getLanguage()->getTag(), true);
+		$language->load('com_dynamic404', JPATH_SITE, $language->getTag(), true);
 
 		// Run the tasks if available
 		if ($init == true)
@@ -101,6 +106,14 @@ class Dynamic404Helper
 			$this->displayCustomPage();
 			$this->displayErrorPage();
 		}
+	}
+
+	/**
+	 * @param $matchHelper
+	 */
+	public function setMatchHelper($matchHelper)
+	{
+		$this->matchHelper = $matchHelper;
 	}
 
 	/**
@@ -133,7 +146,11 @@ class Dynamic404Helper
 			return false;
 		}
 
-		return Dynamic404HelperCore::log($this->matchHelper->getRequest('uri'));
+		$error = $this->getErrorObject();
+		$errorCode = $error->getCode();
+		$errorMessage = $error->getMessage();
+
+		return Dynamic404HelperCore::log($this->matchHelper->getRequest('uri'), $errorCode, $errorMessage);
 	}
 
 	/**
@@ -156,6 +173,21 @@ class Dynamic404Helper
 	public function getMax()
 	{
 		return $this->params->get('max_suggestions', 5);
+	}
+
+	/**
+	 * Method to get the search string
+	 *
+	 * @return string
+	 */
+	public function getSearchString()
+	{
+		$last = $this->getLast();
+		$last = str_replace('-', ' ', $last);
+		$last = str_replace('_', ' ', $last);
+		$last = str_replace(':', ' ', $last);
+
+		return $last;
 	}
 
 	/**
@@ -395,6 +427,12 @@ class Dynamic404Helper
 	 */
 	public function allowRedirect($errorCode, $match)
 	{
+		// Allow when the static flag is set
+		if ($this->staticRulesOnly)
+		{
+			return true;
+		}
+
 		// Do not redirect, if the redirect flag is off
 		$redirect = $this->jinput->getInt('noredirect');
 
@@ -511,7 +549,8 @@ class Dynamic404Helper
 		// Get the fully qualified URL
 		if (!preg_match('/^(http|https):\/\//', $url))
 		{
-			$url = JURI::getInstance()->toString(array('scheme', 'host', 'port')) . '/' . preg_replace('/^\//', '', $url);
+			$url = JURI::getInstance()
+					->toString(array('scheme', 'host', 'port')) . '/' . preg_replace('/^\//', '', $url);
 		}
 
 		// Perform a simple HEAD-test to check for redirects or endless redirects
@@ -647,6 +686,8 @@ class Dynamic404Helper
 
 	/**
 	 * Helper method to determine whether to use JS to redirect to the Menu-Item page
+	 *
+	 * @return bool
 	 */
 	public function isMenuItemJsRedirect()
 	{
@@ -662,8 +703,6 @@ class Dynamic404Helper
 
 	/**
 	 * Method to display a custom page based on an existing Menu-Item
-	 *
-	 * @param string $error
 	 *
 	 * @return bool
 	 */
@@ -687,10 +726,10 @@ class Dynamic404Helper
 
 		$url = $this->getMenuItemUrl($this->error);
 
-        if (empty($url))
-        {
-            return false;
-        }
+		if (empty($url))
+		{
+			return false;
+		}
 
 		$this->debug('Internal URL', $url);
 
@@ -783,7 +822,8 @@ class Dynamic404Helper
 	protected function showComponentPage($Itemid)
 	{
 		// Load the configured Menu-Item
-		$menu = JFactory::getApplication()->getMenu();
+		$menu = JFactory::getApplication()
+			->getMenu();
 		$item = $menu->getItem($Itemid);
 
 		if (empty($item) || !is_object($item) || !isset($item->query['option']))
@@ -809,7 +849,8 @@ class Dynamic404Helper
 		include_once JPATH_SITE . '/components/' . $component . '/' . $entry;
 
 		// So now Joomla! is corrupt, so stop right away
-		JFactory::getApplication()->close();
+		JFactory::getApplication()
+			->close();
 
 		return null;
 	}
@@ -937,7 +978,9 @@ class Dynamic404Helper
 	{
 		$db = JFactory::getDBO();
 		$query = $db->getQuery(true);
-		$query->select($db->quoteName('match'))->from($db->quoteName('#__dynamic404_redirects'))->where($db->quoteName('url') . '=' . $db->quote($url));
+		$query->select($db->quoteName('match'))
+			->from($db->quoteName('#__dynamic404_redirects'))
+			->where($db->quoteName('url') . '=' . $db->quote($url));
 
 		$db->setQuery($query);
 		$match = $db->loadResult();
@@ -950,7 +993,9 @@ class Dynamic404Helper
 			$values = array($db->quote($match), $db->quote($url), 0, $db->quote('full_url'), 1,);
 
 			$query = $db->getQuery(true);
-			$query->insert($db->quoteName('#__dynamic404_redirects'))->columns($db->quoteName($columns))->values(implode(',', $values));
+			$query->insert($db->quoteName('#__dynamic404_redirects'))
+				->columns($db->quoteName($columns))
+				->values(implode(',', $values));
 			$db->setQuery($query);
 			$db->execute();
 		}
