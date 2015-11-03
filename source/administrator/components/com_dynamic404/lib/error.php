@@ -21,6 +21,8 @@ if (!headers_sent())
 	header('Content-Type: text/html; charset=utf-8');
 }
 
+$params = JComponentHelper::getParams('com_dynamic404');
+
 // Instantiate the helper with the argument of how many matches to show
 if ($this instanceof Dynamic404Helper)
 {
@@ -111,11 +113,13 @@ $debugMessages = $debug->getMessages();
 						<li><a href="<?php echo JURI::base(); ?>"
 							   title="<?php echo JText::_('COM_DYNAMIC404_HOME'); ?>"><?php echo JText::_('COM_DYNAMIC404_HOME'); ?></a>
 						</li>
+                        <?php if ($params->get('show_search', 1) == 1) : ?>
 						<li>
 							<a href="<?php echo JRoute::_('index.php?option=com_search&searchword=' . urlencode($search)); ?>"
 							   title="<?php echo JText::_('COM_DYNAMIC404_SEARCH');
 							   ?>"><?php echo JText::_('COM_DYNAMIC404_SEARCH_FOR'); ?>: "<?php echo $search; ?>"</a>
 						</li>
+                        <?php endif; ?>
 					</ul>
 					</p>
 

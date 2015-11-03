@@ -388,15 +388,13 @@ class Dynamic404HelperMatch
 			$application = JFactory::getApplication();
 			$matches = $application->triggerEvent('getMatches', array($text1, $text2));
 
-			if (isset($matches[0]))
-			{
-				$this->addToMatches($matches[0]);
-			}
-
-			if (isset($matches[1]))
-			{
-				$this->addToMatches($matches[1]);
-			}
+            foreach ($matches as $submatches)
+            {
+			    if (!empty($matches))
+    			{
+	    			$this->addToMatches($submatches);
+		    	}
+            }
 		}
 	}
 

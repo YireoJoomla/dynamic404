@@ -106,7 +106,7 @@ class PlgDynamic404VirtueMart extends JPlugin
 		$db = JFactory::getDBO();
 		$query = $db->getQuery(true);
 
-		$query->select($db->quoteName(array('l.category_name')));
+		$query->select($db->quoteName(array('c.virtuemart_category_id', 'l.category_name')));
 
 		$query->from($db->quoteName('#__virtuemart_categories_' . $this->getLanguageCode(), 'l'));
 
@@ -126,18 +126,27 @@ class PlgDynamic404VirtueMart extends JPlugin
 		$db->setQuery($query);
 		$category = $db->loadObject();
 
-		if (empty($category))
+		$this->debug('VirtueMart category query', $db->getQuery());
+
+		if (empty($category) || empty($category->virtuemart_category_id))
 		{
 			return null;
 		}
 
-		$category->match_note = 'virtuemart category';
-		$category->type = 'component';
-		$category->name = $category->category_name;
-		$category->rating = $this->params->get('rating', 85) - 1;
-		$category->url = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_category_id=' . $category_id);
+		$match = Dynamic404ModelMatch::getInstance($category);
 
-		return $category;
+		if (empty($match))
+		{
+			return false;
+		}
+
+		$match->match_note = 'virtuemart category';
+		$match->type = 'component';
+		$match->name = $category->category_name;
+		$match->rating = $this->params->get('rating', 85) - 1;
+		$match->url = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_category_id=' . $category->virtuemart_category_id);
+
+		return $match;
 	}
 
 	/**
@@ -276,7 +285,7 @@ class PlgDynamic404VirtueMart extends JPlugin
         }
 
 		$db->setQuery($query);
-		$this->debug('VirtueMart query', $db->getQuery());
+		$this->debug('VirtueMart product query', $db->getQuery());
 
 		$products = $db->loadObjectList();
 
