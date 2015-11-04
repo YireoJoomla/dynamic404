@@ -20,6 +20,8 @@ class Dynamic404ViewNotfound extends YireoAbstractView
 {
     public function display($tpl = null)
     {
+        header('Content-Type: text/html; charset=utf-8');
+
         // Include the 404 Helper
         require_once JPATH_ADMINISTRATOR.'/components/com_dynamic404/helpers/helper.php';
 

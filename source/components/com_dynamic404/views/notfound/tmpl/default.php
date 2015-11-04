@@ -12,6 +12,11 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die( 'Restricted access' );
 
+$params = JComponentHelper::getParams('com_dynamic404');
+
+// Get the last segment - nice for searching
+$search = $helper->getSearchString();
+
 ?>
 <?php if(!empty($this->article)) : ?>
     <h2><?php echo $this->article->title; ?></h2>
@@ -37,7 +42,9 @@ defined('_JEXEC') or die( 'Restricted access' );
     <?php echo JText::_('COM_DYNAMIC404_ALTERNATIVES'); ?>:
 	<ul>
 		<li><a href="<?php echo JURI::base(); ?>" title="<?php echo JText::_('COM_DYNAMIC404_HOME'); ?>"><?php echo JText::_('COM_DYNAMIC404_HOME'); ?></a></li>
-		<li><a href="<?php echo JRoute::_( 'index.php?option=com_search&searchword='.$this->urilast ); ?>" title="<?php echo JText::_('COM_DYNAMIC404_SEARCH'); ?>"><?php echo JText::_('COM_DYNAMIC404_SEARCH_FOR'); ?>: <?php echo $this->urilast; ?></a></li>
+        <?php if ($params->get('show_search', 1) == 1) : ?>
+		<li><a href="<?php echo JRoute::_( 'index.php?option=com_search&searchword='.urlencode($search)); ?>" title="<?php echo JText::_('COM_DYNAMIC404_SEARCH'); ?>"><?php echo JText::_('COM_DYNAMIC404_SEARCH_FOR'); ?>: <?php echo $search; ?></a></li>
+        <?php endif; ?>
 	</ul>
 </p>
 <p>

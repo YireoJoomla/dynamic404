@@ -745,6 +745,7 @@ class Dynamic404Helper
 		}
 
 		// Output the content
+	    header('Content-Type: text/html; charset=utf-8');
 		print $contents;
 		$app->close();
 
@@ -917,7 +918,7 @@ class Dynamic404Helper
 		$document->setTitle(JText::_('Error') . ': ' . $errorCode);
 
 		$httpStatusText = $this->getHttpStatusText($errorCode);
-		header('HTTP/1.0 ' . $httpStatusText);
+		header('HTTP/1.1 ' . $httpStatusText);
 
 		return;
 	}
