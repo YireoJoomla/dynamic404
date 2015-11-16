@@ -15,7 +15,7 @@ defined('_JEXEC') or die( 'Restricted access' );
 $params = JComponentHelper::getParams('com_dynamic404');
 
 // Get the last segment - nice for searching
-$search = $helper->getSearchString();
+$search = $this->helper->getSearchString();
 
 ?>
 <?php if(!empty($this->article)) : ?>
