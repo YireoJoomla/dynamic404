@@ -24,7 +24,7 @@ class Dynamic404Alert extends AppAlert
     public $parameter2;
     public $parameter3;
 
-    public function Dynamic404Alert($level, $message, $parameter1 = null, $parameter2 = null, $parameter3 = null)
+    public function __construct($level, $message, $parameter1 = null, $parameter2 = null, $parameter3 = null)
     {
         if ($level != null && $message != null)
         {

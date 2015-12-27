@@ -130,6 +130,7 @@ class Dynamic404ModelMatch
 		$this->parseUrl();
 
 		$this->uri = $this->url;
+		//$this->uri = str_replace(JURI::root(), '', $this->url);
 	}
 
 	/**
@@ -164,9 +165,14 @@ class Dynamic404ModelMatch
 			if ($app->isAdmin())
 			{
 				JFactory::$application = JApplicationCms::getInstance('site');
+                $siteApp = JFactory::getApplication();
+			    $siteRouter = $siteApp::getRouter();
+			    $siteUri = $siteRouter->build($this->url);
+                $this->url = $siteUri->toString(array('path', 'query', 'fragment'));
 
-				$this->url = JRoute::_($this->url);
-				$this->url = JURI::root() . str_replace('/administrator/', '', $this->url);
+                $this->url = preg_replace('/\/administrator\//', '', $this->url);
+                $this->url = preg_replace('/^administrator\//', '', $this->url);
+				$this->url = JURI::root() . $this->url;
 
 				JFactory::$application = JApplicationCms::getInstance('administrator');
 			}

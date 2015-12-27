@@ -693,7 +693,7 @@ class Dynamic404Helper
 	{
 		$componentParams = JComponentHelper::getParams('com_dynamic404');
 
-		if ($componentParams->get('error_page', 0) == self::ERROR_PAGE_MENUITEM_JSREDIRECT)
+		if ($componentParams->get('error_page', self::ERROR_PAGE_DYNAMIC404) == self::ERROR_PAGE_MENUITEM_JSREDIRECT)
 		{
 			return true;
 		}
@@ -719,7 +719,7 @@ class Dynamic404Helper
 		$app = JFactory::getApplication();
 		$cache = JFactory::getCache();
 
-		if (!in_array($componentParams->get('error_page', 0), array(self::ERROR_PAGE_MENUITEM_INTERNAL)))
+		if (!in_array($componentParams->get('error_page', self::ERROR_PAGE_DYNAMIC404), array(self::ERROR_PAGE_MENUITEM_INTERNAL)))
 		{
 			return false;
 		}
@@ -880,10 +880,16 @@ class Dynamic404Helper
 
 		// Check the parameters
 		$componentParams = JComponentHelper::getParams('com_dynamic404');
+        $languageTag = JFactory::getLanguage()->getTag();
 
-		if ($componentParams->get('error_page', 0) == self::ERROR_PAGE_DEFAULT)
+		if ($componentParams->get('error_page', self::ERROR_PAGE_DYNAMIC404) == self::ERROR_PAGE_DEFAULT)
 		{
-			$file = JPATH_SITE . '/templates/' . $application->getTemplate() . '/error.php';
+            $file = JPATH_SITE . '/templates/' . $application->getTemplate() . '/error_' . $languageTag . '.php';
+
+            if (file_exists($file) == false)
+            {
+                $file = JPATH_SITE . '/templates/' . $application->getTemplate() . '/error.php';
+            }
 		}
 
 		if (empty($file) || file_exists($file) == false)

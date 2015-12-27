@@ -22,6 +22,8 @@ class Dynamic404HelperMatchArticle
 	 */
 	private $params = null;
 
+    protected $articleFields = array('id', 'title', 'alias', 'introtext', 'fulltext', 'state', 'catid', 'publish_up', 'publish_down', 'attribs', 'language');
+
 	/**
 	 * Constructor
 	 */
@@ -173,7 +175,8 @@ class Dynamic404HelperMatchArticle
 			->select($db->quoteName('c.alias', 'catalias'))
 			->from($db->quoteName('#__content', 'a'))
 			->join('INNER', $db->quoteName('#__categories', 'c') . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')')
-			->where($db->quoteName('a.id') . '=' . (int) $id);
+			->where($db->quoteName('a.id') . '=' . (int) $id)
+            ->setLimit(1);
 		$db->setQuery($query);
 		$article = $db->loadObject();
 
@@ -190,11 +193,12 @@ class Dynamic404HelperMatchArticle
 	{
 		$db = JFactory::getDBO();
 		$query = $db->getQuery(true);
-		$query->select('*')
+		$query->select($db->quoteName($this->articleFields))
 			->from($db->quoteName('#__content'))
 			->where($db->quoteName('state') . '= 1')
 			->where($db->quoteName('id') . '=' . (int) $id)
-			->order($db->quoteName('ordering') . ' ASC');
+			->order($db->quoteName('ordering') . ' ASC')
+            ->setLimit(1);
 		$db->setQuery($query, 0, 1);
 
 		if ($this->params->get('debug', 0) == 1)
@@ -225,9 +229,16 @@ class Dynamic404HelperMatchArticle
 		{
 			$db = JFactory::getDBO();
 			$query = $db->getQuery(true);
-			$query->select('*')
-				->from('#__content')
+
+            $nullDate = $db->getNullDate();
+            $date = JFactory::getDate();
+            $now = $date->toSql();
+
+			$query->select($db->quoteName($this->articleFields))
+				->from($db->quoteName('#__content'))
 				->where($db->quoteName('state') . '= 1')
+				->where('(publish_up = ' . $db->quote($nullDate) . ' OR publish_up <= ' . $db->quote($now) . ')')
+                ->where('(publish_down = ' . $db->quote($nullDate) . ' OR publish_down >= ' . $db->quote($now) . ')')
 				->order($db->quoteName('ordering'));
 
 			if ($this->params->get('load_all_articles', 0) == 0)

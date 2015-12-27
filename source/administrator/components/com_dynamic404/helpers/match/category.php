@@ -95,7 +95,7 @@ class Dynamic404HelperMatchCategory
 
 					if (!empty($row))
 					{
-						$row->match_note = 'category alias';
+						$row->match_note = 'category alias = ' . $row->alias . ' / #' . $row->id;
 						$matches[] = $row;
 					}
 
@@ -113,7 +113,7 @@ class Dynamic404HelperMatchCategory
 
 						if (!empty($row))
 						{
-							$row->match_note = 'category alias';
+						    $row->match_note = 'category alias = ' . $row->alias . ' / #' . $row->id;
 							$row->rating = $row->rating - 10 + count($row->match_parts);
 							$matches[] = $row;
 						}
@@ -136,7 +136,7 @@ class Dynamic404HelperMatchCategory
 	{
 		require_once JPATH_SITE . '/components/com_content/helpers/route.php';
 
-		return JRoute::_(ContentHelperRoute::getCategoryRoute($id));
+		return ContentHelperRoute::getCategoryRoute($id);
 	}
 
 	/**
@@ -185,6 +185,7 @@ class Dynamic404HelperMatchCategory
 			$query = $db->getQuery(true);
 			$query->select('*')
 				->from('#__categories')
+			    ->where($db->quoteName('extension') . '=' . $db->quote('com_content'))
 				->where($db->quoteName('published') . '= 1');
 
 			if ($this->params->get('load_all_categories', 0) == 0)

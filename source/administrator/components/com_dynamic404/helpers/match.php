@@ -437,16 +437,7 @@ class Dynamic404HelperMatch
 
 		// Include Search Plugins
 		JPluginHelper::importPlugin('search');
-
-		if (YireoHelper::isJoomla25())
-		{
-			$dispatcher = JDispatcher::getInstance();
-		}
-		else
-		{
-			$dispatcher = JEventDispatcher::getInstance();
-		}
-
+		$dispatcher = JEventDispatcher::getInstance();
 		$areas = $dispatcher->trigger('onContentSearch', array($search, $match, $ordering, $active));
 
 		// Loop through the search results and add them to the matches
@@ -751,6 +742,8 @@ class Dynamic404HelperMatch
 	 */
 	private function parseMatches()
 	{
+        $uri = JURI::getInstance();
+
 		if (!empty($this->matches))
 		{
 			foreach ($this->matches as $index => $match)
@@ -761,9 +754,7 @@ class Dynamic404HelperMatch
 				// Parse the current match
 				$match->parse();
 
-				if (JURI::getInstance()
-						->toString(array('path')) == $match->url
-				)
+				if ($uri->toString(array('path')) == $match->url)
 				{
 					unset($this->matches[$index]);
 					continue;
