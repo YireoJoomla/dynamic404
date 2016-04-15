@@ -62,7 +62,7 @@ On this page, you can see the result of Joomla trying to fetch data from Joomla 
         <?php echo JText::_('COM_DYNAMIC404_RESULT'); ?>
     </td>
     <td>
-        <iframe src="index.php?option=com_dynamic404&view=browse&task=ajax" width="100%" height="80"></iframe>
+        <iframe src="index.php?option=com_dynamic404&view=browse&task=ajax" width="100%" height="300"></iframe>
     </td>
 </tr>
 </table>

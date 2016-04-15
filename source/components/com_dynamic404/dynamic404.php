@@ -10,12 +10,12 @@
  */
 
 // no direct access
-defined( '_JEXEC' ) or die( 'Restricted access' );
+defined('_JEXEC') or die('Restricted access');
 
 // Require the base controller
-require_once (JPATH_COMPONENT.'/controller.php');
-$controller	= new Dynamic404Controller( );
+require_once JPATH_COMPONENT . '/controller.php';
+$controller = new Dynamic404Controller;
 
 // Perform the Request task
-$controller->execute(null);
-
+$app = JFactory::getApplication();
+$controller->execute($app->input->getCmd('task'));

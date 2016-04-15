@@ -25,9 +25,12 @@ class Dynamic404ControllerBrowse extends YireoController
 	public function ajax()
 	{
 		$app = JFactory::getApplication();
+		//$helper = new Dynamic404HelperCore;
 
 		$uri = JURI::getInstance();
-		$url = JURI::root();
+		$url = JURI::root() . 'index.php?option=com_dynamic404&task=test';
+		//$url = $helper->getMenuItemUrl(404);
+
 		$host = $uri->toString(array('host'));
 
 		$this->browse($host, $url);
@@ -73,6 +76,10 @@ class Dynamic404ControllerBrowse extends YireoController
 
 			return false;
 		}
+
+		require_once JPATH_COMPONENT . '/helpers/helper.php';
+		$response = Dynamic404Helper::fetchPage($url);
+		echo $response;exit;
 
 		// Fetch various responses
 		$this->responses[] = 'Basic connection succeeded';

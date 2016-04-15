@@ -16,9 +16,6 @@ jimport('joomla.plugin.plugin');
 
 /**
  * Plugin class for reusing redirection of the Dynamic404 component
- *
- * @package       Dynamic404
- * @subpackage    plgSystemDynamic404
  */
 class PlgSystemDynamic404 extends JPlugin
 {
@@ -26,6 +23,27 @@ class PlgSystemDynamic404 extends JPlugin
 	 * Instance of JApplication
 	 */
 	protected $app = null;
+
+	/**
+	 * File path to the Dynamic404 helper file
+	 *
+	 * @var string
+	 */
+	protected $helperFile = null;
+
+	/**
+	 * File path to the Dynamic404 debug helper
+	 *
+	 * @var string
+	 */
+	protected $debugFile = null;
+
+	/**
+	 * File path to the Dynamic404 match helper
+	 *
+	 * @var string
+	 */
+	protected $matchFile = null;
 
 	/**
 	 * File path to the Dynamic404 library loader
@@ -45,6 +63,9 @@ class PlgSystemDynamic404 extends JPlugin
 		// Internal variables
 		$this->app = JFactory::getApplication();
 		$this->loaderFile = JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
+		$this->helperFile = JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/helper.php';
+		$this->debugFile = JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
+		$this->matchFile = JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match.php';
 
 		// Include the parent library
 		$this->includeLibrary();
@@ -64,31 +85,35 @@ class PlgSystemDynamic404 extends JPlugin
 	 *
 	 * @param object &$error JError object
 	 */
-	static public function handleError(&$error)
+	static public function handleError($error)
 	{
 		if (empty($error) || $error == false)
 		{
 			$error = JError::getError();
 		}
 
+		$pluginData = JPluginHelper::getPlugin('system', 'dynamic404');
+		$dispatcher = JEventDispatcher::getInstance();
+		$plugin = new PlgSystemDynamic404($dispatcher, (array) ($pluginData));
+
 		// Include the 404 Helper-class
-		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/helper.php';
+		require_once $plugin->helperFile;
 
 		// Instantiate the helper with the argument of how many matches to show
 		$helper = new Dynamic404Helper(true, null, $error);
 		$app = JFactory::getApplication();
 
-        if (method_exists($error, 'getCode'))
-        {
-            $errorCode = $error->getCode();
-        }
-        else
-        {
-            $errorCode = $error->get('code');    
-        }
+		if (method_exists($error, 'getCode'))
+		{
+			$errorCode = $error->getCode();
+		}
+		else
+		{
+			$errorCode = $error->get('code');
+		}
 
-        // Make sure the error is a 404 and we are not in the administrator.
-        if (!$app->isAdmin() and $errorCode == 404)
+		// Make sure the error is a 404 and we are not in the administrator.
+		if (!$app->isAdmin() and $errorCode == 404)
 		{
 			// Log the 404 entry
 			$helper->log();
@@ -145,7 +170,10 @@ class PlgSystemDynamic404 extends JPlugin
 		$this->stopNonexistingComponents();
 
 		// Redirect static rules
-		$this->redirectStatic();
+		if ($this->hasComponent())
+		{
+			$this->redirectStatic();
+		}
 	}
 
 	/**
@@ -285,9 +313,9 @@ class PlgSystemDynamic404 extends JPlugin
 			return false;
 		}
 
-		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
-		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/helper.php';
-		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match.php';
+		require_once $this->debugFile;
+		require_once $this->helperFile;
+		require_once $this->matchFile;
 
 		$helper = new Dynamic404Helper(false, null, null, true);
 		$helper->getMatches();
@@ -407,7 +435,7 @@ class PlgSystemDynamic404 extends JPlugin
 	 */
 	public function onAfterRender()
 	{
-        require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
+		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
 		$debug = Dynamic404HelperDebug::getInstance();
 		$debugMessages = $debug->getMessages();
 
@@ -542,12 +570,22 @@ class PlgSystemDynamic404 extends JPlugin
 	 */
 	public function hasComponent()
 	{
-		if (file_exists($this->loaderFile))
+		if (file_exists($this->loaderFile) == false)
 		{
-			return true;
+			return false;
 		}
 
-		return false;
+		if (file_exists($this->helperFile) == false)
+		{
+			return false;
+		}
+
+		if (file_exists($this->debugFile) == false)
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

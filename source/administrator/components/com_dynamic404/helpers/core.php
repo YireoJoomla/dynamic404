@@ -150,4 +150,112 @@ class Dynamic404HelperCore
 
 		return $data['version'];
 	}
+
+
+	/**
+	 * Method to get the Menu-Item error-page URL
+	 */
+	public function getMenuItemUrl($errorCode)
+	{
+		// Check the parameters
+		$params = $this->params->toArray();
+		$Itemid = null;
+		$article = null;
+
+		foreach ($params as $name => $value)
+		{
+			if ($value > 0 && preg_match('/^menuitem_id_([0-9]+)/', $name, $match))
+			{
+				if ($errorCode == $match[1])
+				{
+					$Itemid = (int) $value;
+				}
+			}
+
+			if ($value > 0 && preg_match('/^article_id_([0-9]+)/', $name, $match))
+			{
+				if ($errorCode == $match[1])
+				{
+					$article = (int) $value;
+				}
+			}
+		}
+
+		// Don't continue if no item is there
+		if ($Itemid > 0 == false && $article > 0 == false)
+		{
+			return false;
+		}
+
+		// Check whether the current page is already the Dynamic404-page
+		if ($this->jinput->getCmd('option') == 'com_dynamic404')
+		{
+			return false;
+		}
+
+		// Fetch the system variables
+		$app = JFactory::getApplication();
+
+		// Determine the URL by Menu-Item
+		if ($Itemid > 0)
+		{
+			// Load the configured Menu-Item
+			$menu = $app->getMenu();
+			$item = $menu->getItem($Itemid);
+
+			if (empty($item) || !is_object($item) || !isset($item->query['option']))
+			{
+				return false;
+			}
+
+			// Construct the URL
+			if (isset($item->component) && $item->component == 'com_dynamic404')
+			{
+				$currentUrl = JURI::current();
+				$currentUrl = str_replace('?noredirect=1', '', $currentUrl);
+				$url = JRoute::_('index.php?option=com_dynamic404&Itemid=' . $Itemid . '&uri=' . base64_encode($currentUrl));
+			}
+			else
+			{
+				$url = JRoute::_('index.php?Itemid=' . $Itemid);
+			}
+		}
+		else
+		{
+			// Load the configured article
+			$row = $this->getArticle($errorCode);
+
+			if (empty($row))
+			{
+				return false;
+			}
+
+			require_once JPATH_SITE . '/components/com_content/helpers/route.php';
+			$url = ContentHelperRoute::getArticleRoute($article . ':' . $row->alias, $row->catid);
+			$url = JRoute::_($url);
+		}
+
+		// Complete the URL
+		$url = JURI::base() . substr($url, strlen(JURI::base(true)) + 1);
+
+		// Detect the language-SEF
+		$currentLanguage = JFactory::getLanguage();
+		$languages = JLanguageHelper::getLanguages('sef');
+
+		foreach ($languages as $language)
+		{
+			if ($language->lang_code == $currentLanguage->getTag())
+			{
+				$languageSef = $language->sef;
+			}
+		}
+
+		// Add the language to the URL
+		if (!empty($languageSef))
+		{
+			$url = (strstr($url, '?')) ? $url . '&lang=' . $languageSef : $url . '?lang=' . $languageSef;
+		}
+
+		return $url;
+	}
 }

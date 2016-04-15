@@ -18,6 +18,11 @@ require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match.php
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
 
+/**
+ * Class Dynamic404Helper
+ *
+ * @todo: Rename to Dynamic404Handler
+ */
 class Dynamic404Helper
 {
 	/**
@@ -578,12 +583,10 @@ class Dynamic404Helper
 	/**
 	 * Method to get the Menu-Item error-page URL
 	 */
-	public function getMenuItemUrl($error)
+	public function getMenuItemUrl($errorCode)
 	{
 		// Check the parameters
 		$params = $this->params->toArray();
-		$errorCode = $this->getErrorCode($error);
-
 		$Itemid = null;
 		$article = null;
 
@@ -724,7 +727,7 @@ class Dynamic404Helper
 			return false;
 		}
 
-		$url = $this->getMenuItemUrl($this->error);
+		$url = $this->getMenuItemUrl($this->getErrorCode($this->error));
 
 		if (empty($url))
 		{
@@ -737,15 +740,15 @@ class Dynamic404Helper
 		if ($this->params->get('caching', 1) == 1)
 		{
 			$cache->setCaching(1);
-			$contents = $cache->call(array('Dynamic404Helper', 'fetchPage'), $url);
+			$contents = $cache->call(array('Dynamic404Helper', 'fetchPage'), $url, null, true);
 		}
 		else
 		{
-			$contents = self::fetchPage($url);
+			$contents = self::fetchPage($url, null, true);
 		}
 
 		// Output the content
-	    header('Content-Type: text/html; charset=utf-8');
+		header('Content-Type: text/html; charset=utf-8');
 		print $contents;
 		$app->close();
 
@@ -757,10 +760,11 @@ class Dynamic404Helper
 	 *
 	 * @param string $url
 	 * @param string $useragent
+	 * @param bool $allowRedirects
 	 *
 	 * @return string
 	 */
-	static public function fetchPage($url, $useragent = null)
+	static public function fetchPage($url, $useragent = null, $allowRedirects = false)
 	{
 		if (function_exists('curl_init') == false)
 		{
@@ -777,7 +781,10 @@ class Dynamic404Helper
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
-		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
+
+		$maxRedirects = ($allowRedirects) ? 10 : 1;
+		curl_setopt($ch, CURLOPT_MAXREDIRS, $maxRedirects);
+
 		curl_setopt($ch, CURLOPT_USERAGENT, (!empty($useragent)) ? $useragent : $_SERVER['HTTP_USER_AGENT']);
 
 		$contents = curl_exec($ch);
@@ -822,8 +829,10 @@ class Dynamic404Helper
 	 */
 	protected function showComponentPage($Itemid)
 	{
+		$app = JFactory::getApplication();
+
 		// Load the configured Menu-Item
-		$menu = JFactory::getApplication()
+		$menu = $app
 			->getMenu();
 		$item = $menu->getItem($Itemid);
 
@@ -850,7 +859,7 @@ class Dynamic404Helper
 		include_once JPATH_SITE . '/components/' . $component . '/' . $entry;
 
 		// So now Joomla! is corrupt, so stop right away
-		JFactory::getApplication()
+		$app
 			->close();
 
 		return null;
@@ -880,16 +889,17 @@ class Dynamic404Helper
 
 		// Check the parameters
 		$componentParams = JComponentHelper::getParams('com_dynamic404');
-        $languageTag = JFactory::getLanguage()->getTag();
+		$language = JFactory::getLanguage();
+		$languageTag = $language->getTag();
 
 		if ($componentParams->get('error_page', self::ERROR_PAGE_DYNAMIC404) == self::ERROR_PAGE_DEFAULT)
 		{
-            $file = JPATH_SITE . '/templates/' . $application->getTemplate() . '/error_' . $languageTag . '.php';
+			$file = JPATH_SITE . '/templates/' . $application->getTemplate() . '/error_' . $languageTag . '.php';
 
-            if (file_exists($file) == false)
-            {
-                $file = JPATH_SITE . '/templates/' . $application->getTemplate() . '/error.php';
-            }
+			if (file_exists($file) == false)
+			{
+				$file = JPATH_SITE . '/templates/' . $application->getTemplate() . '/error.php';
+			}
 		}
 
 		if (empty($file) || file_exists($file) == false)

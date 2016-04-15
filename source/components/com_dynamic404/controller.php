@@ -13,7 +13,7 @@
 defined('_JEXEC') or die();
 
 // Include the loader
-require_once(JPATH_ADMINISTRATOR.'/components/com_dynamic404/lib/loader.php');
+require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
 
 /**
  * Dynamic404 Controller
@@ -22,17 +22,25 @@ require_once(JPATH_ADMINISTRATOR.'/components/com_dynamic404/lib/loader.php');
  */
 class Dynamic404Controller extends YireoAbstractController
 {
-    /**
-     * Constructor
-     *
-     * @access public
-     * @param null
-     * @return null
-     */
-    public function __construct()
-    {
-        JRequest::setVar('view', 'notfound');
-        parent::__construct();
-    }
+	protected $app;
+
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		/** @var JApplicationCms app */
+		$this->app = JFactory::getApplication();
+		$this->app->input->setVar('view', 'notfound');
+
+		parent::__construct();
+	}
+
+	public function test()
+	{
+		echo 'Basic connection succeeded<br/>';
+		echo 'Current URL: ' . JURI::getInstance()->toString(array('scheme', 'host', 'port', 'path', 'params'));
+		$this->app->close();
+	}
 }
 

@@ -15,6 +15,7 @@ defined('_JEXEC') or die('Restricted access');
 require_once JPATH_COMPONENT . '/lib/loader.php';
 
 // Load the helpers
+require_once JPATH_COMPONENT . '/helpers/helper.php';
 require_once JPATH_COMPONENT . '/helpers/core.php';
 require_once JPATH_COMPONENT . '/helpers/gui.php';
 

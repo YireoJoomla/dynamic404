@@ -774,17 +774,23 @@ class Dynamic404HelperMatch
 	{
 		if (!empty($this->matches))
 		{
-			$foundUrls = array();
+			$foundMatches = array();
 			$sort = array();
 
 			foreach ($this->matches as $match)
 			{
-				if (in_array($match->url, $foundUrls))
+                $matchSum = md5($match->url);
+
+				if (array_key_exists($matchSum, $foundMatches))
 				{
-					continue;
+                    $foundMatch = $foundMatches[$matchSum];
+                    if ($match->rating < $foundMatch->rating)
+                    {
+					    continue;
+                    }
 				}
 
-				$foundUrls[] = $match->url;
+				$foundMatches[$matchSum] = $match;
 
 				$index = urlencode($match->rating . '-' . $match->url);
 				$sort[$index] = array('rating' => $match->rating, 'match' => $match);
