@@ -4,9 +4,9 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2016 Yireo (https://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link       http://www.yireo.com/
+ * @link       https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -148,7 +148,7 @@ class Dynamic404HelperMatchCategory
 	 */
 	private function getCategoryById($id)
 	{
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName('id', 'title', 'alias', 'access'))
 			->from($db->quoteName('#__categories'))
@@ -180,7 +180,7 @@ class Dynamic404HelperMatchCategory
 
 		if (empty($rows))
 		{
-			$db = JFactory::getDBO();
+			$db = JFactory::getDbo();
 
 			$query = $db->getQuery(true);
 			$query->select('*')

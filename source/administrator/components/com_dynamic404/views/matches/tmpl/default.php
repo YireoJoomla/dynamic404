@@ -2,16 +2,22 @@
 /**
  * Joomla! component Dynamic404
  *
- * @author      Yireo (http://www.yireo.com/)
- * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die();
 ?>
 <form action="index.php?option=com_dynamic404&view=matches" method="post" name="adminForm" id="adminForm">
+
+	<div class="description">
+		<p>
+			Enter a URL in the search bar to see which matches Dynamic404 finds in your database
+		</p>
+	</div>
 
 	<div class="clearfix">
 		<div class="js-stools-container-bar">

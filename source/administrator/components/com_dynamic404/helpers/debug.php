@@ -4,9 +4,9 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2016 Yireo (https://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link       http://www.yireo.com/
+ * @link       https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -18,12 +18,12 @@ defined('_JEXEC') or die();
 class Dynamic404HelperDebug
 {
 	/**
-	 * @var JRegistry
+	 * @var \Joomla\Registry\Registry
 	 */
 	protected $params = null;
 
 	/**
-	 * @var messages
+	 * @var array
 	 */
 	protected $messages = array();
 
@@ -40,7 +40,7 @@ class Dynamic404HelperDebug
 		{
 			$instance = new Dynamic404HelperDebug;
 
-			/** @var JRegistry $params */
+			/** @var \Joomla\Registry\Registry $params */
 			$params = JComponentHelper::getParams('com_dynamic404');
 			$instance->setParams($params);
 		}
@@ -51,7 +51,7 @@ class Dynamic404HelperDebug
 	/**
 	 * Method to set parameters internally
 	 *
-	 * @param JRegistry $params
+	 * @param \Joomla\Registry\Registry $params
 	 */
 	public function setParams($params)
 	{
@@ -80,14 +80,15 @@ class Dynamic404HelperDebug
 		}
 
 		$message .= "\n";
+		$app = JFactory::getApplication();
 
-		if (JFactory::getApplication()->isSite())
+		if ($app->isSite())
 		{
 			$this->messages[] = $message;
 		}
-		elseif (JFactory::getApplication()->isAdmin())
+		elseif ($app->isAdmin())
 		{
-			JFactory::getApplication()->enqueueMessage($message, 'notice');
+			$app->enqueueMessage($message, 'notice');
 		}
 	}
 
@@ -104,7 +105,7 @@ class Dynamic404HelperDebug
 		{
 			if ($variable instanceof JDatabaseQuery)
 			{
-				$db = JFactory::getDBO();
+				$db = JFactory::getDbo();
 				$query = (string) $variable;
 				$query = str_replace('#__', $db->getPrefix(), $query);
 

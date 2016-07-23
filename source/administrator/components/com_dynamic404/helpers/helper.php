@@ -4,9 +4,9 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2016 Yireo (https://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link       http://www.yireo.com/
+ * @link       https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -16,6 +16,7 @@ defined('_JEXEC') or die();
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/core.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
+
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
 
 /**
@@ -67,6 +68,8 @@ class Dynamic404Helper
 	 *
 	 * @param   bool $init Initialize the helper
 	 * @param   int  $max  Maximum amount of entries to fetch
+	 * @param   mixed $error
+	 * @param   bool $staticRulesOnly
 	 */
 	public function __construct($init = true, $max = null, $error = null, $staticRulesOnly = false)
 	{
@@ -102,15 +105,23 @@ class Dynamic404Helper
 		// Run the tasks if available
 		if ($init == true)
 		{
-			$this->log();
-			$this->doRedirect();
-
-			$this->debug('PHP memory-usage', memory_get_usage());
-
-			$this->setHttpStatus();
-			$this->displayCustomPage();
-			$this->displayErrorPage();
+			$this->init();
 		}
+	}
+
+	/**
+	 * Initialize tasks
+	 */
+	public function init()
+	{
+		$this->log();
+		$this->doRedirect();
+
+		$this->debug('PHP memory-usage', memory_get_usage());
+
+		$this->setHttpStatus();
+		$this->displayCustomPage();
+		$this->displayErrorPage();
 	}
 
 	/**
@@ -151,8 +162,8 @@ class Dynamic404Helper
 			return false;
 		}
 
-		$error = $this->getErrorObject();
-		$errorCode = $error->getCode();
+		$error        = $this->getErrorObject();
+		$errorCode    = $error->getCode();
 		$errorMessage = $error->getMessage();
 
 		return Dynamic404HelperCore::log($this->matchHelper->getRequest('uri'), $errorCode, $errorMessage);
@@ -212,7 +223,7 @@ class Dynamic404Helper
 	 */
 	public function getLastSegment()
 	{
-		$segment = $this->matchHelper->getRequest('uri_last');
+		$segment          = $this->matchHelper->getRequest('uri_last');
 		$strip_extensions = explode(',', $this->params->get('strip_extensions'));
 
 		if (!empty($strip_extensions))
@@ -220,7 +231,7 @@ class Dynamic404Helper
 			foreach ($strip_extensions as $strip_extension)
 			{
 				$strip_extension = preg_replace('/([^a-zA-Z0-9\.\-\_]+)/', '', $strip_extension);
-				$segment = preg_replace('/\.' . $strip_extension . '$/', '', $segment);
+				$segment         = preg_replace('/\.' . $strip_extension . '$/', '', $segment);
 			}
 		}
 
@@ -274,8 +285,8 @@ class Dynamic404Helper
 
 		if (empty($this->error) || $this->error == false)
 		{
-			$code = 404;
-			$message = JText::_('Not found');
+			$code        = 404;
+			$message     = JText::_('Not found');
 			$this->error = new Exception($message, $code);
 		}
 
@@ -347,7 +358,7 @@ class Dynamic404Helper
 
 		$article = $params['article_id_' . $error];
 
-		$db = JFactory::getDBO();
+		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select('*');
 		$query->from($db->quoteName('#__content'));
@@ -388,36 +399,27 @@ class Dynamic404Helper
 		}
 
 		$user_agent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : null;
+		$url = 'https://api.yireo.com/redirect_check.php?url=' . urlencode(base64_encode($url));
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_HEADER, 1);
-		curl_setopt($ch, CURLOPT_NOBODY, 0);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 2);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
 		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
 		curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
 
-		$curl_head = curl_exec($ch);
-		$curl_info = curl_getinfo($ch);
-		$curl_error = curl_error($ch);
+		$content  = curl_exec($ch);
 		curl_close($ch);
 
-		if (empty($curl_head))
+		if (!empty($content))
 		{
-			$this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_ENDLESS_REDIRECT') . ': ' . $curl_error;
-
-			return false;
-
-		}
-		elseif (isset($curl_info['redirect_url']) && !empty($curl_info['redirect_url']))
-		{
-			$this->errors[] = JText::_('COM_DYNAMIC404_ADDITIONAL_ERROR_DOUBLE_REDIRECT') . ': ' . $curl_error;
+			$this->errors[] = $content;
 
 			return false;
 		}
@@ -465,7 +467,7 @@ class Dynamic404Helper
 		}
 
 		// Fetch the global direct values
-		$globalRedirect = (bool) $this->params->get('enable_redirect', 1);
+		$globalRedirect  = (bool) $this->params->get('enable_redirect', 1);
 		$redirectMinimum = (int) $this->params->get('redirect_minimum', 99);
 
 		// Check the rating boundary
@@ -482,8 +484,9 @@ class Dynamic404Helper
 		}
 		else
 		{
-			$params = YireoHelper::toRegistry($match->params);
-			$matchRedirect = $params->get('redirect');
+			/** @var \Joomla\Registry\Registry $params */
+			$params        = YireoHelper::toRegistry($match->params);
+			$matchRedirect = $params->get('redirect', $globalRedirect);
 		}
 
 		// Set global redirect value
@@ -554,7 +557,7 @@ class Dynamic404Helper
 		// Get the fully qualified URL
 		if (!preg_match('/^(http|https):\/\//', $url))
 		{
-			$url = JURI::getInstance()
+			$url = JUri::getInstance()
 					->toString(array('scheme', 'host', 'port')) . '/' . preg_replace('/^\//', '', $url);
 		}
 
@@ -586,8 +589,8 @@ class Dynamic404Helper
 	public function getMenuItemUrl($errorCode)
 	{
 		// Check the parameters
-		$params = $this->params->toArray();
-		$Itemid = null;
+		$params  = $this->params->toArray();
+		$Itemid  = null;
 		$article = null;
 
 		foreach ($params as $name => $value)
@@ -641,7 +644,7 @@ class Dynamic404Helper
 			{
 				$currentUrl = JURI::current();
 				$currentUrl = str_replace('?noredirect=1', '', $currentUrl);
-				$url = JRoute::_('index.php?option=com_dynamic404&Itemid=' . $Itemid . '&uri=' . base64_encode($currentUrl));
+				$url        = JRoute::_('index.php?option=com_dynamic404&Itemid=' . $Itemid . '&uri=' . base64_encode($currentUrl));
 			}
 			else
 			{
@@ -668,7 +671,7 @@ class Dynamic404Helper
 
 		// Detect the language-SEF
 		$currentLanguage = JFactory::getLanguage();
-		$languages = JLanguageHelper::getLanguages('sef');
+		$languages       = JLanguageHelper::getLanguages('sef');
 
 		foreach ($languages as $language)
 		{
@@ -719,8 +722,8 @@ class Dynamic404Helper
 
 		// Check the parameters
 		$componentParams = JComponentHelper::getParams('com_dynamic404');
-		$app = JFactory::getApplication();
-		$cache = JFactory::getCache();
+		$app             = JFactory::getApplication();
+		$cache           = JFactory::getCache();
 
 		if (!in_array($componentParams->get('error_page', self::ERROR_PAGE_DYNAMIC404), array(self::ERROR_PAGE_MENUITEM_INTERNAL)))
 		{
@@ -760,7 +763,7 @@ class Dynamic404Helper
 	 *
 	 * @param string $url
 	 * @param string $useragent
-	 * @param bool $allowRedirects
+	 * @param bool   $allowRedirects
 	 *
 	 * @return string
 	 */
@@ -768,7 +771,7 @@ class Dynamic404Helper
 	{
 		if (function_exists('curl_init') == false)
 		{
-			die('CURL not installed');
+			throw new Exception('CURL not installed');
 		}
 
 		$ch = curl_init();
@@ -776,14 +779,21 @@ class Dynamic404Helper
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 20);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
 
-		$maxRedirects = ($allowRedirects) ? 10 : 1;
-		curl_setopt($ch, CURLOPT_MAXREDIRS, $maxRedirects);
+		if ($allowRedirects)
+		{
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+			curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+		}
+		else
+		{
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+			curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
+		}
 
 		curl_setopt($ch, CURLOPT_USERAGENT, (!empty($useragent)) ? $useragent : $_SERVER['HTTP_USER_AGENT']);
 
@@ -791,7 +801,7 @@ class Dynamic404Helper
 
 		if ($contents === false)
 		{
-			die('CURL error: ' . curl_error($ch));
+			throw new Exception('CURL error: ' . curl_error($ch) . ' = ' . var_export(curl_getinfo($ch), true));
 		}
 
 		return $contents;
@@ -813,7 +823,7 @@ class Dynamic404Helper
 		}
 		else
 		{
-			$params = JComponentHelper::getParams('com_dynamic404');
+			$params      = JComponentHelper::getParams('com_dynamic404');
 			$http_status = $params->get('http_status', 301);
 
 			return $http_status;
@@ -832,8 +842,7 @@ class Dynamic404Helper
 		$app = JFactory::getApplication();
 
 		// Load the configured Menu-Item
-		$menu = $app
-			->getMenu();
+		$menu = $app->getMenu();
 		$item = $menu->getItem($Itemid);
 
 		if (empty($item) || !is_object($item) || !isset($item->query['option']))
@@ -859,8 +868,7 @@ class Dynamic404Helper
 		include_once JPATH_SITE . '/components/' . $component . '/' . $entry;
 
 		// So now Joomla! is corrupt, so stop right away
-		$app
-			->close();
+		$app->close();
 
 		return null;
 	}
@@ -874,7 +882,7 @@ class Dynamic404Helper
 	{
 		// System variables
 		$application = JFactory::getApplication();
-		$document = JFactory::getDocument();
+		$document    = JFactory::getDocument();
 
 		if (empty($this->title))
 		{
@@ -882,15 +890,15 @@ class Dynamic404Helper
 		}
 
 		// Add some common variables to the error-page
-		$this->error = $this->getErrorObject();
-		$this->baseurl = JURI::base();
+		$this->error    = $this->getErrorObject();
+		$this->baseurl  = JURI::base();
 		$this->template = $application->getTemplate();
-		$this->debug = 0;
+		$this->debug    = 0;
 
 		// Check the parameters
 		$componentParams = JComponentHelper::getParams('com_dynamic404');
-		$language = JFactory::getLanguage();
-		$languageTag = $language->getTag();
+		$language        = JFactory::getLanguage();
+		$languageTag     = $language->getTag();
 
 		if ($componentParams->get('error_page', self::ERROR_PAGE_DYNAMIC404) == self::ERROR_PAGE_DEFAULT)
 		{
@@ -922,9 +930,9 @@ class Dynamic404Helper
 	 */
 	public function setHttpStatus()
 	{
-		$error = JError::getError();
+		$error     = JError::getError();
 		$errorCode = $this->getErrorCode($error);
-		$document = JFactory::getDocument();
+		$document  = JFactory::getDocument();
 
 		if (YireoHelper::isJoomla25())
 		{
@@ -993,7 +1001,7 @@ class Dynamic404Helper
 	 */
 	public function generateShortUrl($url = null, $fullurl = true)
 	{
-		$db = JFactory::getDBO();
+		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName('match'))
 			->from($db->quoteName('#__dynamic404_redirects'))
@@ -1007,7 +1015,7 @@ class Dynamic404Helper
 			$match = self::generateRandomString();
 
 			$columns = array('match', 'url', 'http_status', 'type', 'published',);
-			$values = array($db->quote($match), $db->quote($url), 0, $db->quote('full_url'), 1,);
+			$values  = array($db->quote($match), $db->quote($url), 0, $db->quote('full_url'), 1,);
 
 			$query = $db->getQuery(true);
 			$query->insert($db->quoteName('#__dynamic404_redirects'))
@@ -1034,9 +1042,9 @@ class Dynamic404Helper
 	 */
 	public function generateRandomString()
 	{
-		$length = 8;
+		$length     = 8;
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyz';
-		$string = '';
+		$string     = '';
 
 		for ($p = 0; $p < $length; $p++)
 		{
@@ -1050,10 +1058,11 @@ class Dynamic404Helper
 	 * Method to block certain hack attempts
 	 *
 	 * @return bool|null
+	 * @throws Exception
 	 */
 	public function preventHacks()
 	{
-		$url = JURI::current();
+		$url   = JURI::current();
 		$block = false;
 
 		// Block certain hack strings
@@ -1093,7 +1102,7 @@ class Dynamic404Helper
 		}
 
 		header('HTTP/1.1 403 Forbidden');
-		die('Access Forbidden');
+		throw new Exception('Access Forbidden');
 	}
 
 	/**

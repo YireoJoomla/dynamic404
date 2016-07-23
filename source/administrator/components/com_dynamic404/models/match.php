@@ -2,11 +2,11 @@
 /**
  * Joomla! component Dynamic404
  *
- * @author      Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -20,19 +20,21 @@ class Dynamic404ModelMatch
 	/**
 	 * The friendly name of this match displayed on screen
 	 *
-	 * @var null
+	 * @var string
 	 */
 	public $name = null;
 
 	/**
 	 * The type of this match (component|...)
 	 *
-	 * @var null
+	 * @var string
 	 */
 	public $type = null;
 
 	/**
-	 * The piece of software responsible for constructing this match
+	 * The mechanism responsible for finding this match
+	 *
+	 * @var string
 	 */
 	public $handler = null;
 
@@ -46,21 +48,21 @@ class Dynamic404ModelMatch
 	/**
 	 * Direct URL of this match
 	 *
-	 * @var null
+	 * @var string
 	 */
 	public $url = null;
 
 	/**
 	 * Optional HTTP Status used when redirecting to this URL
 	 *
-	 * @var null
+	 * @var string
 	 */
 	public $http_status = null;
 
 	/**
 	 * Optional note for development
 	 *
-	 * @var null
+	 * @var string
 	 */
 	public $match_note = null;
 
@@ -91,13 +93,19 @@ class Dynamic404ModelMatch
 	/**
 	 * Calculate an additional rating by matching two string patterns and seeing how much they match
 	 *
-	 * @param $matchString
-	 * @param $searchParts
+	 * @param string $matchString
+	 * @param array $searchParts
 	 *
 	 * @return int
 	 */
 	public function getAdditionalRatingFromMatchedParts($matchString, $searchParts)
 	{
+		$sourceString = implode('-', $searchParts);
+
+		$rating = new \Yireo\Dynamic404\Utility\Rating($sourceString, $matchString);
+		
+		return $rating->getMatchPercentage();
+		/*
 		if (is_string($searchParts))
 		{
 			$searchParts = explode('-', $searchParts);
@@ -119,6 +127,7 @@ class Dynamic404ModelMatch
 		$this->debug('Additional rating for "' . $matchString . '" [' . $rating . ']', $searchParts);
 
 		return $rating;
+		*/
 	}
 
 	/**

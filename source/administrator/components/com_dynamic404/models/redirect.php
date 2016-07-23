@@ -2,23 +2,30 @@
 /**
  * Joomla! component Dynamic404
  *
- * @author      Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die();
 
+/**
+ * Class Dynamic404ModelRedirect
+ */
 class Dynamic404ModelRedirect extends YireoModel
 {
 	/**
 	 * Indicator if this is a model for multiple or single entries
 	 */
 	protected $_single = true;
-	//protected $_debug = true;
+
+	/**
+	 * @var bool
+	 */
+	protected $_debug = false;
 
 	/**
 	 * Constructor
@@ -40,9 +47,9 @@ class Dynamic404ModelRedirect extends YireoModel
 	public function store($data)
 	{
 		if (isset($data['url']))
-        {
-            $data['url'] = trim($data['url']);
-        }
+		{
+			$data['url'] = trim($data['url']);
+		}
 
 		if (isset($data['match']) && $data['match'] != '/')
 		{
@@ -72,30 +79,29 @@ class Dynamic404ModelRedirect extends YireoModel
 
 			if (!empty($asset_data) && is_array($asset_data))
 			{
-				$data = (object)array_merge((array)$data, $asset_data);
+				$data = (object) array_merge((array) $data, $asset_data);
 			}
 		}
 
 		return $data;
 	}
 
-	/*
+	/**
 	 * Method to prepare for HTML output
 	 *
-	 * @access public
 	 * @param string $tpl
 	 * @return null
 	 */
 	public function loadDataByAssetId($asset_id)
 	{
-		$asset_id = (int)$asset_id;
+		$asset_id = (int) $asset_id;
 
 		if (empty($asset_id))
 		{
 			return array();
 		}
 
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName('name'));
 		$query->from($db->quoteName('#__assets'));
@@ -144,25 +150,20 @@ class Dynamic404ModelRedirect extends YireoModel
 	/**
 	 * Method to initialise the data
 	 *
-	 * @access     protected
-	 * @subpackage Yireo
-	 *
-	 * @param null
-	 *
 	 * @return bool
 	 */
 	protected function getEmpty()
 	{
 		$rt = parent::getEmpty();
 
-		$this->_data->type = $this->params->get('type');
-		$this->_data->http_status = $this->params->get('http_status');
+		$this->data->type = $this->params->get('type');
+		$this->data->http_status = $this->params->get('http_status');
 
-		$params = YireoHelper::toParameter($this->_data->params);
+		$params = YireoHelper::toParameter($this->data->params);
 		$params->set('redirect', $this->params->get('redirect'));
 		$params->set('match_case', $this->params->get('match_case'));
 		$params->set('show_description', $this->params->get('show_description'));
-		$this->_data->params = json_encode($params);
+		$this->data->params = json_encode($params);
 
 		return $rt;
 	}

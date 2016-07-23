@@ -2,22 +2,21 @@
 /**
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2016 Yireo (https://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link       http://www.yireo.com/
+ * @link       https://www.yireo.com/
  */
 
 defined('JPATH_BASE') or die;
 
 // Load the Yireo library
-require_once(JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php');
+require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
 
 /**
  * Supports a modal article picker.
  *
  * @package        Joomla.Administrator
  * @subpackage     com_content
- * @since          1.6
  */
 class JFormFieldArticle extends JFormField
 {
@@ -53,7 +52,8 @@ class JFormFieldArticle extends JFormField
 		$script[] = '    }';
 
 		// Add the script to the document head.
-		JFactory::getDocument()->addScriptDeclaration(implode("\n", $script));
+		JFactory::getDocument()
+			->addScriptDeclaration(implode("\n", $script));
 
 		// Setup variables for display.
 		$html = array();
@@ -61,8 +61,8 @@ class JFormFieldArticle extends JFormField
 		$link .= '&amp;' . JSession::getFormToken() . '=1';
 
 		// Load the article title
-		$db = JFactory::getDBO();
-		$db->setQuery('SELECT title FROM #__content WHERE id = ' . (int)$this->value);
+		$db = JFactory::getDbo();
+		$db->setQuery('SELECT title FROM #__content WHERE id = ' . (int) $this->value);
 
 		$title = $db->loadResult();
 
@@ -85,39 +85,11 @@ class JFormFieldArticle extends JFormField
 			$value = (int) $this->value;
 		}
 
-		// HTML for Joomla! 2.5
-		if (YireoHelper::isJoomla25())
-		{
-			// The current user display field
-			$html[] = '<div class="fltlft">';
-			$html[] = '  <input type="text" id="' . $this->id . '_name" value="' . $title . '" disabled="disabled" size="35" />';
-			$html[] = '</div>';
-
-			// The user select button
-			$html[] = '<div class="button2-left">';
-			$html[] = '  <div class="blank">';
-			$html[] = '    <a class="modal btn" href="' . $link . '" rel="{handler: \'iframe\', size: {x: 800, y: 450}}">' . JText::_('COM_CONTENT_CHANGE_ARTICLE_BUTTON') . '</a>';
-			$html[] = '  </div>';
-			$html[] = '</div>';
-
-			// The reset button
-			$html[] = '<div class="button2-left">';
-			$html[] = '  <div class="blank">';
-			$html[] = '    <a class="btn" onclick="jResetArticle_' . $this->id . '(); return false;">' . JText::_('JNONE') . '</a>';
-			$html[] = '  </div>';
-			$html[] = '</div>';
-
-			// HTML for other Joomla!
-		}
-		else
-		{
-			$html[] = '<span class="input-append">';
-			$html[] = '<input type="text" class="input-medium" id="' . $this->id . '_name" value="' . $title . '" disabled="disabled" size="35" />';
-			$html[] = '<a class="modal btn" href="' . $link . '" rel="{handler: \'iframe\', size: {x: 800, y: 450}}"><i class="icon-file"></i> ' . JText::_('JSELECT') . '</a>';
-			$html[] = '<button id="' . $this->id . '_clear" class="btn" onclick="jResetArticle_' . $this->id . '(); return false;"><span class="icon-remove"></span>' . JText::_('JCLEAR') . '</button>';
-			$html[] = '</span>';
-
-		}
+		$html[] = '<span class="input-append">';
+		$html[] = '<input type="text" class="input-medium" id="' . $this->id . '_name" value="' . $title . '" disabled="disabled" size="35" />';
+		$html[] = '<a class="modal btn" href="' . $link . '" rel="{handler: \'iframe\', size: {x: 800, y: 450}}"><i class="icon-file"></i> ' . JText::_('JSELECT') . '</a>';
+		$html[] = '<button id="' . $this->id . '_clear" class="btn" onclick="jResetArticle_' . $this->id . '(); return false;"><span class="icon-remove"></span>' . JText::_('JCLEAR') . '</button>';
+		$html[] = '</span>';
 
 		// Class='required' for client side validation
 		$class = '';

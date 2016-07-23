@@ -2,11 +2,11 @@
 /**
  * Joomla! component Dynamic404
  *
- * @author      Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!  
@@ -41,18 +41,29 @@ class Dynamic404ViewMatches extends YireoView
 	 */
 	public function display($tpl = null)
 	{
-		JToolBarHelper::custom( 'refresh', 'preview.png', 'preview_f2.png', 'Browse', false );
-
-		$this->url = $this->application->input->get('url', null, 'raw');
+		$this->url = $this->app->input->get('url', null, 'raw');
 		$this->matches = $this->getMatches($this->url);
 
 		parent::display();
 	}
 
-	public function getMatches($url)
+	/**
+	 * @param null $url
+	 *
+	 * @return array
+	 * @throws Exception
+	 */
+	public function getMatches($url = null)
 	{
-		$matchHelper = new Dynamic404HelperMatch($url);
-		$matches = $matchHelper->getMatches();
+		if (empty($url))
+		{
+			return array();
+		}
+
+		$remoteUrl = JUri::root() . 'index.php?option=com_dynamic404&view=matches&format=raw&url=' . urlencode(base64_encode($url));
+
+		$result = Dynamic404Helper::fetchPage($remoteUrl, null, true);
+		$matches = json_decode($result);
 
 		return $matches;
 	}

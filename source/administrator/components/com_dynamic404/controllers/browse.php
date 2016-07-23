@@ -2,10 +2,10 @@
 /**
  * Joomla! component Dynamic404
  *
- * @author      Yireo (http://www.yireo.com/)
- * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -16,6 +16,9 @@ defined('_JEXEC') or die();
  */
 class Dynamic404ControllerBrowse extends YireoController
 {
+	/**
+	 * @var array
+	 */
 	protected $responses = array();
 
 	/**
@@ -79,9 +82,7 @@ class Dynamic404ControllerBrowse extends YireoController
 
 		require_once JPATH_COMPONENT . '/helpers/helper.php';
 		$response = Dynamic404Helper::fetchPage($url);
-		echo $response;exit;
-
-		// Fetch various responses
-		$this->responses[] = 'Basic connection succeeded';
+		echo $response;
+		exit;
 	}
 }

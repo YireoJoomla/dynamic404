@@ -2,11 +2,11 @@
 /**
  * Joomla! component Dynamic404
  *
- * @author      Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -31,13 +31,10 @@ class Dynamic404Controller extends YireoController
 
 	/**
 	 * Method to restore the original error.php file
-	 *
-	 * @access public
-	 * @return null
 	 */
 	public function deleteAll()
 	{
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->delete($db->quoteName('#__dynamic404_logs'));
 
@@ -51,9 +48,6 @@ class Dynamic404Controller extends YireoController
 
 	/**
 	 * Method to restore the original error.php file
-	 *
-	 * @access public
-	 * @return null
 	 */
 	public function restore()
 	{
@@ -86,9 +80,6 @@ class Dynamic404Controller extends YireoController
 
 	/**
 	 * Method to patch the system error.php file
-	 *
-	 * @access public
-	 * @return null
 	 */
 	public function patch()
 	{
@@ -114,25 +105,19 @@ class Dynamic404Controller extends YireoController
 
 	/**
 	 * Method to enable the Dynamic404 System Plugin
-	 *
-	 * @access public
-	 * @return null
 	 */
 	public function pluginD404()
 	{
 		// Perform the database query
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$query = $db->getQuery(true);
-		$query
-			->update($db->quoteName('#__extensions'))
+		$query->update($db->quoteName('#__extensions'))
 			->set($db->quoteName('enabled') . '=1')
-			->where(
-				array(
+			->where(array(
 					$db->quoteName('type') . '=' . $db->quote('plugin'),
 					$db->quoteName('element') . '=' . $db->quote('dynamic404'),
 					$db->quoteName('folder') . '=' . $db->quote('system')
-				)
-			);
+				));
 
 		$db->setQuery($query);
 		$db->execute();
@@ -143,25 +128,19 @@ class Dynamic404Controller extends YireoController
 
 	/**
 	 * Method to enable the Dynamic404 System Plugin
-	 *
-	 * @access public
-	 * @return null
 	 */
 	public function pluginRedirect()
 	{
 		// Perform the database query
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$query = $db->getQuery(true);
-		$query
-			->update($db->quoteName('#__extensions'))
+		$query->update($db->quoteName('#__extensions'))
 			->set($db->quoteName('enabled') . '=0')
-			->where(
-				array(
+			->where(array(
 					$db->quoteName('type') . '=' . $db->quote('plugin'),
 					$db->quoteName('element') . '=' . $db->quote('redirect'),
 					$db->quoteName('folder') . '=' . $db->quote('system')
-				)
-			);
+				));
 
 		$db->setQuery($query);
 		$db->execute();
@@ -169,7 +148,6 @@ class Dynamic404Controller extends YireoController
 		// Redirect
 		$this->setRedirect('index.php?option=com_dynamic404&view=setup');
 	}
-
 
 	/**
 	 * Method to run SQL-update queries
@@ -189,9 +167,9 @@ class Dynamic404Controller extends YireoController
 	/**
 	 *
 	 */
-    public function ajax()
-    {
-        echo 'Success';
-        exit;
-    }
+	public function ajax()
+	{
+		echo 'Success';
+		exit;
+	}
 }

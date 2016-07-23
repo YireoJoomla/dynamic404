@@ -3,9 +3,9 @@
  * Joomla! component Dynamic404
  *
  * @author Yireo (info@yireo.com)
- * @copyright Copyright 2015
+ * @copyright Copyright 2016
  * @license GNU Public License
- * @link http://www.yireo.com
+ * @link https://www.yireo.com
  */
 
 // Check to ensure this file is included in Joomla!
@@ -22,8 +22,9 @@ class Dynamic404Update
 	static public function runUpdateQueries()
 	{
 		$sqlfiles = array(
-			JPATH_COMPONENT . '/sql/install.sql',
-			JPATH_COMPONENT . '/sql/update.sql',);
+			JPATH_COMPONENT . '/sql/install.mysql.utf8.sql',
+			JPATH_COMPONENT . '/sql/update.sql'
+        );
 
 		foreach ($sqlfiles as $sqlfile)
 		{
@@ -39,7 +40,7 @@ class Dynamic404Update
 	 */
 	static public function runUpdateQueriesFromFile($sqlfile)
 	{
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$buffer = file_get_contents($sqlfile);
 
 		if (method_exists('JDatabaseDriver', 'splitSql'))

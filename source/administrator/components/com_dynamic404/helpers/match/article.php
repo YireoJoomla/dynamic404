@@ -4,9 +4,9 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2016 Yireo (https://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link       http://www.yireo.com/
+ * @link       https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -22,7 +22,22 @@ class Dynamic404HelperMatchArticle
 	 */
 	private $params = null;
 
-    protected $articleFields = array('id', 'title', 'alias', 'introtext', 'fulltext', 'state', 'catid', 'publish_up', 'publish_down', 'attribs', 'language');
+	/**
+	 * @var array
+	 */
+	protected $articleFields = array(
+		'id',
+		'title',
+		'alias',
+		'introtext',
+		'fulltext',
+		'state',
+		'catid',
+		'publish_up',
+		'publish_down',
+		'attribs',
+		'language'
+	);
 
 	/**
 	 * Constructor
@@ -35,7 +50,7 @@ class Dynamic404HelperMatchArticle
 	/**
 	 * Method to find matches when the last segment seems to be an ID
 	 *
-	 * @param   int  $id  Numerical value to match
+	 * @param   int $id Numerical value to match
 	 *
 	 * @return mixed|null
 	 */
@@ -57,7 +72,7 @@ class Dynamic404HelperMatchArticle
 	/**
 	 * Method to find matches within Joomla! articles
 	 *
-	 * @param   array  $strings Strings to search for
+	 * @param   array $strings Strings to search for
 	 *
 	 * @return array
 	 */
@@ -80,34 +95,47 @@ class Dynamic404HelperMatchArticle
 
 			if (!empty($article))
 			{
-				$article->rating = 95;
+				$article->rating     = 95;
 				$article->match_note = 'article ID';
-				$matches[] = $article;
+				$matches[]           = $article;
 			}
 		}
 
 		// Match the alias
 		$articles = $this->getArticleListByStrings($strings);
 
-		if (!empty($articles))
+		if (empty($articles))
 		{
-			foreach ($articles as $article)
+			return $matches;
+		}
+
+		foreach ($articles as $article)
+		{
+			if (!isset($article->alias) || empty($article->alias))
 			{
-				if (!isset($article->alias) || empty($article->alias))
-				{
-					continue;
-				}
-
-				$match = $this->prepareArticle($article);
-
-				if (!empty($match))
-				{
-					$match->search_parts = $strings;
-					$match->rating = $match->rating + $match->getAdditionalRatingFromMatchedParts($match->alias, $strings);
-					$match->match_note = 'article alias "' . $match->alias . '""';
-					$matches[] = $match;
-				}
+				continue;
 			}
+
+			/** @var Dynamic404ModelMatch $match */
+			$match = $this->prepareArticle($article);
+
+			if (empty($match))
+			{
+				continue;
+			}
+
+			$additionalRating = $match->getAdditionalRatingFromMatchedParts($match->alias, $strings);
+
+			if (empty($additionalRating) && $this->params->get('load_all_articles', 0) == 1)
+			{
+				continue;
+			}
+
+			$match->search_parts = $strings;
+			//$match->rating       = $match->rating + $additionalRating;
+			$match->rating = $additionalRating;
+			$match->match_note   = 'article alias "' . $match->alias . '""';
+			$matches[]           = $match;
 		}
 
 		return $matches;
@@ -116,10 +144,10 @@ class Dynamic404HelperMatchArticle
 	/**
 	 * Method to redirect to a specific match
 	 *
-	 * @param   string  $article_slug  Article ID + alias
-	 * @param   int     $category_id   Category ID
-	 * @param   int     $section_id    Section ID (deprecated)
-	 * @param   string  $language      Language identifier
+	 * @param   string $article_slug Article ID + alias
+	 * @param   int    $category_id  Category ID
+	 * @param   int    $section_id   Section ID (deprecated)
+	 * @param   string $language     Language identifier
 	 *
 	 * @return string
 	 */
@@ -139,7 +167,7 @@ class Dynamic404HelperMatchArticle
 			if (!empty($article))
 			{
 				$article_slug = $article->id . ':' . $article->alias;
-				$category_id = $article->catid . ':' . $article->catalias;
+				$category_id  = $article->catid . ':' . $article->catalias;
 			}
 		}
 
@@ -152,7 +180,7 @@ class Dynamic404HelperMatchArticle
 			$link = ContentHelperRoute::getArticleRoute($article_slug, $category_id);
 		}
 
-        $currentLanguage = JFactory::getLanguage();
+		$currentLanguage = JFactory::getLanguage();
 
 		if (!empty($language) && $language != '*' && $language != $currentLanguage->getTag())
 		{
@@ -169,14 +197,14 @@ class Dynamic404HelperMatchArticle
 	 */
 	private function getArticleSlugDetailsById($id)
 	{
-		$db = JFactory::getDBO();
+		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName(array('a.id', 'a.alias', 'a.catid')))
 			->select($db->quoteName('c.alias', 'catalias'))
 			->from($db->quoteName('#__content', 'a'))
 			->join('INNER', $db->quoteName('#__categories', 'c') . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')')
 			->where($db->quoteName('a.id') . '=' . (int) $id)
-            ->setLimit(1);
+			->setLimit(1);
 		$db->setQuery($query);
 		$article = $db->loadObject();
 
@@ -187,18 +215,19 @@ class Dynamic404HelperMatchArticle
 	 * Method to get an article by ID
 	 *
 	 * @param null
+	 *
 	 * @return array
 	 */
 	private function getArticleById($id)
 	{
-		$db = JFactory::getDBO();
+		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName($this->articleFields))
 			->from($db->quoteName('#__content'))
 			->where($db->quoteName('state') . '= 1')
 			->where($db->quoteName('id') . '=' . (int) $id)
 			->order($db->quoteName('ordering') . ' ASC')
-            ->setLimit(1);
+			->setLimit(1);
 		$db->setQuery($query, 0, 1);
 
 		if ($this->params->get('debug', 0) == 1)
@@ -212,7 +241,7 @@ class Dynamic404HelperMatchArticle
 	/**
 	 * Method to get a list of articles
 	 *
-	 * @param   array  $strings  Array of strings to search for
+	 * @param   array $strings Array of strings to search for
 	 *
 	 * @return array
 	 */
@@ -227,18 +256,18 @@ class Dynamic404HelperMatchArticle
 
 		if (empty($rows))
 		{
-			$db = JFactory::getDBO();
+			$db    = JFactory::getDbo();
 			$query = $db->getQuery(true);
 
-            $nullDate = $db->getNullDate();
-            $date = JFactory::getDate();
-            $now = $date->toSql();
+			$nullDate = $db->getNullDate();
+			$date     = JFactory::getDate();
+			$now      = $date->toSql();
 
 			$query->select($db->quoteName($this->articleFields))
 				->from($db->quoteName('#__content'))
 				->where($db->quoteName('state') . '= 1')
 				->where('(publish_up = ' . $db->quote($nullDate) . ' OR publish_up <= ' . $db->quote($now) . ')')
-                ->where('(publish_down = ' . $db->quote($nullDate) . ' OR publish_down >= ' . $db->quote($now) . ')')
+				->where('(publish_down = ' . $db->quote($nullDate) . ' OR publish_down >= ' . $db->quote($now) . ')')
 				->order($db->quoteName('ordering'));
 
 			if ($this->params->get('load_all_articles', 0) == 0)
@@ -269,7 +298,7 @@ class Dynamic404HelperMatchArticle
 	/**
 	 * Method to prepare an article
 	 *
-	 * @param   object  $item  Content item object
+	 * @param   object $item Content item object
 	 *
 	 * @return object
 	 */
@@ -284,10 +313,10 @@ class Dynamic404HelperMatchArticle
 		// Cast this match to the right class
 		$item = Dynamic404ModelMatch::getInstance($item);
 
-		$item->type = 'component';
+		$item->type    = 'component';
 		$item->handler = 'article';
-		$item->name = $item->title;
-		$item->rating = $this->params->get('rating_articles', 85);
+		$item->name    = $item->title;
+		$item->rating  = $this->params->get('rating_articles', 85);
 
 		// Parse the language of this item
 		$item->parseLanguage();
@@ -307,8 +336,8 @@ class Dynamic404HelperMatchArticle
 	/**
 	 * Method alias for debugging
 	 *
-	 * @param   string  $msg       Debugging message
-	 * @param   null    $variable  Optional variable to dump
+	 * @param   string $msg      Debugging message
+	 * @param   null   $variable Optional variable to dump
 	 */
 	public function debug($msg, $variable = null)
 	{

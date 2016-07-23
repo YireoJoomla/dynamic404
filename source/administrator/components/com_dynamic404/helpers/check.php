@@ -4,9 +4,9 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright  Copyright 2016 Yireo (https://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link       http://www.yireo.com/
+ * @link       https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -24,7 +24,7 @@ class Dynamic404HelperCheck
 	 */
 	static public function checkDynamic404SystemPlugin()
 	{
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select('*')
 			->from($db->quoteName('#__extensions'))
@@ -67,7 +67,7 @@ class Dynamic404HelperCheck
 	 */
 	static public function checkRedirectSystemPlugin()
 	{
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select('*')
 			->from($db->quoteName('#__extensions'))
@@ -104,7 +104,8 @@ class Dynamic404HelperCheck
 	 */
 	static public function checkSefEnabled()
 	{
-		$sef = (bool) JFactory::getConfig()->get('sef');
+		$sef = (bool) JFactory::getConfig()
+			->get('sef');
 
 		if ($sef)
 		{
@@ -131,7 +132,8 @@ class Dynamic404HelperCheck
 	 */
 	static public function checkSefRewritesEnabled()
 	{
-		$sefRewrites = (bool) JFactory::getConfig()->get('sef_rewrite');
+		$sefRewrites = (bool) JFactory::getConfig()
+			->get('sef_rewrite');
 
 		if ($sefRewrites)
 		{
@@ -158,7 +160,8 @@ class Dynamic404HelperCheck
 	 */
 	static public function checkAutoRedirectEnabled()
 	{
-		$autoRedirect = (bool) JComponentHelper::getParams('com_dynamic404')->get('enable_redirect', 1);
+		$autoRedirect = (bool) JComponentHelper::getParams('com_dynamic404')
+			->get('enable_redirect', 1);
 
 		if ($autoRedirect)
 		{

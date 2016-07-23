@@ -23,8 +23,6 @@ CREATE TABLE IF NOT EXISTS `#__dynamic404_redirects` (
     PRIMARY KEY (`redirect_id`)
 ) DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `#__dynamic404_logs`;
-
 CREATE TABLE IF NOT EXISTS `#__dynamic404_logs` (
     `log_id` int(11) NOT NULL auto_increment,
     `request` varchar(255) NOT NULL,
