@@ -1,6 +1,6 @@
 <?php
 /**
- * Joomla! plugin for Dynamic404 - VirtueMart
+ * Joomla! plugin for Dynamic404 - Hikashop
  *
  * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
@@ -16,9 +16,9 @@ defined('_JEXEC') or die('Restricted access');
 jimport('joomla.plugin.plugin');
 
 /**
- * Dynamic404 Plugin for VirtueMart
+ * Dynamic404 Plugin for Hikashop
  */
-class PlgDynamic404VirtueMart extends JPlugin
+class PlgDynamic404Hikashop extends JPlugin
 {
 	protected $matchedUrls = array();
 
@@ -29,29 +29,12 @@ class PlgDynamic404VirtueMart extends JPlugin
 	 */
 	private function isEnabled()
 	{
-		if (!is_dir(JPATH_SITE . '/components/com_virtuemart'))
+		if (!is_dir(JPATH_SITE . '/components/com_hikashop'))
 		{
 			return false;
 		}
 
 		return true;
-	}
-
-	/**
-	 * Get the current locale
-	 *
-	 * @return string
-	 */
-	private function getLanguageCode()
-	{
-		$language = JFactory::getLanguage();
-
-		if (isset($language->lang_code))
-		{
-			return str_replace('-', '_', $language->lang_code);
-		}
-
-		return 'en_gb';
 	}
 
 	/**
@@ -63,7 +46,7 @@ class PlgDynamic404VirtueMart extends JPlugin
 	 */
 	public function getMatches($urilast = null)
 	{
-		$app = JFactory::getApplication();
+		$app     = JFactory::getApplication();
 		$matches = array();
 
 		if ($this->isEnabled() == false)
@@ -78,7 +61,10 @@ class PlgDynamic404VirtueMart extends JPlugin
 		{
 			foreach ($products as $product)
 			{
-				$matches[] = $product;
+				if (!empty($product))
+				{
+					$matches[] = $product;
+				}
 			}
 		}
 
@@ -103,32 +89,34 @@ class PlgDynamic404VirtueMart extends JPlugin
 	 */
 	private function findCategory($urilast, $category_id)
 	{
-		$db = JFactory::getDbo();
+		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true);
 
-		$query->select($db->quoteName(array('c.virtuemart_category_id', 'l.category_name')));
+		$query->select($db->quoteName(array('c.category_id', 'c.category_name')));
+		$query->from($db->quoteName('#__hikashop_category', 'c'));
 
-		$query->from($db->quoteName('#__virtuemart_categories_' . $this->getLanguageCode(), 'l'));
+		$wheres   = array();
+		$wheres[] = $db->quoteName('c.category_id') . '=' . (int) $category_id;
+		$wheres[] = $db->quoteName('c.category_alias') . ' LIKE ' . $db->quote('%' . $urilast . '%');
 
-		$categoryTable = $db->quoteName('#__virtuemart_categories', 'c');
-		$categoryTableId = $db->quoteName('c.virtuemart_category_id');
-		$productTableCategoryId = $db->quoteName('l.virtuemart_category_id');
-		$query->join('LEFT', $categoryTable . ' ON (' . $categoryTableId . ' = ' . $productTableCategoryId . ')');
+		$strings = $this->getSearchPartsFromString($urilast);
 
-		$wheres = array();
-		$wheres[] = $db->quoteName('l.virtuemart_category_id') . '=' . (int) $category_id;
-		$wheres[] = $db->quoteName('l.slug') . ' LIKE ' . $db->quote('%' . $urilast . '%');
+		foreach ($strings as $string)
+		{
+			$wheres[] = $db->quoteName('c.category_alias') . ' LIKE ' . $db->quote('%' . $string . '%');
+		}
+
 		$query->where(implode(' OR ', $wheres));
 
-		$query->where($db->quoteName('c.published') . '=1');
+		$query->where($db->quoteName('c.category_published') . '=1');
 		$query->setLimit(1);
 
 		$db->setQuery($query);
 		$category = $db->loadObject();
 
-		$this->debug('VirtueMart category query', $db->getQuery());
+		$this->debug('Hikashop category query', $db->getQuery());
 
-		if (empty($category) || empty($category->virtuemart_category_id))
+		if (empty($category) || empty($category->category_id))
 		{
 			return null;
 		}
@@ -140,11 +128,11 @@ class PlgDynamic404VirtueMart extends JPlugin
 			return false;
 		}
 
-		$match->match_note = 'virtuemart category';
-		$match->type = 'component';
-		$match->name = $category->category_name;
-		$match->rating = $this->params->get('rating', 85) - 1;
-		$match->url = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_category_id=' . $category->virtuemart_category_id);
+		$match->match_note = 'hikashop category';
+		$match->type       = 'component';
+		$match->name       = $category->category_name;
+		$match->rating     = $this->params->get('rating', 85) - 1;
+		$match->url        = JRoute::_('index.php?option=com_hikashop&view=category&category_id=' . $category->category_id);
 
 		return $match;
 	}
@@ -153,50 +141,47 @@ class PlgDynamic404VirtueMart extends JPlugin
 	 * @param $product_id
 	 * @param $urilast
 	 *
-	 * @return JDatabaseQuery
+	 * @return false|JDatabaseQuery
 	 */
-	private function getVmProductQuery($product_id, $urilast)
+	private function getProductQuery($product_id, $urilast)
 	{
 		$strings = $this->getSearchPartsFromString($urilast);
 
 		if (empty($strings) && empty($product_id))
-        {
-            return false;
-        }
+		{
+			return false;
+		}
 
-		$db = JFactory::getDbo();
+		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true);
 
-		$query->select($db->quoteName('p.virtuemart_product_id', 'product_id'));
-		$query->select($db->quoteName('l.product_name'));
-		$query->select($db->quoteName('l.slug'));
-		$query->select($db->quoteName('c.virtuemart_category_id', 'category_id'));
+		$query->select($db->quoteName('p.product_id'));
+		$query->select($db->quoteName('p.product_name'));
+		$query->select($db->quoteName('p.product_alias'));
+		$query->select($db->quoteName('p.product_canonical'));
+		$query->select($db->quoteName('c.category_id'));
 
-		$query->from($db->quoteName('#__virtuemart_products_' . $this->getLanguageCode(), 'l'));
+		$query->from($db->quoteName('#__hikashop_product', 'p'));
 
-		$categoryTable = $db->quoteName('#__virtuemart_product_categories', 'c');
-		$categoryTableProductId = $db->quoteName('c.virtuemart_product_id');
-		$languageTableProductId = $db->quoteName('l.virtuemart_product_id');
-		$query->join('LEFT', $categoryTable . ' ON (' . $categoryTableProductId . ' = ' . $languageTableProductId . ')');
-
-		$productsTable = $db->quoteName('#__virtuemart_products', 'p');
-		$productsTableProductId = $db->quoteName('p.virtuemart_product_id');
-		$query->join('LEFT', $productsTable . ' ON (' . $productsTableProductId . ' = ' . $languageTableProductId . ')');
+		$categoryTable          = $db->quoteName('#__hikashop_product_category', 'c');
+		$categoryTableProductId = $db->quoteName('c.product_id');
+		$productId              = $db->quoteName('p.product_id');
+		$query->join('LEFT', $categoryTable . ' ON (' . $categoryTableProductId . ' = ' . $productId . ')');
 
 		$wheres = array();
 
 		if (!empty($product_id))
 		{
-			$wheres[] = $db->quoteName('l.virtuemart_product_id') . '=' . (int) $product_id;
+			$wheres[] = $db->quoteName('p.product_id') . '=' . (int) $product_id;
 		}
 
-		$strings = $this->getSearchPartsFromString($urilast);
-		$firstString = $strings[0];
-		$wheres[] = $db->quoteName('l.slug') . ' LIKE ' . $db->quote(implode('%', $strings));
-		$wheres[] = $db->quoteName('l.slug') . ' LIKE ' . $db->quote($firstString . '%');
+		foreach ($strings as $string)
+		{
+			$wheres[] = $db->quoteName('p.product_alias') . ' LIKE ' . $db->quote('%' . $string . '%');
+		}
 
 		$query->where('(' . implode(' OR ', $wheres) . ')');
-		$query->where($db->quoteName('p.published') . '=1');
+		$query->where($db->quoteName('p.product_published') . '=1');
 
 		$query->setLimit(15);
 
@@ -210,7 +195,7 @@ class PlgDynamic404VirtueMart extends JPlugin
 	 */
 	private function getArrayFromString($string)
 	{
-		$string = str_replace('_', '-', $string);
+		$string  = str_replace('_', '-', $string);
 		$strings = explode('-', $string);
 
 		return $strings;
@@ -244,7 +229,7 @@ class PlgDynamic404VirtueMart extends JPlugin
 	 */
 	private function getSearchPartsFromString($string)
 	{
-		$strings = $this->getArrayFromString($string);
+		$strings     = $this->getArrayFromString($string);
 		$searchParts = array();
 
 		foreach ($strings as $string)
@@ -277,15 +262,15 @@ class PlgDynamic404VirtueMart extends JPlugin
 	{
 		$db = JFactory::getDbo();
 
-		$query = $this->getVmProductQuery($product_id, $urilast);
+		$query = $this->getProductQuery($product_id, $urilast);
 
-        if (empty($query))
-        {
-            return false;
-        }
+		if (empty($query))
+		{
+			return false;
+		}
 
 		$db->setQuery($query);
-		$this->debug('VirtueMart product query', $db->getQuery());
+		$this->debug('Hikashop product query', $db->getQuery());
 
 		$products = $db->loadObjectList();
 
@@ -305,19 +290,19 @@ class PlgDynamic404VirtueMart extends JPlugin
 				continue;
 			}
 
-			$match->type = 'component';
-			$match->name = $product->product_name;
-			$match->match_note = 'virtuemart product';
+			$match->type       = 'component';
+			$match->name       = $product->product_name;
+			$match->match_note = 'hikashop product';
 
 			$match->rating = $this->params->get('rating', 85);
-			$match->rating = $match->rating + $match->getAdditionalRatingFromMatchedParts($product->slug, $urilast);
+			$match->rating = $match->rating + $match->getAdditionalRatingFromMatchedParts($product->product_alias, $urilast);
 
 			if (in_array($product->category_id, $this->getNumbersFromString($urilast)))
 			{
 				$match->rating = $match->rating + 1;
 			}
 
-			$match->url = $this->getProductUrl($product->product_id, $product->category_id);
+			$match->url = $this->getProductUrl($product);
 
 			if (in_array($match->url, $this->matchedUrls))
 			{
@@ -325,7 +310,7 @@ class PlgDynamic404VirtueMart extends JPlugin
 			}
 
 			$this->matchedUrls[] = $match->url;
-			$matches[] = $match;
+			$matches[]           = $match;
 		}
 
 		return $matches;
@@ -337,10 +322,13 @@ class PlgDynamic404VirtueMart extends JPlugin
 	 *
 	 * @return string
 	 */
-	private function getProductUrl($product_id, $category_id)
+	private function getProductUrl($product)
 	{
-		$url = 'index.php?option=com_virtuemart&view=productdetails&virtuemart_product_id=' . $product_id . '&virtuemart_category_id=' . $category_id;
-		$url = JRoute::_($url);
+		require_once JPATH_SITE . '/components/com_hikashop/helpers/route.php';
+
+		$productSlug = $product->product_id . ':' . $product->product_alias;
+		$url         = hikashopTagRouteHelper::getProductRoute($productSlug, $product->category_id, '*');
+		$url         = JRoute::_($url);
 
 		return $url;
 	}

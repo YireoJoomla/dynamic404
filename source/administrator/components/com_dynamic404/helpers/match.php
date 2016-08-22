@@ -508,6 +508,11 @@ class Dynamic404HelperMatch
 					continue;
 				}
 
+                if ($match->rating > 100)
+                {
+                    $match->rating = 100;
+                }
+
 				$this->matches[$index] = $match;
 			}
 		}

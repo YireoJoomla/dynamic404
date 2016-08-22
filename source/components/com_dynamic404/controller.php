@@ -2,11 +2,11 @@
 /**
  * Joomla! component Dynamic404
  *
- * @author      Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright 2015 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -22,6 +22,9 @@ require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
  */
 class Dynamic404Controller extends YireoAbstractController
 {
+	/**
+	 * @var JApplicationCms
+	 */
 	protected $app;
 
 	/**
@@ -31,15 +34,24 @@ class Dynamic404Controller extends YireoAbstractController
 	{
 		/** @var JApplicationCms app */
 		$this->app = JFactory::getApplication();
-		$this->app->input->setVar('view', 'notfound');
+        $input = $this->app->input;
+        $view = $input->get('view');
+
+        if (empty($view))
+        {
+		    $input->set('view', 'notfound');
+        }
 
 		parent::__construct();
 	}
 
+	/**
+	 * Simple test action
+	 */
 	public function test()
 	{
 		echo 'Basic connection succeeded<br/>';
-		echo 'Current URL: ' . JURI::getInstance()->toString(array('scheme', 'host', 'port', 'path', 'params'));
+		echo 'Current URL: ' . JUri::getInstance()->toString(array('scheme', 'host', 'port', 'path', 'params'));
 		$this->app->close();
 	}
 }

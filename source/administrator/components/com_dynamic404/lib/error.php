@@ -138,8 +138,8 @@ $debugMessages = $debug->getMessages();
 						<p><?php echo $errorMsg; ?></p>
 
 						<p>
-							<?php if (isset($this->debug) && $this->debug == true) : ?>
-								<?php echo $this->renderBacktrace(); ?>
+							<?php if ($errorCode == 500 || (isset($this->debug) && $this->debug == true)) : ?>
+								<code><?php echo debug_print_backtrace(); ?></code>
 							<?php endif; ?>
 						</p>
 					</div>

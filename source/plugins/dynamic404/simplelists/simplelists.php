@@ -4,9 +4,9 @@
  *
  * @author      Yireo
  * @package     Dynamic404
- * @copyright   Copyright (c) 2014 Yireo
+ * @copyright   Copyright 2016 Yireo
  * @license     GNU Public License (GPL) 
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -79,7 +79,7 @@ class plgDynamic404Simplelists extends JPlugin
     {
         static $rows = null;
         if(empty($rows)) {
-            $db = JFactory::getDBO();
+            $db = JFactory::getDbo();
             $query = $db->getQuery(true);
             $query->select($db->quoteName(array('id', 'title', 'alias', 'access')));
             $query->from($db->quoteName('#__simplelists_items'));
@@ -113,7 +113,7 @@ class plgDynamic404Simplelists extends JPlugin
             . "LEFT JOIN #__categories AS c ON c.id = sc.category_id "
             . "WHERE sc.id = ".(int)$item->id." LIMIT 1";
 
-        $db = JFactory::getDBO();
+        $db = JFactory::getDbo();
         $db->setQuery( $query );
         $category = $db->loadObject();
         if(empty($category)) {

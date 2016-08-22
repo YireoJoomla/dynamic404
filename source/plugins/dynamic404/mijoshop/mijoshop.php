@@ -2,11 +2,11 @@
 /**
  * Joomla! plugin for Dynamic404 - MijoShop
  *
- * @author      Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (c) 2013 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -110,7 +110,7 @@ class plgDynamic404Mijoshop extends JPlugin
     {
         static $rows = null;
         if(empty($rows)) {
-            $db = JFactory::getDBO();
+            $db = JFactory::getDbo();
 
             $aliasNumber = (int)$aliasNumber;
             $alias = preg_replace('/^([0-9]+)-/', '', $alias);
@@ -159,7 +159,7 @@ class plgDynamic404Mijoshop extends JPlugin
     {
         static $rows = null;
         if(empty($rows)) {
-            $db = JFactory::getDBO();
+            $db = JFactory::getDbo();
 
             $aliasNumber = (int)$aliasNumber;
             $alias = preg_replace('/^([0-9]+)-/', '', $alias);

@@ -2,11 +2,11 @@
 <extension version="2.5" type="plugin" group="watchfulliApps" method="upgrade">
 	<name>PLG_WATCHFULLIAPPS_DYNAMIC404</name>
 	<author>Yireo</author>
-	<creationDate>December 2015</creationDate>
-	<copyright>Copyright 2015 Yireo.com. All rights reserved.</copyright>
+	<creationDate>August 2016</creationDate>
+	<copyright>Copyright 2016 Yireo.com. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
 	<authorEmail>support@yireo.com</authorEmail>
-	<authorUrl>http://www.yireo.com/</authorUrl>
+	<authorUrl>https://www.yireo.com/</authorUrl>
 	<version>1.0.0</version>
 	<description>PLG_WATCHFULLIAPPS_DYNAMIC404_DESC</description>
 
@@ -33,6 +33,6 @@
     </config>
 
     <updateservers>
-        <server type="extension" priority="1" name="plg_watchfulliapps_dynamic404">http://www.yireo.com/updates/plg_watchfulliapps_dynamic404.xml</server>
+        <server type="extension" priority="1" name="plg_watchfulliapps_dynamic404">https://www.yireo.com/updates/plg_watchfulliapps_dynamic404.xml</server>
     </updateservers>
 </extension>

@@ -2,11 +2,11 @@
 /**
  * Joomla! plugin for Dynamic404 - FLEXIcontent 
  *
- * @author      Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (c) 2013 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -89,7 +89,7 @@ class plgDynamic404Ninjaboard extends JPlugin
      */
     private function findPost($id) 
     {
-        $db = JFactory::getDBO();
+        $db = JFactory::getDbo();
         $query = "SELECT `ninjaboard_post_id`, `subject`, `ninjaboard_topic_id` FROM `yio_ninjaboard_posts` WHERE `ninjaboard_post_id` = ".(int)$id;
         $db->setQuery( $query );
         $post = $db->loadObject();
@@ -114,7 +114,7 @@ class plgDynamic404Ninjaboard extends JPlugin
      */
     private function findForum($id) 
     {
-        $db = JFactory::getDBO();
+        $db = JFactory::getDbo();
         $query = "SELECT `ninjaboard_forum_id` AS id, `alias`, `title` FROM `#__ninjaboard_forums` WHERE `ninjaboard_forum_id`=".(int)$id." LIMIT 0,1";
         $db->setQuery( $query );
         $forum = $db->loadObject();

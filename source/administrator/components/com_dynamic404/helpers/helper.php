@@ -884,16 +884,23 @@ class Dynamic404Helper
 		$application = JFactory::getApplication();
 		$document    = JFactory::getDocument();
 
-		if (empty($this->title))
-		{
-			$this->title = 'Page not found';
-		}
-
 		// Add some common variables to the error-page
 		$this->error    = $this->getErrorObject();
 		$this->baseurl  = JURI::base();
 		$this->template = $application->getTemplate();
 		$this->debug    = 0;
+
+		if (empty($this->title))
+		{
+            if ($this->error instanceof Exception)
+            {
+			    $this->title = $this->error->getMessage();
+            }
+            else
+            {
+			    $this->title = 'Page not found';
+            }
+		}
 
 		// Check the parameters
 		$componentParams = JComponentHelper::getParams('com_dynamic404');

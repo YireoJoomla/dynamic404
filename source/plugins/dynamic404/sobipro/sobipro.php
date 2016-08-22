@@ -2,11 +2,11 @@
 /**
  * Joomla! plugin for Dynamic404 - SobiPro
  *
- * @author      Yireo (http://www.yireo.com/)
+ * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright (c) 2013 Yireo (http://www.yireo.com/)
+ * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        http://www.yireo.com/
+ * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -104,7 +104,7 @@ class plgDynamic404SobiPro extends JPlugin
         static $rows = null;
         if(empty($rows)) {
             
-            $db = JFactory::getDBO();
+            $db = JFactory::getDbo();
 
             $alias = preg_replace('/^([0-9]+)-/', '', $alias);
             $alias = preg_replace('/\?(.*)/', '', $alias);
@@ -162,7 +162,7 @@ class plgDynamic404SobiPro extends JPlugin
     {
         static $rows = null;
         if(empty($rows)) {
-            $db = JFactory::getDBO();
+            $db = JFactory::getDbo();
 
             $alias = preg_replace('/^([0-9]+)-/', '', $alias);
             $alias = preg_replace('/\?(.*)/', '', $alias);

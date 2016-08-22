@@ -22,7 +22,7 @@ class Dynamic404ModelRedirects extends YireoModel
 	 */
 	public function __construct()
 	{
-		$this->_search = array('match', 'url');
+		$this->search = array('match', 'url');
 
 		return parent::__construct('redirect');
 	}

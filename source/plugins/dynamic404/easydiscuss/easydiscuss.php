@@ -2,11 +2,11 @@
 /**
  * Joomla! plugin for Dynamic404 - EasyBlog
  *
- * @author      Yireo (https://www.yireo.com/)
+ * @author      Yireo (http://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
+ * @copyright   Copyright (c) 2014 Yireo (http://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
- * @link        https://www.yireo.com/
+ * @link        http://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
@@ -18,7 +18,7 @@ jimport( 'joomla.plugin.plugin' );
 /**
  * Dynamic404 Plugin for EasyBlog 
  */
-class plgDynamic404EasyBlog extends JPlugin
+class plgDynamic404EasyDiscuss extends JPlugin
 {
     /**
      * Determine whether this plugin could be used
@@ -29,7 +29,7 @@ class plgDynamic404EasyBlog extends JPlugin
      */
     private function isEnabled()
     {
-        if(!is_dir(JPATH_SITE.'/components/com_easyblog')) {
+        if(!is_dir(JPATH_SITE.'/components/com_easydiscuss')) {
             return false;
         }
         return true;
@@ -80,12 +80,12 @@ class plgDynamic404EasyBlog extends JPlugin
     {
         static $rows = null;
         if(empty($rows)) {
-            $db = JFactory::getDbo();
+            $db = JFactory::getDBO();
             $query = $db->getQuery(true);
-            $query->select($db->quoteName(array('id', 'title', 'permalink')));
-            $query->from($db->quoteName('#__easyblog_post'));
+            $query->select($db->quoteName(array('id', 'title', 'alias')));
+            $query->from($db->quoteName('#__discuss_posts'));
             $query->where($db->quoteName('published') . ' = 1');
-            $query->where($db->quoteName('permalink') . ' LIKE '. $db->quote('%'.$alias.'%'));
+            $query->where($db->quoteName('alias') . ' LIKE '. $db->quote('%'.$alias.'%'));
             $db->setQuery($query);
             $rows = $db->loadObjectList();
 
@@ -112,14 +112,14 @@ class plgDynamic404EasyBlog extends JPlugin
         $item->type = 'component';
         $item->name = $item->title;
         $item->rating = $this->params->get('rating', 85);
-        $item->match_note = 'easyblog item';
+        $item->match_note = 'easydiscuss item';
 
         switch($item->row_type) {
     
             case 'item':
             default:
                 $this->includeFiles();
-                $item->url = EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id='.(int)$item->id);
+                $item->url = EasyDiscussRouter::_('index.php?option=com_easydiscuss&view=post&id='.(int)$item->id);
                 break;
         }
         return $item;
@@ -128,8 +128,8 @@ class plgDynamic404EasyBlog extends JPlugin
     private function includeFiles()
     {
         $files = array(
-            JPATH_SITE.'/administrator/components/com_easyblog/includes/easyblog.php',
-            JPATH_SITE.'/components/com_easyblog/helpers/router.php',
+            JPATH_SITE.'/administrator/components/com_easydiscuss/includes/easydiscuss.php',
+            JPATH_SITE.'/components/com_easydiscuss/router.php',
         );
 
         foreach($files as $file) {
