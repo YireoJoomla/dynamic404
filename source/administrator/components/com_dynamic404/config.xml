@@ -101,6 +101,11 @@
             <field name="rating_custom_last_segment" type="text" default="94" label="COM_DYNAMIC404_FIELD_RATING_CUSTOM_LAST_SEGMENT" description="COM_DYNAMIC404_FIELD_RATING_CUSTOM_LAST_SEGMENT_DESC" />
             <field name="rating_custom_any_segment" type="text" default="90" label="COM_DYNAMIC404_FIELD_RATING_CUSTOM_ANY_SEGMENT" description="COM_DYNAMIC404_FIELD_RATING_CUSTOM_ANY_SEGMENT_DESC" />
             <field name="rating_custom_fuzzy" type="text" default="90" label="COM_DYNAMIC404_FIELD_RATING_CUSTOM_FUZZY" description="COM_DYNAMIC404_FIELD_RATING_CUSTOM_FUZZY_DESC" />
+            <field name="apply_character_rating" type="radio" default="1" class="btn-group"
+                   label="COM_DYNAMIC404_FIELD_APPLY_CHARACTER_RATING" description="COM_DYNAMIC404_FIELD_APPLY_CHARACTER_RATING_DESC">
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
             <field type="spacer" hr="true" />
             <field name="search_plugins" type="radio" default="0" class="btn-group"
                 label="COM_DYNAMIC404_FIELD_SEARCH_PLUGINS" description="COM_DYNAMIC404_FIELD_SEARCH_PLUGINS_DESC">
@@ -162,6 +167,11 @@
                 label="COM_DYNAMIC404_FIELD_CACHING" description="COM_DYNAMIC404_FIELD_CACHING_DESC">
                 <option value="0">JNO</option>
                 <option value="1">JYES</option>
+            </field>
+            <field name="redirect_loop_checker" type="list" default="internal" class="btn-group"
+                   label="COM_DYNAMIC404_FIELD_REDIRECT_LOOP_CHECKER" description="COM_DYNAMIC404_FIELD_REDIRECT_LOOP_CHECKER_DESC">
+                <option value="internal">COM_DYNAMIC404_FIELD_REDIRECT_LOOP_CHECKER_OPTION_INTERNAL</option>
+                <option value="yireo">COM_DYNAMIC404_FIELD_REDIRECT_LOOP_CHECKER_OPTION_YIREO</option>
             </field>
         </fieldset>
         <fieldset name="redirect" addfieldpath="administrator/components/com_dynamic404/lib/form/fields">

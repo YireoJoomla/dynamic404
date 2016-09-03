@@ -156,6 +156,7 @@ class Dynamic404ModelRedirect extends YireoModel
 	{
 		$rt = parent::getEmpty();
 
+        if (!empty($this->params)) {
 		$this->data->type = $this->params->get('type');
 		$this->data->http_status = $this->params->get('http_status');
 
@@ -164,6 +165,7 @@ class Dynamic404ModelRedirect extends YireoModel
 		$params->set('match_case', $this->params->get('match_case'));
 		$params->set('show_description', $this->params->get('show_description'));
 		$this->data->params = json_encode($params);
+        }
 
 		return $rt;
 	}

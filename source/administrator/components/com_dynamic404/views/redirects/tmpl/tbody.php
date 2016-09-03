@@ -17,7 +17,7 @@ $popup_image = '<img src="../media/com_dynamic404/images/external_link.gif" />';
 $item_match = Dynamic404HelperGUI::getItemMatchLink($item->match, $item->type);
 $item_url = Dynamic404HelperGUI::getItemUrlLink($item->url);
 ?>
-<td>
+<td class="break">
     <?php if($this->isCheckedOut($item)) : ?>
         <?php echo $this->checkedout($item, $i); ?>
         <span class="checked_out"><?php echo $item->match; ?></span>
@@ -31,7 +31,7 @@ $item_url = Dynamic404HelperGUI::getItemUrlLink($item->url);
 <td>
     <?php echo Dynamic404HelperGUI::getTypeTitle($item->type); ?>
 </td>
-<td>
+<td class="break">
     <?php echo $item->url; ?>
     <?php if (!empty($item_url)) : ?>
         <a href="<?php echo $item_url; ?>" target="_new"><?php echo $popup_image; ?></a>

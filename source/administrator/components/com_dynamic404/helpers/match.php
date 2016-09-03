@@ -73,7 +73,7 @@ class Dynamic404HelperMatch
 	 * Constructor
 	 *
 	 * @param string $uri
-	 * @param bool $staticRulesOnly
+	 * @param bool   $staticRulesOnly
 	 */
 	public function __construct($uri = null, $staticRulesOnly = false)
 	{
@@ -248,6 +248,11 @@ class Dynamic404HelperMatch
 		$uri = preg_replace('/^(http|https):\/\//', '', $uri);
 		$uri = preg_replace('/^' . $juri->getHost() . '\//', '', $uri);
 
+		if (!stristr($uri, '?'))
+		{
+			$uri = preg_replace('/\&(.*)$/', '', $uri);
+		}
+
 		$uri_parts   = $this->uriHelper->getArrayFromUri($uri);
 		$uri_lastnum = null;
 		$uri_last    = null;
@@ -363,7 +368,7 @@ class Dynamic404HelperMatch
 		$string = preg_replace('/^([\-\_\.]+)/', '', $string);
 		$string = str_replace('.', '-', $string);
 		$string = str_replace('_', '-', $string);
-		
+
 		return $string;
 	}
 
@@ -433,7 +438,7 @@ class Dynamic404HelperMatch
 	 */
 	public function findDynamic404PluginMatches($text1, $text2)
 	{
-		$helper = new Dynamic404HelperMatchPlugin($this->params, $this->request);
+		$helper  = new Dynamic404HelperMatchPlugin($this->params, $this->request);
 		$matches = $helper->getMatches($text1, $text2);
 		$this->addToMatches($matches);
 
@@ -447,7 +452,7 @@ class Dynamic404HelperMatch
 	 */
 	public function findSearchPluginMatches()
 	{
-		$helper = new Dynamic404HelperMatchSearch($this->params, $this->request);
+		$helper  = new Dynamic404HelperMatchSearch($this->params, $this->request);
 		$matches = $helper->getMatches();
 		$this->addToMatches($matches);
 
@@ -461,7 +466,7 @@ class Dynamic404HelperMatch
 	 */
 	public function findRedirectMatches()
 	{
-		$helper = new Dynamic404HelperMatchManual($this->params, $this->request);
+		$helper  = new Dynamic404HelperMatchManual($this->params, $this->request);
 		$matches = $helper->getMatches($this->staticRulesOnly);
 		$this->addToMatches($matches);
 
@@ -507,11 +512,6 @@ class Dynamic404HelperMatch
 					unset($this->matches[$index]);
 					continue;
 				}
-
-                if ($match->rating > 100)
-                {
-                    $match->rating = 100;
-                }
 
 				$this->matches[$index] = $match;
 			}

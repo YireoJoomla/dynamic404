@@ -66,7 +66,7 @@ defined('_JEXEC') or die();
 						<?php echo $match->match_note; ?>
 					</td>
 					<td>
-						<?php echo $match->rating; ?>%
+						<?php echo $match->rating; ?>
 					</td>
 				</tr>
 				<?php endforeach; ?>

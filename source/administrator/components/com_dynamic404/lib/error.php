@@ -61,11 +61,11 @@ if (!empty($article))
 }
 
 // Fetch additional properties
-$errorMsg = (is_object($this->error) && isset($this->error->message)) ? $this->error->message : $this->title;
+$errorMsg         = (is_object($this->error) && isset($this->error->message)) ? $this->error->message : $this->title;
 $additionalErrors = $this->getAdditionalErrors();
 
 // Debug messages
-$debug = Dynamic404HelperDebug::getInstance();
+$debug         = Dynamic404HelperDebug::getInstance();
 $debugMessages = $debug->getMessages();
 
 // If no redirect is available or performed, show the page below
@@ -99,7 +99,7 @@ $debugMessages = $debug->getMessages();
 						{ ?>
 							<?php if (!empty($item->match_note)): ?><!-- Match note: "<?php echo $item->match_note ?>" --><?php endif; ?>
 							<li><a href="<?php echo $item->url; ?>"><?php echo $item->name; ?></a>
-								(<?php echo $item->rating; ?>%)
+								(<?php echo $item->rating; ?>)
 							</li>
 						<?php } ?>
 					</ul>
@@ -111,15 +111,16 @@ $debugMessages = $debug->getMessages();
 						<?php echo JText::_('COM_DYNAMIC404_ALTERNATIVES'); ?>:
 					<ul>
 						<li><a href="<?php echo JURI::base(); ?>"
-							   title="<?php echo JText::_('COM_DYNAMIC404_HOME'); ?>"><?php echo JText::_('COM_DYNAMIC404_HOME'); ?></a>
+						       title="<?php echo JText::_('COM_DYNAMIC404_HOME'); ?>"><?php echo JText::_('COM_DYNAMIC404_HOME'); ?></a>
 						</li>
-                        <?php if ($params->get('show_search', 1) == 1) : ?>
-						<li>
-							<a href="<?php echo JRoute::_('index.php?option=com_search&searchword=' . urlencode($search)); ?>"
-							   title="<?php echo JText::_('COM_DYNAMIC404_SEARCH');
-							   ?>"><?php echo JText::_('COM_DYNAMIC404_SEARCH_FOR'); ?>: "<?php echo $search; ?>"</a>
-						</li>
-                        <?php endif; ?>
+						<?php if ($params->get('show_search', 1) == 1) : ?>
+							<li>
+								<a href="<?php echo JRoute::_('index.php?option=com_search&searchword=' . urlencode($search)); ?>"
+								   title="<?php echo JText::_('COM_DYNAMIC404_SEARCH');
+								   ?>"><?php echo JText::_('COM_DYNAMIC404_SEARCH_FOR'); ?>: "<?php echo $search; ?>
+									"</a>
+							</li>
+						<?php endif; ?>
 					</ul>
 					</p>
 
@@ -138,7 +139,7 @@ $debugMessages = $debug->getMessages();
 						<p><?php echo $errorMsg; ?></p>
 
 						<p>
-							<?php if ($errorCode == 500 || (isset($this->debug) && $this->debug == true)) : ?>
+							<?php if ($errorCode === 500 || (isset($this->debug) && $this->debug == true)) : ?>
 								<code><?php echo debug_print_backtrace(); ?></code>
 							<?php endif; ?>
 						</p>

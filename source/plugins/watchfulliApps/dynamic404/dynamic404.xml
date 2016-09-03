@@ -2,7 +2,7 @@
 <extension version="2.5" type="plugin" group="watchfulliApps" method="upgrade">
 	<name>PLG_WATCHFULLIAPPS_DYNAMIC404</name>
 	<author>Yireo</author>
-	<creationDate>August 2016</creationDate>
+	<creationDate>September 2016</creationDate>
 	<copyright>Copyright 2016 Yireo.com. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
 	<authorEmail>support@yireo.com</authorEmail>

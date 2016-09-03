@@ -94,7 +94,7 @@ class Dynamic404ModelMatch
 	 * Calculate an additional rating by matching two string patterns and seeing how much they match
 	 *
 	 * @param string $matchString
-	 * @param array $searchParts
+	 * @param array  $searchParts
 	 *
 	 * @return int
 	 */
@@ -103,31 +103,8 @@ class Dynamic404ModelMatch
 		$sourceString = implode('-', $searchParts);
 
 		$rating = new \Yireo\Dynamic404\Utility\Rating($sourceString, $matchString);
-		
+
 		return $rating->getMatchPercentage();
-		/*
-		if (is_string($searchParts))
-		{
-			$searchParts = explode('-', $searchParts);
-		}
-
-		$rating = 0;
-		$matchParts = array();
-
-		foreach ($searchParts as $searchPart)
-		{
-			$matchParts = array_merge($matchParts, Dynamic404HelperMatch::matchTextParts($matchString, $searchPart));
-		}
-
-		if (!empty($matchParts))
-		{
-			$rating = count(array_intersect($matchParts, $searchParts));
-		}
-
-		$this->debug('Additional rating for "' . $matchString . '" [' . $rating . ']', $searchParts);
-
-		return $rating;
-		*/
 	}
 
 	/**
@@ -139,7 +116,6 @@ class Dynamic404ModelMatch
 		$this->parseUrl();
 
 		$this->uri = $this->url;
-		//$this->uri = str_replace(JURI::root(), '', $this->url);
 	}
 
 	/**
@@ -147,7 +123,8 @@ class Dynamic404ModelMatch
 	 */
 	public function parseLanguage()
 	{
-		$currentLanguage = JFactory::getLanguage()->getTag();
+		$currentLanguage = JFactory::getLanguage()
+			->getTag();
 
 		if (empty($this->language) || $this->language == '*')
 		{
@@ -156,7 +133,7 @@ class Dynamic404ModelMatch
 
 		if ($currentLanguage != $this->language)
 		{
-			$this->rating -= 1;
+			$this->rating -= 1; // @todo: Find a way to determine the cost of not matching the language
 		}
 	}
 
@@ -165,23 +142,24 @@ class Dynamic404ModelMatch
 	 */
 	public function parseUrl()
 	{
-		$config = JFactory::getConfig();
+		$config      = JFactory::getConfig();
 		$sef_rewrite = (bool) $config->get('sef_rewrite');
-		$app = JFactory::getApplication();
+		$app         = JFactory::getApplication();
 
 		if (strstr($this->url, 'index.php?option'))
 		{
 			if ($app->isAdmin())
 			{
 				JFactory::$application = JApplicationCms::getInstance('site');
-                $siteApp = JFactory::getApplication();
-			    $siteRouter = $siteApp::getRouter();
-			    $siteUri = $siteRouter->build($this->url);
-                $this->url = $siteUri->toString(array('path', 'query', 'fragment'));
 
-                $this->url = preg_replace('/\/administrator\//', '', $this->url);
-                $this->url = preg_replace('/^administrator\//', '', $this->url);
-				$this->url = JURI::root() . $this->url;
+				$siteApp    = JFactory::getApplication();
+				$siteRouter = $siteApp::getRouter();
+				$siteUri    = $siteRouter->build($this->url);
+				$this->url  = $siteUri->toString(array('path', 'query', 'fragment'));
+
+				$this->url = preg_replace('/\/administrator\//', '', $this->url);
+				$this->url = preg_replace('/^administrator\//', '', $this->url);
+				$this->url = JUri::root() . $this->url;
 
 				JFactory::$application = JApplicationCms::getInstance('administrator');
 			}
@@ -193,7 +171,7 @@ class Dynamic404ModelMatch
 
 		if (preg_match('/^(http|https):\/\//', $this->url) == false && preg_match('/^\//', $this->url) == false)
 		{
-			$base_uri = JURI::base();
+			$base_uri = JUri::base();
 
 			if ($sef_rewrite == false)
 			{
@@ -226,8 +204,8 @@ class Dynamic404ModelMatch
 	/**
 	 * Method alias for debugging
 	 *
-	 * @param   string  $msg       Debugging message
-	 * @param   null    $variable  Optional variable to dump
+	 * @param   string $msg      Debugging message
+	 * @param   null   $variable Optional variable to dump
 	 */
 	public function debug($msg, $variable = null)
 	{

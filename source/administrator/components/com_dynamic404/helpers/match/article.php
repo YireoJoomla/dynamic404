@@ -95,7 +95,7 @@ class Dynamic404HelperMatchArticle
 
 			if (!empty($article))
 			{
-				$article->rating     = 95;
+				$article->rating     = $this->params->get('rating_articles', 85);
 				$article->match_note = 'article ID';
 				$matches[]           = $article;
 			}
@@ -132,10 +132,14 @@ class Dynamic404HelperMatchArticle
 			}
 
 			$match->search_parts = $strings;
-			//$match->rating       = $match->rating + $additionalRating;
-			$match->rating = $additionalRating;
-			$match->match_note   = 'article alias "' . $match->alias . '""';
-			$matches[]           = $match;
+			$match->match_note = 'article alias "' . $match->alias . '"';
+
+			if ($this->params->get('apply_character_rating', 1) == 1)
+			{
+				$match->rating     = $match->rating + $additionalRating;
+			}
+
+			$matches[]         = $match;
 		}
 
 		return $matches;
@@ -216,7 +220,7 @@ class Dynamic404HelperMatchArticle
 	 *
 	 * @param null
 	 *
-	 * @return array
+	 * @return object
 	 */
 	private function getArticleById($id)
 	{
@@ -249,48 +253,50 @@ class Dynamic404HelperMatchArticle
 	{
 		if (empty($strings))
 		{
-			return false;
+			return array();
 		}
 
 		static $rows = null;
 
-		if (empty($rows))
+		if (!empty($rows))
 		{
-			$db    = JFactory::getDbo();
-			$query = $db->getQuery(true);
-
-			$nullDate = $db->getNullDate();
-			$date     = JFactory::getDate();
-			$now      = $date->toSql();
-
-			$query->select($db->quoteName($this->articleFields))
-				->from($db->quoteName('#__content'))
-				->where($db->quoteName('state') . '= 1')
-				->where('(publish_up = ' . $db->quote($nullDate) . ' OR publish_up <= ' . $db->quote($now) . ')')
-				->where('(publish_down = ' . $db->quote($nullDate) . ' OR publish_down >= ' . $db->quote($now) . ')')
-				->order($db->quoteName('ordering'));
-
-			if ($this->params->get('load_all_articles', 0) == 0)
-			{
-				$whereParts = array();
-
-				foreach ($strings as $string)
-				{
-					$whereParts[] = $db->quoteName('alias') . ' LIKE ' . $db->quote('%' . $string . '%');
-				}
-
-				$query->where('(' . implode(' OR ', $whereParts) . ')');
-			}
-
-			$db->setQuery($query);
-
-			if ($this->params->get('debug') == 1)
-			{
-				$this->debug('MatchArticle::getArticleListByStrings', $db->getQuery());
-			}
-
-			$rows = $db->loadObjectList();
+			return $rows;
 		}
+
+		$db    = JFactory::getDbo();
+		$query = $db->getQuery(true);
+
+		$nullDate = $db->getNullDate();
+		$date     = JFactory::getDate();
+		$now      = $date->toSql();
+
+		$query->select($db->quoteName($this->articleFields))
+			->from($db->quoteName('#__content'))
+			->where($db->quoteName('state') . '= 1')
+			->where('(publish_up = ' . $db->quote($nullDate) . ' OR publish_up <= ' . $db->quote($now) . ')')
+			->where('(publish_down = ' . $db->quote($nullDate) . ' OR publish_down >= ' . $db->quote($now) . ')')
+			->order($db->quoteName('ordering'));
+
+		if ($this->params->get('load_all_articles', 0) == 0)
+		{
+			$whereParts = array();
+
+			foreach ($strings as $string)
+			{
+				$whereParts[] = $db->quoteName('alias') . ' LIKE ' . $db->quote('%' . $string . '%');
+			}
+
+			$query->where('(' . implode(' OR ', $whereParts) . ')');
+		}
+
+		$db->setQuery($query);
+
+		if ($this->params->get('debug') == 1)
+		{
+			$this->debug('MatchArticle::getArticleListByStrings', $db->getQuery());
+		}
+
+		$rows = $db->loadObjectList();
 
 		return $rows;
 	}
@@ -300,7 +306,7 @@ class Dynamic404HelperMatchArticle
 	 *
 	 * @param   object $item Content item object
 	 *
-	 * @return object
+	 * @return array|object
 	 */
 	private function prepareArticle($item)
 	{
@@ -320,17 +326,24 @@ class Dynamic404HelperMatchArticle
 
 		// Parse the language of this item
 		$item->parseLanguage();
-
-		if (isset($item->sectionid))
-		{
-			$item->url = $this->getArticleLink($item->id . ':' . $item->alias, $item->catid, $item->sectionid, $item->language);
-		}
-		else
-		{
-			$item->url = $this->getArticleLink($item->id . ':' . $item->alias, $item->catid, null, $item->language);
-		}
+		$item->url = $this->getArticleUrl($item);
 
 		return $item;
+	}
+
+	/**
+	 * @param $item
+	 *
+	 * @return string
+	 */
+	private function getArticleUrl($item)
+	{
+		if (isset($item->sectionid))
+		{
+			return $this->getArticleLink($item->id . ':' . $item->alias, $item->catid, $item->sectionid, $item->language);
+		}
+
+		return $item->url = $this->getArticleLink($item->id . ':' . $item->alias, $item->catid, null, $item->language);
 	}
 
 	/**

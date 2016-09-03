@@ -66,10 +66,10 @@ class Dynamic404Helper
 	/**
 	 * Constructor
 	 *
-	 * @param   bool $init Initialize the helper
-	 * @param   int  $max  Maximum amount of entries to fetch
+	 * @param   bool  $init Initialize the helper
+	 * @param   int   $max  Maximum amount of entries to fetch
 	 * @param   mixed $error
-	 * @param   bool $staticRulesOnly
+	 * @param   bool  $staticRulesOnly
 	 */
 	public function __construct($init = true, $max = null, $error = null, $staticRulesOnly = false)
 	{
@@ -345,7 +345,7 @@ class Dynamic404Helper
 	 *
 	 * @param string $error
 	 *
-	 * @return object
+	 * @return false|object
 	 */
 	public function getArticle($error = '404')
 	{
@@ -398,23 +398,104 @@ class Dynamic404Helper
 			return false;
 		}
 
+		$redirectLoopChecker = $this->params->get('redirect_loop_checker', 'internal');
+
+		if ($redirectLoopChecker == 'yireo')
+		{
+			try
+			{
+				$rt = $this->givesNoRedirectLoopYireoApi($url);
+			}
+			catch (Exception $e)
+			{
+				$rt = $this->givesNoRedirectLoopLocal($url);
+			}
+		}
+		else
+		{
+			$rt = $this->givesNoRedirectLoopLocal($url);
+		}
+
+		return $rt;
+	}
+
+	/**
+	 * @param $url
+	 *
+	 * @return bool
+	 */
+	private function givesNoRedirectLoopLocal($url)
+	{
+		$ch = curl_init();
+
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, 1);
+		curl_setopt($ch, CURLOPT_NOBODY, 0);
+		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
+		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
+		curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+
+		$curl_head = curl_exec($ch);
+		$curl_info = curl_getinfo($ch);
+		curl_close($ch);
+
+		if (empty($curl_head))
+		{
+			$this->errors[] = 'Endless redirect detected';
+
+			return false;
+		}
+
+		if (isset($curl_info['redirect_url']) && !empty($curl_info['redirect_url']))
+		{
+			$this->errors[] = 'Double redirect detected';
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param $url
+	 *
+	 * @return bool
+	 * @throws RuntimeException
+	 */
+	private function givesNoRedirectLoopYireoApi($url)
+	{
 		$user_agent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : null;
-		$url = 'https://api.yireo.com/redirect_check.php?url=' . urlencode(base64_encode($url));
+		$key        = $this->params->get('support_key');
+
+		if (empty($key))
+		{
+			throw new RuntimeException('Invalid key');
+		}
+
+		$url = urlencode(base64_encode($url));
+		$url = 'https://api.yireo.com/redirect_check.php?key=' . $key . '&url=' . $url;
 
 		$ch = curl_init();
+
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
 		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
 		curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
 
-		$content  = curl_exec($ch);
+		$content = curl_exec($ch);
 		curl_close($ch);
 
 		if (!empty($content))
@@ -892,14 +973,14 @@ class Dynamic404Helper
 
 		if (empty($this->title))
 		{
-            if ($this->error instanceof Exception)
-            {
-			    $this->title = $this->error->getMessage();
-            }
-            else
-            {
-			    $this->title = 'Page not found';
-            }
+			if ($this->error instanceof Exception)
+			{
+				$this->title = $this->error->getMessage();
+			}
+			else
+			{
+				$this->title = 'Page not found';
+			}
 		}
 
 		// Check the parameters

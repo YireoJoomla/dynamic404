@@ -53,3 +53,6 @@ td.vital {
     border: 0px solid #85b1cd !important;
 }
 
+td.break {
+    word-break: break-all;
+}
