@@ -847,6 +847,7 @@ class Dynamic404Helper
 	 * @param bool   $allowRedirects
 	 *
 	 * @return string
+	 * @throws Exception
 	 */
 	static public function fetchPage($url, $useragent = null, $allowRedirects = false)
 	{
@@ -854,6 +855,8 @@ class Dynamic404Helper
 		{
 			throw new Exception('CURL not installed');
 		}
+
+		@ini_set('open_basedir', '');
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
