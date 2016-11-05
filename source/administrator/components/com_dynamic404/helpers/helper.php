@@ -849,46 +849,61 @@ class Dynamic404Helper
 	 * @return string
 	 * @throws Exception
 	 */
-	static public function fetchPage($url, $useragent = null, $allowRedirects = false)
+	static public function fetchPage($url, $useragent = null, $allowRedirects = false, $redirect = 0)
 	{
 		if (function_exists('curl_init') == false)
 		{
 			throw new Exception('CURL not installed');
 		}
 
-		@ini_set('open_basedir', '');
+		if ($redirect > 10)
+		{
+			throw new Exception('CURL redirected too many times');
+		}
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_HEADER, true);
+		curl_setopt($ch, CURLOPT_FAILONERROR, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
 
-		if ($allowRedirects)
+		$userAgent = (!empty($useragent)) ? $useragent : $_SERVER['HTTP_USER_AGENT'];
+		curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
+
+		$response = curl_exec($ch);
+
+		$headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+		$header     = substr($response, 0, $headerSize);
+		$body       = substr($response, $headerSize);
+
+		$httpStatusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		if ($allowRedirects && ($httpStatusCode == 301 || $httpStatusCode == 302))
 		{
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-			curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+			preg_match("/(Location:|URI:)[^(\n)]*/", $header, $matches);
+			$url = trim(str_replace($matches[1], "", $matches[0]));
+			$url_parsed = parse_url($url);
+
+			if (!empty($url_parsed))
+			{
+				$redirect++;
+
+				return self::fetchPage($url, $useragent, $allowRedirects, $redirect);
+			}
 		}
-		else
-		{
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
-			curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
-		}
 
-		curl_setopt($ch, CURLOPT_USERAGENT, (!empty($useragent)) ? $useragent : $_SERVER['HTTP_USER_AGENT']);
-
-		$contents = curl_exec($ch);
-
-		if ($contents === false)
+		if ($body === false)
 		{
 			throw new Exception('CURL error: ' . curl_error($ch) . ' = ' . var_export(curl_getinfo($ch), true));
 		}
 
-		return $contents;
+		return $body;
 	}
 
 	/**

@@ -23,9 +23,14 @@ jimport('joomla.plugin.plugin');
 class PlgSystemDynamic404 extends JPlugin
 {
 	/**
-	 * Instance of JApplication
+	 * @var JApplicationCms
 	 */
-	protected $app = null;
+	protected $app;
+
+	/**
+	 * @var JDocument
+	 */
+	protected $doc;
 
 	/**
 	 * File path to the Dynamic404 library loader
@@ -43,7 +48,8 @@ class PlgSystemDynamic404 extends JPlugin
 	public function __construct(&$subject, $config)
 	{
 		// Internal variables
-		$this->app        = JFactory::getApplication();
+		$this->app = JFactory::getApplication();
+		$this->doc = JFactory::getDocument();
 		$this->loaderFile = JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
 
 		// Include the parent library
@@ -376,7 +382,7 @@ class PlgSystemDynamic404 extends JPlugin
 			return;
 		}
 
-		$url       = JURI::current();
+		$url       = JUri::current();
 		$component = $this->app->input->get('option');
 		$view      = $this->app->input->get('view');
 		$id        = $this->app->input->get('id');
@@ -389,7 +395,7 @@ class PlgSystemDynamic404 extends JPlugin
 
 			$matchHelper = new Dynamic404HelperMatchArticle;
 			$newUrl      = JRoute::_($matchHelper->getArticleLink($id));
-			$newUrl      = JURI::base() . substr($newUrl, YireoHelper::strlen(JURI::base(true)) + 1);
+			$newUrl      = JUri::base() . substr($newUrl, YireoHelper::strlen(JUri::base(true)) + 1);
 		}
 		else
 		{
@@ -403,16 +409,8 @@ class PlgSystemDynamic404 extends JPlugin
 
 				if (class_exists($className))
 				{
-					if (YireoHelper::isJoomla25())
-					{
-						$dispatcher = JDispatcher::getInstance();
-					}
-					else
-					{
-						$dispatcher = JEventDispatcher::getInstance();
-					}
-
-					$plugin = new $className($dispatcher, (array) $plugin);
+					$dispatcher = JEventDispatcher::getInstance();
+					$plugin     = new $className($dispatcher, (array) $plugin);
 
 					if (method_exists($plugin, $method))
 					{
@@ -427,6 +425,9 @@ class PlgSystemDynamic404 extends JPlugin
 				}
 			}
 		}
+
+		$newUrl = preg_replace('/\?(.*)/', '', $newUrl);
+		$url    = preg_replace('/\?(.*)/', '', $url);
 
 		// Redirect if needed
 		if (!empty($newUrl) && $newUrl != $url)
@@ -475,8 +476,7 @@ class PlgSystemDynamic404 extends JPlugin
 	 */
 	protected function handleTitle()
 	{
-		$doc   = JFactory::getDocument();
-		$title = $doc->getTitle();
+		$title = $this->doc->getTitle();
 
 		if (strstr($title, JText::_('PRODUCT_NOT_FOUND')))
 		{
@@ -492,11 +492,9 @@ class PlgSystemDynamic404 extends JPlugin
 	 */
 	protected function handleMessageQueue()
 	{
-		$app = JFactory::getApplication();
-
-		if (method_exists($app, 'getMessageQueue'))
+		if (method_exists($this->app, 'getMessageQueue'))
 		{
-			$messageQueue = $app->getMessageQueue();
+			$messageQueue = $this->app->getMessageQueue();
 
 			if (!empty($messageQueue))
 			{

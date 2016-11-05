@@ -2,12 +2,12 @@
 <extension version="2.5" type="plugin" group="system" method="upgrade">
 	<name>PLG_SYSTEM_DYNAMIC404</name>
 	<author>Yireo</author>
-	<creationDate>September 2016</creationDate>
+	<creationDate>October 2016</creationDate>
 	<copyright>Copyright 2016 Yireo.com. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
 	<authorEmail>support@yireo.com</authorEmail>
 	<authorUrl>www.yireo.com</authorUrl>
-	<version>1.2.0</version>
+	<version>1.2.9</version>
 	<description>PLG_SYSTEM_DYNAMIC404_DESC</description>
 
 	<files>
