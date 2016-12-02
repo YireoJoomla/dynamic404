@@ -1185,6 +1185,7 @@ class Dynamic404Helper
 			{
 				if (stristr($url, $hack))
 				{
+                    $message = $hack;
 					$block = true;
 					break;
 				}
@@ -1195,8 +1196,9 @@ class Dynamic404Helper
 		if ($this->params->get('block_nonexisting_components', 1) == 1)
 		{
 			$cmd = $this->jinput->getCmd('option');
+            $message = $cmd;
 
-			if (!empty($cmd) && is_dir(JPATH_SITE . '/components/' . $cmd) == false)
+			if (!empty($cmd) && !is_dir(JPATH_SITE . '/components/' . $cmd) && is_dir(JPATH_ADMINISTRATOR . '/components/' . $cmd))
 			{
 				$block = true;
 			}
@@ -1208,7 +1210,7 @@ class Dynamic404Helper
 		}
 
 		header('HTTP/1.1 403 Forbidden');
-		throw new Exception('Access Forbidden');
+		throw new Exception('Access Forbidden: ' . $message);
 	}
 
 	/**
