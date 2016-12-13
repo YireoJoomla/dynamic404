@@ -28,11 +28,6 @@ class PlgSystemDynamic404 extends JPlugin
 	protected $app;
 
 	/**
-	 * @var JDocument
-	 */
-	protected $doc;
-
-	/**
 	 * File path to the Dynamic404 library loader
 	 *
 	 * @var string
@@ -49,7 +44,6 @@ class PlgSystemDynamic404 extends JPlugin
 	{
 		// Internal variables
 		$this->app = JFactory::getApplication();
-		$this->doc = JFactory::getDocument();
 		$this->loaderFile = JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
 
 		// Include the parent library
@@ -476,7 +470,7 @@ class PlgSystemDynamic404 extends JPlugin
 	 */
 	protected function handleTitle()
 	{
-		$title = $this->doc->getTitle();
+		$title = $this->getDocument()->getTitle();
 
 		if (strstr($title, JText::_('PRODUCT_NOT_FOUND')))
 		{
@@ -614,4 +608,9 @@ class PlgSystemDynamic404 extends JPlugin
 			require_once $this->loaderFile;
 		}
 	}
+
+    protected function getDocument()
+    {
+		return JFactory::getDocument();
+    }
 }
