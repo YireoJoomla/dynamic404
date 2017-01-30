@@ -44,6 +44,11 @@ class Dynamic404Helper
 	const ERROR_PAGE_MENUITEM_JSREDIRECT = 3;
 
 	/**
+	 * @var Error|Exception
+	 */
+	private $error;
+
+	/**
 	 * Component parameters
 	 */
 	private $params = null;
@@ -81,10 +86,7 @@ class Dynamic404Helper
 			ini_set('display_errors', 1);
 		}
 
-		if (!empty($error) && is_object($error))
-		{
-			$this->setErrorObject($error);
-		}
+		$this->setErrorObject($error);
 
 		// Initialize some other variables
 		$this->jinput = JFactory::getApplication()->input;
@@ -266,7 +268,27 @@ class Dynamic404Helper
 	 */
 	public function setErrorObject($error = null)
 	{
-		$this->error = $error;
+		if (!empty($error) && is_object($error))
+		{
+			if ($error instanceof Error || $error instanceof Exception) {
+				return $this->error = $error;
+			}
+		}
+
+		$error = JError::getError();
+		if (!empty($error))
+		{
+			return $this->error = $error;
+		}
+
+		if (empty($this->error) || $this->error === false)
+		{
+			$code        = 404;
+			$message     = JText::_('Not found');
+			return $this->error = new Exception($message, $code);
+		}
+
+		echo 'unknown test: '; exit;
 	}
 
 	/**
@@ -278,18 +300,6 @@ class Dynamic404Helper
 	 */
 	public function getErrorObject()
 	{
-		if (empty($this->error) || $this->error == false)
-		{
-			$this->error = JError::getError();
-		}
-
-		if (empty($this->error) || $this->error == false)
-		{
-			$code        = 404;
-			$message     = JText::_('Not found');
-			$this->error = new Exception($message, $code);
-		}
-
 		return $this->error;
 	}
 
@@ -300,6 +310,14 @@ class Dynamic404Helper
 	 */
 	public function getMatches()
 	{
+		// Check if this is a 500 error
+		$errorCode = $this->getErrorCode();
+
+		if ($errorCode === 500)
+		{
+			return array();
+		}
+
 		// Do not search for matches, if this is not a valid URL
 		$url = $this->matchHelper->getRequest('uri');
 
@@ -540,7 +558,7 @@ class Dynamic404Helper
 		}
 
 		// Do not redirect, if the HTTP-status is not a 4xx error
-		if ($this->params->get('redirect_non404', 0) == 0 && preg_match('/^4/', $errorCode) == false)
+		if ($this->params->get('redirect_non404', 0) == 0 && preg_match('/^4/', $errorCode) === false)
 		{
 			$this->debug('No redirect for non-404 errors');
 
@@ -647,8 +665,9 @@ class Dynamic404Helper
 		{
 			$rt = $this->checkNoRedirectLoop($url);
 
-			if ($rt == false)
+			if ($rt === false)
 			{
+                header('Status: 508 Loop Detected');
 				return false;
 			}
 		}
@@ -887,7 +906,7 @@ class Dynamic404Helper
 		if ($allowRedirects && ($httpStatusCode == 301 || $httpStatusCode == 302))
 		{
 			preg_match("/(Location:|URI:)[^(\n)]*/", $header, $matches);
-			$url = trim(str_replace($matches[1], "", $matches[0]));
+			$url        = trim(str_replace($matches[1], "", $matches[0]));
 			$url_parsed = parse_url($url);
 
 			if (!empty($url_parsed))
@@ -981,7 +1000,6 @@ class Dynamic404Helper
 	{
 		// System variables
 		$application = JFactory::getApplication();
-		$document    = JFactory::getDocument();
 
 		// Add some common variables to the error-page
 		$this->error    = $this->getErrorObject();
@@ -991,14 +1009,7 @@ class Dynamic404Helper
 
 		if (empty($this->title))
 		{
-			if ($this->error instanceof Exception)
-			{
-				$this->title = $this->error->getMessage();
-			}
-			else
-			{
-				$this->title = 'Page not found';
-			}
+			$this->title = $this->error->getMessage();
 		}
 
 		// Check the parameters
@@ -1036,15 +1047,9 @@ class Dynamic404Helper
 	 */
 	public function setHttpStatus()
 	{
-		$error     = JError::getError();
+		$error     = $this->getErrorObject();
 		$errorCode = $this->getErrorCode($error);
 		$document  = JFactory::getDocument();
-
-		if (YireoHelper::isJoomla25())
-		{
-			$document->setError($error);
-		}
-
 		$document->setTitle(JText::_('Error') . ': ' . $errorCode);
 
 		$httpStatusText = $this->getHttpStatusText($errorCode);
@@ -1185,8 +1190,8 @@ class Dynamic404Helper
 			{
 				if (stristr($url, $hack))
 				{
-                    $message = $hack;
-					$block = true;
+					$message = $hack;
+					$block   = true;
 					break;
 				}
 			}
@@ -1195,8 +1200,8 @@ class Dynamic404Helper
 		// Block access to non-existing components
 		if ($this->params->get('block_nonexisting_components', 1) == 1)
 		{
-			$cmd = $this->jinput->getCmd('option');
-            $message = $cmd;
+			$cmd     = $this->jinput->getCmd('option');
+			$message = $cmd;
 
 			if (!empty($cmd) && !is_dir(JPATH_SITE . '/components/' . $cmd) && is_dir(JPATH_ADMINISTRATOR . '/components/' . $cmd))
 			{
@@ -1230,27 +1235,54 @@ class Dynamic404Helper
 	 *
 	 * @return int
 	 */
-	public function getErrorCode($error)
+	public function getErrorCode($error = null)
 	{
-		if (is_object($error))
+		if (empty($error))
 		{
-			if (method_exists($error, 'get'))
-			{
-				return $error->get('code');
-			}
-			elseif ($error instanceof Exception)
-			{
-				return 500;
-			}
-			elseif (isset($error->code))
-			{
-				return $error->code;
-			}
+			$error = $this->getErrorObject();
 		}
 
 		if (is_numeric($error))
 		{
 			return $error;
+		}
+
+
+		if (is_object($error) && method_exists($error, 'getCode'))
+		{
+			$errorCode = $error->getCode();
+
+			if (!empty($errorCode)) {
+				return $errorCode;
+			}
+		}
+
+		if (is_object($error) && method_exists($error, 'get'))
+		{
+			return $error->get('code');
+		}
+
+		if (is_object($error) && $error instanceof Exception)
+		{
+            if (stristr($error->getMessage(), '404')) {
+                return 404;
+            }
+
+			return 500;
+		}
+
+		if (is_object($error) && class_exists('Error') && $error instanceof Error)
+		{
+            if (stristr($error->getMessage(), '404')) {
+                return 404;
+            }
+
+			return 500;
+		}
+
+		if (is_object($error) && isset($error->code))
+		{
+			return $error->code;
 		}
 
 		return 404;
