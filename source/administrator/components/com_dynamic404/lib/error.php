@@ -30,7 +30,7 @@ if ($this instanceof Dynamic404Helper)
 }
 else
 {
-	$helper = new Dynamic404Helper($this->error);
+	$helper = new Dynamic404Helper(true, null, $this->error);
 }
 
 // Parse empty variables and/or objects
@@ -44,7 +44,7 @@ if (empty($this->title))
 	$this->title = JText::_('COM_DYNAMIC404_NOT_FOUND');
 }
 
-$errorCode = $helper->getErrorCode($this->error);
+$errorCode = $helper->getErrorCode();
 
 // Get the possible matches
 $matches = $helper->getMatches();
@@ -138,11 +138,11 @@ $debugMessages = $debug->getMessages();
 					<div id="techinfo">
 						<p><?php echo $errorMsg; ?></p>
 
-						<p>
+						<pre style="white-space: pre-wrap;">
 							<?php if ($errorCode === 500 || (isset($this->debug) && $this->debug == true)) : ?>
-								<code><?php echo debug_print_backtrace(); ?></code>
+								<?php debug_print_backtrace(); ?>
 							<?php endif; ?>
-						</p>
+						</pre>
 					</div>
 				</div>
 			</div>
