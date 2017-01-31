@@ -28,13 +28,6 @@ class PlgSystemDynamic404 extends JPlugin
 	protected $app;
 
 	/**
-	 * File path to the Dynamic404 library loader
-	 *
-	 * @var string
-	 */
-	protected $loaderFile = null;
-
-	/**
 	 * Constructor.
 	 *
 	 * @param   object &$subject The object to observe.
@@ -44,7 +37,6 @@ class PlgSystemDynamic404 extends JPlugin
 	{
 		// Internal variables
 		$this->app = JFactory::getApplication();
-		$this->loaderFile = JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
 
 		// Include the parent library
 		$this->includeLibrary();
@@ -470,7 +462,8 @@ class PlgSystemDynamic404 extends JPlugin
 	 */
 	protected function handleTitle()
 	{
-		$title = $this->getDocument()->getTitle();
+		$title = $this->getDocument()
+			->getTitle();
 
 		if (strstr($title, JText::_('PRODUCT_NOT_FOUND')))
 		{
@@ -590,7 +583,7 @@ class PlgSystemDynamic404 extends JPlugin
 	 */
 	public function hasComponent()
 	{
-		if (file_exists($this->loaderFile))
+		if (file_exists(JPATH_ADMINISTRATOR . '/components/com_dynamic404/dynamic404.php'))
 		{
 			return true;
 		}
@@ -605,12 +598,15 @@ class PlgSystemDynamic404 extends JPlugin
 	{
 		if ($this->hasComponent())
 		{
-			require_once $this->loaderFile;
+			jimport('yireo.loader');
 		}
 	}
 
-    protected function getDocument()
-    {
+	/**
+	 * @return JDocument
+	 */
+	protected function getDocument()
+	{
 		return JFactory::getDocument();
-    }
+	}
 }

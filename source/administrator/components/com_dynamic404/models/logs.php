@@ -22,6 +22,8 @@ class Dynamic404ModelLogs extends YireoModelItems
 	 */
 	public function __construct()
 	{
+		$rt = parent::__construct('log');
+
 		$this->setConfig('search_fields', ['request']);
 		$this->setConfig('table_prefix_auto', true);
 		$this->_checkout = false;
@@ -29,6 +31,6 @@ class Dynamic404ModelLogs extends YireoModelItems
 
 		$this->setConfig('orderby_default', 'timestamp');
 
-		return parent::__construct('log');
+		return $rt;
 	}
 }

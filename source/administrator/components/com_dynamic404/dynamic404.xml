@@ -58,7 +58,7 @@
             <folder>controllers</folder>
             <folder>helpers</folder>
             <folder>fields</folder>
-            <folder>lib</folder>
+            <folder>libraries</folder>
             <folder>models</folder>
             <folder>sql</folder>
             <folder>tables</folder>

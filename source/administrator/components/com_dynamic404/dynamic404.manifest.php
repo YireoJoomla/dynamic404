@@ -13,7 +13,7 @@
 defined('_JEXEC') or die();
 
 // Definitions
-define('D404_ERROR_PATCH', JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/error.php');
+define('D404_ERROR_PATCH', JPATH_ADMINISTRATOR . '/components/com_dynamic404/libraries/error.php');
 define('D404_ERROR_TARGET', JPATH_SITE . '/templates/system/error.php');
 define('D404_ERROR_BACKUP', JPATH_SITE . '/templates/system/error.before-dynamic404.php');
 

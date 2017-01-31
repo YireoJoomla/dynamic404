@@ -17,7 +17,7 @@ require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/core.php'
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
 
-require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
+jimport('yireo.loader');
 
 /**
  * Class Dynamic404Helper
@@ -1029,7 +1029,7 @@ class Dynamic404Helper
 
 		if (empty($file) || file_exists($file) == false)
 		{
-			$file = JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/error.php';
+			$file = JPATH_ADMINISTRATOR . '/components/com_dynamic404/libraries/error.php';
 		}
 
 		JResponse::allowCache(false);

@@ -15,15 +15,16 @@ defined('_JEXEC') or die();
 /**
  * Class Dynamic404ModelRedirects
  */
-class Dynamic404ModelRedirects extends YireoModel
+class Dynamic404ModelRedirects extends YireoModelItems
 {
 	/**
 	 * Constructor
 	 */
 	public function __construct()
 	{
+		$rt = parent::__construct('redirect');
 		$this->setConfig('search_fields', array('match', 'url'));
 
-		return parent::__construct('redirect');
+		return $rt;
 	}
 }

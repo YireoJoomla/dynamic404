@@ -12,7 +12,29 @@
 defined('_JEXEC') or die('Restricted access');
 
 // Load the Yireo library
-require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
+jimport('yireo.loader');
+
+// Check for helper
+if (!class_exists('YireoHelperInstall'))
+{
+	try
+	{
+		require_once JPATH_COMPONENT . '/helpers/install.php';
+		$installer = new YireoHelperInstall;
+		$installer->autoInstallLibrary('yireo', 'https://www.yireo.com/documents/lib_yireo_j3x.zip', 'Yireo Library');
+		$installer->redirectToInstallManager();
+	}
+	catch (Exception $e)
+	{
+		die('Yireo Library is not installed and could not be installed automatically: ' . $e->getMessage());
+	}
+}
+
+// Check for function
+if (!class_exists('\Yireo\System\Autoloader'))
+{
+	die('Yireo Library is not installed and could not be installed automatically');
+}
 
 // Load the helpers
 require_once JPATH_COMPONENT . '/helpers/helper.php';
@@ -25,7 +47,7 @@ define('DYNAMIC404_ERROR_TARGET', JPATH_SITE . '/templates/system/error.php');
 define('DYNAMIC404_ERROR_BACKUP', JPATH_SITE . '/templates/system/error.before-dynamic404.php');
 
 // Get the required controller
-$view = JFactory::getApplication()->input->getCmd('view');
+$view       = JFactory::getApplication()->input->getCmd('view');
 $controller = YireoCommonController::getControllerInstance('dynamic404', $view);
 
 // Perform the Request task

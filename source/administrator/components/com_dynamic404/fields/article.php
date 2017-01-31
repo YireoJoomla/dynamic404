@@ -10,7 +10,7 @@
 defined('JPATH_BASE') or die;
 
 // Load the Yireo library
-require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/lib/loader.php';
+jimport('yireo.loader');
 
 /**
  * Supports a modal article picker.
