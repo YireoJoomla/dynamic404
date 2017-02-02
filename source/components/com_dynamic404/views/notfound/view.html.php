@@ -12,8 +12,8 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die( 'Restricted access' );
 
-// Include the loader
-require_once(JPATH_ADMINISTRATOR.'/components/com_dynamic404/lib/loader.php');
+// Load the Yireo library
+jimport('yireo.loader');
 
 // View class
 class Dynamic404ViewNotfound extends YireoAbstractView
