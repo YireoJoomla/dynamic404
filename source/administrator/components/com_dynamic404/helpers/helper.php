@@ -146,23 +146,60 @@ class Dynamic404Helper
 	}
 
 	/**
+	 * Method to determine whether to log or not
+	 *
+     * @param array $matches
+     *
+	 * @return bool
+	 */
+    protected function allowLog($matches)
+    {
+		if ($this->params->get('enable_logging', 1) == 0)
+		{
+			return false;
+		}
+
+        if (empty($matches))
+        {
+            return true;
+        }
+
+        if ($this->params->get('log_all', 0) === 1)
+        {
+            return true;
+        }
+
+		if ($this->params->get('enable_redirect', 1))
+		{
+			return false;
+		}
+
+        foreach ($matches as $match)
+        {
+            $params = json_decode($params);
+
+            if (isset($params->redirect) && $params->redirect == 1)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+	/**
 	 * Method to log a 404 occurance to the database
 	 *
 	 * @return bool
 	 */
 	public function log()
 	{
-		if ($this->params->get('enable_logging', 1) == 0)
-		{
-			return false;
-		}
-
 		$matches = $this->getMatches();
 
-		if ($this->params->get('log_all', 0) == 0 && $this->params->get('enable_redirect', 1) && !empty($matches))
-		{
-			return false;
-		}
+        if ($this->allowLog($matches) === false)
+        {
+            return false;
+        }
 
 		$error        = $this->getErrorObject();
 		$errorCode    = $error->getCode();
