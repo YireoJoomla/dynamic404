@@ -402,11 +402,11 @@ class Dynamic404Helper
 	 *
 	 * @return bool
 	 */
-	public function checkNoRedirectLoop($url = null)
+	public function checkNoRedirectLoop($url = null, $checkOffline = true)
 	{
 		$conf = JFactory::getConfig();
 
-		if ($conf->get('offline') == 1)
+		if ($checkOffline == true && $conf->get('offline') == 1)
 		{
 			return true;
 		}
@@ -433,6 +433,7 @@ class Dynamic404Helper
 		{
 			$rt = $this->givesNoRedirectLoopLocal($url);
 		}
+
 
 		return $rt;
 	}

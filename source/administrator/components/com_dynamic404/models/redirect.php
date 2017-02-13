@@ -46,15 +46,32 @@ class Dynamic404ModelRedirect extends YireoModel
 	 */
 	public function store($data)
 	{
-		if (isset($data['url']))
+		if (isset($data['item']['url']))
 		{
-			$data['url'] = trim($data['url']);
+			$data['item']['url'] = trim($data['item']['url']);
 		}
 
-		if (isset($data['match']) && $data['match'] != '/')
+		if (isset($data['item']['match']) && $data['item']['match'] != '/')
 		{
-			$data['match'] = preg_replace('/^\//', '', $data['match']);
+			$data['item']['match'] = preg_replace('/^\//', '', $data['item']['match']);
 		}
+
+        $url = $data['item']['url'];
+        $published = $data['item']['published'];
+        $helper = new Dynamic404Helper(false);
+
+		if (!preg_match('/^(http|https):\/\//', $url))
+		{
+			$url = JUri::getInstance()
+					->toString(array('scheme', 'host', 'port')) . '/' . preg_replace('/^\//', '', $url);
+		}
+
+        if ($helper->checkNoRedirectLoop($url, false) == false)
+        {
+            $published = 0;
+        }
+
+        $data['item']['published'] = $published;
 
 		return parent::store($data);
 	}
