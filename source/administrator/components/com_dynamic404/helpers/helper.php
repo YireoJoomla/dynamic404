@@ -176,7 +176,12 @@ class Dynamic404Helper
 
         foreach ($matches as $match)
         {
-            $params = json_decode($params);
+            if (empty($match->params))
+            {
+                continue;
+            }
+
+            $params = json_decode($match->params);
 
             if (isset($params->redirect) && $params->redirect == 1)
             {
