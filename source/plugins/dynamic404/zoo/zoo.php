@@ -100,14 +100,30 @@ class plgDynamic404Zoo extends JPlugin
      */
     public function getItems($alias)
     {
+        require_once(JPATH_ADMINISTRATOR.'/components/com_zoo/config.php');
+        $zoo = App::getInstance('zoo');
+
         static $rows = null;
         if(empty($rows)) {
             $db = JFactory::getDbo();
-            $db->setQuery('SELECT `id`, `name`, `alias`, `access` FROM `#__zoo_item` WHERE `state`=1 AND `alias` LIKE "%'.$alias.'%"');
+            $query = $db->getQuery(true);
+            $query->select($db->qn(['id', 'application_id', 'type', 'name', 'alias', 'access']));
+            $query->from($db->qn('#__zoo_item'));
+            $query->where($db->qn('state') . ' = 1');
+            $query->where($db->qn('alias') . ' LIKE "%'.$alias.'%"');
+            // @todo: Possibly match with publish_up and publish_down
+            $db->setQuery($query);
             $rows = $db->loadObjectList();
 
             if(!empty($rows)) { 
                 foreach($rows as $index => $row) {
+                    $row->item = $zoo->object->create('Item');
+                    $variables = get_object_vars($row);
+                    foreach($variables as $name => $value)
+                    {
+                        $row->item->$name = $value;
+                    }
+
                     $row->row_type = 'item';
                     $rows[$index] = $row;
                 }
@@ -175,7 +191,11 @@ class plgDynamic404Zoo extends JPlugin
             default:
                 $item->rating = $this->getParams()->get('item_rating', 85);
                 $item->match_note = 'zoo item';
-                $item->url = JRoute::_('index.php?option=com_zoo&task=item&item_id='.(int)$item->id.':'.$item->alias);
+
+                require_once(JPATH_ADMINISTRATOR.'/components/com_zoo/config.php');
+                $zoo = App::getInstance('zoo');
+                $item->url = $zoo->route->item($item->item);
+                //$item->url = JRoute::_('index.php?option=com_zoo&task=item&item_id='.(int)$item->id.':'.$item->alias);
                 break;
         }
         return $item;
