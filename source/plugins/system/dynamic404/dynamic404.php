@@ -80,7 +80,7 @@ class PlgSystemDynamic404 extends JPlugin
 		}
 
 		// Make sure the error is a 404 and we are not in the administrator.
-		if (!$app->isAdmin() and $errorCode == 404)
+		if (!$app->isClient('administrator') && $errorCode == 404)
 		{
 			// Log the 404 entry
 			$helper->log();
@@ -100,7 +100,7 @@ class PlgSystemDynamic404 extends JPlugin
 
 		if ($params->get('error_page', 0) == 1)
 		{
-			JError::customErrorPage($error);
+			JErrorPage::render($error);
 
 			return;
 		}
@@ -112,14 +112,12 @@ class PlgSystemDynamic404 extends JPlugin
 	/**
 	 * Method to be called after the Joomla! Application has been initialized
 	 *
-	 * @param null
-	 *
 	 * @return void
 	 */
 	public function onAfterInitialise()
 	{
 		// Make sure we are not in the administrator.
-		if ($this->app->isSite() == false)
+		if ($this->app->isClient('site') == false)
 		{
 			return;
 		}
@@ -144,7 +142,7 @@ class PlgSystemDynamic404 extends JPlugin
 	}
 
 	/**
-	 *
+	 * @return void
 	 */
 	protected function findMatches()
 	{
@@ -180,126 +178,156 @@ class PlgSystemDynamic404 extends JPlugin
 
 	/**
 	 * Prevent calls to non-existing components
+	 *
+	 * @return void
 	 */
 	protected function stopNonexistingComponents()
 	{
 		$uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
 
-		if (preg_match('/\/component\/([a-zA-Z0-9\.\-\_]+)\//', $uri, $componentMatch))
+		if (!preg_match('/\/component\/([a-zA-Z0-9\.\-\_]+)\//', $uri, $componentMatch))
 		{
-			$component = preg_replace('/^com_/', '', $componentMatch[1]);
-
-			if (!is_dir(JPATH_SITE . '/components/com_' . $component))
-			{
-				// Fetch the last segment of this URL
-				$segments    = explode('/', $uri);
-				$lastSegment = trim(array_pop($segments));
-
-				if (empty($lastSegment))
-				{
-					$lastSegment = trim(array_pop($segments));
-				}
-
-				// Strip the ID if possible
-				if (preg_match('/^([0-9]+)(.*)/', $lastSegment, $lastSegmentMatch))
-				{
-					$lastSegment = $lastSegmentMatch[2];
-				}
-
-				// Redirect to this fake URL assuming it will trigger a 404-redirect
-				$url = JUri::base() . 'component/content/' . $lastSegment;
-				header('Location: ' . $url);
-				exit;
-			}
+			return;
 		}
+
+		$component = preg_replace('/^com_/', '', $componentMatch[1]);
+
+		if (is_dir(JPATH_SITE . '/components/com_' . $component))
+		{
+			return;
+		}
+
+		// Fetch the last segment of this URL
+		$segments    = explode('/', $uri);
+		$lastSegment = trim(array_pop($segments));
+
+		if (empty($lastSegment))
+		{
+			$lastSegment = trim(array_pop($segments));
+		}
+
+		// Strip the ID if possible
+		if (preg_match('/^([0-9]+)(.*)/', $lastSegment, $lastSegmentMatch))
+		{
+			$lastSegment = $lastSegmentMatch[2];
+		}
+
+		// Redirect to this fake URL assuming it will trigger a 404-redirect
+		$url = JUri::base() . 'component/content/' . $lastSegment;
+		header('Location: ' . $url);
+		exit;
 	}
 
 	/**
 	 * Method to force the current URL to be in lower-case
+	 *
+	 * @return void
 	 */
 	protected function forceLowerCase()
 	{
-		$force_lowercase = $this->params->get('force_lowercase', 0);
+		$forceLowercase = $this->params->get('force_lowercase', 0);
 
-		if ($force_lowercase == 1)
+		if ($forceLowercase !== 1)
 		{
-			$uri           = JUri::current();
-			$lowercase_uri = strtolower($uri);
-
-			if ($uri != $lowercase_uri)
-			{
-				header('HTTP/1.1 301 Moved Permanently');
-				header('Location: ' . $lowercase_uri);
-				$this->app->close();
-				exit;
-			}
+			return;
 		}
+
+		$uri          = JUri::current();
+		$lowercaseUri = strtolower($uri);
+
+		if ($uri == $lowercaseUri)
+		{
+			return;
+		}
+
+		header('HTTP/1.1 301 Moved Permanently');
+		header('Location: ' . $lowercaseUri);
+		$this->app->close();
+		exit;
 	}
 
 	/**
 	 * Method to enforce a certain domain upon the current URL
+	 *
+	 * @return void
 	 */
 	protected function enforceDomain()
 	{
-		$enforce_domain = trim($this->params->get('enforce_domain'));
+		$enforceDomain = trim($this->params->get('enforce_domain'));
 
-		if (!empty($enforce_domain))
+		if (empty($enforceDomain))
 		{
-			$uri = JUri::current();
-
-			if (preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
-			{
-				$hostname = $match[2];
-
-				if ($hostname != $enforce_domain)
-				{
-					$newUrl = str_replace($hostname, $enforce_domain, $uri);
-					header('HTTP/1.1 301 Moved Permanently');
-					header('Location: ' . $newUrl);
-					$this->app->close();
-					exit;
-				}
-			}
+			return;
 		}
+
+		$uri = JUri::current();
+
+		if (!preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
+		{
+			return;
+		}
+
+		$hostname = $match[2];
+
+		if ($hostname === $enforceDomain)
+		{
+			return;
+		}
+
+		$newUrl = str_replace($hostname, $enforceDomain, $uri);
+		header('HTTP/1.1 301 Moved Permanently');
+		header('Location: ' . $newUrl);
+		$this->app->close();
+		exit;
 	}
 
 	/**
 	 * Method to redirect the current domain to an alternative with www prefix
+	 *
+	 * @return void
 	 */
 	protected function redirectToWww()
 	{
-		$redirect_www = $this->params->get('redirect_www', 0);
+		$redirectWww = $this->params->get('redirect_www', 0);
 
-		if ($redirect_www == 1)
+		if ($redirectWww !== 1)
 		{
-			$uri = JUri::current();
-
-			if (preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
-			{
-				$hostname = $match[2];
-
-				if (preg_match('/^www\./', $hostname) == false)
-				{
-					$newUrl = $match[1] . '://www.' . $hostname . $match[3];
-					header('HTTP/1.1 301 Moved Permanently');
-					header('Location: ' . $newUrl);
-					$this->app->close();
-					exit;
-				}
-			}
+			return;
 		}
+
+		$uri = JUri::current();
+
+		if (!preg_match('/^(http|https)\:\/\/([^\/]+)(.*)/', $uri, $match))
+		{
+			return;
+		}
+
+		$hostname = $match[2];
+
+		if (preg_match('/^www\./', $hostname))
+		{
+			return;
+		}
+
+		$newUrl = $match[1] . '://www.' . $hostname . $match[3];
+		header('HTTP/1.1 301 Moved Permanently');
+		header('Location: ' . $newUrl);
+		$this->app->close();
+		exit;
 	}
 
 	/**
 	 * Method to redirect based on rules that are marked as static
+	 *
+	 * @return void
 	 */
 	protected function redirectStatic()
 	{
-		$redirect_static = $this->params->get('redirect_static', 0);
+		$redirectStatic = $this->params->get('redirect_static', 0);
 
-		if ($redirect_static == 0)
+		if ($redirectStatic == 0)
 		{
-			return false;
+			return;
 		}
 
 		$db    = JFactory::getDbo();
@@ -312,7 +340,7 @@ class PlgSystemDynamic404 extends JPlugin
 
 		if ($rs == 0)
 		{
-			return false;
+			return;
 		}
 
 		require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php';
@@ -327,19 +355,17 @@ class PlgSystemDynamic404 extends JPlugin
 	/**
 	 * Method to be called after the component has been routed
 	 *
-	 * @param null
-	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onAfterRoute()
 	{
 		// Make sure we are not in the administrator.
-		if ($this->app->isSite() == false)
+		if ($this->app->isClient('site') === false)
 		{
-			return null;
+			return;
 		}
 
-		if ($this->hasComponent() == false)
+		if ($this->hasComponent() === false)
 		{
 			return;
 		}
@@ -357,9 +383,7 @@ class PlgSystemDynamic404 extends JPlugin
 	/**
 	 * Method to expand the URL
 	 *
-	 * @param null
-	 *
-	 * @return null
+	 * @return void
 	 */
 	public function doExpandUrl()
 	{
@@ -426,9 +450,7 @@ class PlgSystemDynamic404 extends JPlugin
 	/**
 	 * Method to be called after the component has been rendered
 	 *
-	 * @param null
-	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onAfterRender()
 	{
@@ -438,7 +460,7 @@ class PlgSystemDynamic404 extends JPlugin
 
 		if (!empty($debugMessages))
 		{
-			$body      = JResponse::getBody();
+			$body      = $this->app->getBody();
 			$debugHtml = array();
 
 			foreach ($debugMessages as $debugMessage)
@@ -448,7 +470,7 @@ class PlgSystemDynamic404 extends JPlugin
 
 			$debugHtml = '<script>' . implode('', $debugHtml) . '</script>';
 			$body      = str_replace('</body>', $debugHtml . '</body>', $body);
-			JResponse::setBody($body);
+			$this->app->setBody($body);
 		}
 
 		$this->handleMessageQueue();
@@ -458,6 +480,7 @@ class PlgSystemDynamic404 extends JPlugin
 	/**
 	 * Method to handle the message queue to see if any stupid errors await there
 	 *
+	 * @return void
 	 * @throws Exception
 	 */
 	protected function handleTitle()
@@ -467,37 +490,40 @@ class PlgSystemDynamic404 extends JPlugin
 
 		if (strstr($title, JText::_('PRODUCT_NOT_FOUND')))
 		{
-			$error = 404;
-			JError::raiseError($error, $title);
+			throw new Exception('404 - ' . $title);
 		}
 	}
 
 	/**
 	 * Method to handle the message queue to see if any stupid errors await there
 	 *
+	 * @return void
 	 * @throws Exception
 	 */
 	protected function handleMessageQueue()
 	{
-		if (method_exists($this->app, 'getMessageQueue'))
+		if (!method_exists($this->app, 'getMessageQueue'))
 		{
-			$messageQueue = $this->app->getMessageQueue();
+			return;
+		}
 
-			if (!empty($messageQueue))
+		$messageQueue = $this->app->getMessageQueue();
+
+		if (empty($messageQueue))
+		{
+			return;
+		}
+
+		foreach ($messageQueue as $message)
+		{
+			if ($message['type'] != 'error')
 			{
-				foreach ($messageQueue as $message)
-				{
-					if ($message['type'] != 'error')
-					{
-						continue;
-					}
+				continue;
+			}
 
-					if (strstr($message['message'], JText::_('JGLOBAL_CATEGORY_NOT_FOUND')))
-					{
-						$error = 404;
-						JError::raiseError($error, $message['message']);
-					}
-				}
+			if (strstr($message['message'], JText::_('JGLOBAL_CATEGORY_NOT_FOUND')))
+			{
+				throw new Exception('404 - ' . $message['message']);
 			}
 		}
 	}
@@ -527,19 +553,19 @@ class PlgSystemDynamic404 extends JPlugin
 		}
 
 		// Fetch the support key
-		$support_key = $this->getSupportKey($componentName);
+		$supportKey = $this->getSupportKey($componentName);
 
-		if (empty($support_key))
+		if (empty($supportKey))
 		{
 			return false;
 		}
 
 		// Add the support key to the URL
 		$separator    = strpos($url, '?') !== false ? '&' : '?';
-		$url_addition = $separator . 'key=' . $support_key;
+		$urlAddition = $separator . 'key=' . $supportKey;
 
 		// Check if this key is valid
-		$tmpUrl   = $url . $url_addition . '&validate=1';
+		$tmpUrl   = $url . $urlAddition . '&validate=1';
 		$http     = JHttpFactory::getHttp();
 		$response = $http->get($tmpUrl, array());
 
@@ -551,7 +577,7 @@ class PlgSystemDynamic404 extends JPlugin
 		// Add the key to the update URL
 		if ($response->body == '1')
 		{
-			$url .= $url_addition;
+			$url .= $urlAddition;
 
 			return false;
 		}
@@ -571,9 +597,8 @@ class PlgSystemDynamic404 extends JPlugin
 		// Fetch the support key
 		JLoader::import('joomla.application.component.helper');
 		$component   = JComponentHelper::getComponent($componentName);
-		$support_key = $component->params->get('support_key', '');
 
-		return $support_key;
+		return $component->params->get('support_key', '');
 	}
 
 	/**
@@ -593,13 +618,18 @@ class PlgSystemDynamic404 extends JPlugin
 
 	/**
 	 * Check whether the Dynamic404 can be included and if not, try to include
+	 *
+	 * @return boolean
 	 */
-	public function includeLibrary()
+	protected function includeLibrary()
 	{
 		if ($this->hasComponent())
 		{
 			jimport('yireo.loader');
+			return true;
 		}
+
+		return false;
 	}
 
 	/**
