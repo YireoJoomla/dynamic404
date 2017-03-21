@@ -355,7 +355,7 @@ class Dynamic404Helper
 		// Check if this is a 500 error
 		$errorCode = $this->getErrorCode();
 
-		if ($errorCode === 500)
+		if ($errorCode === 500 && $this->params->get('redirect_non404', 0) === 0)
 		{
 			return array();
 		}
@@ -446,6 +446,16 @@ class Dynamic404Helper
 	 */
 	public function checkNoRedirectLoop($url = null, $checkOffline = true)
 	{
+		if ($this->params->get('prevent_loops', 1) === 0)
+        {
+            return true;
+        }
+
+        if (!function_exists('curl_init'))
+        {
+            return true;
+        }
+
 		$conf = JFactory::getConfig();
 
 		if ($checkOffline == true && $conf->get('offline') == 1)
@@ -704,15 +714,12 @@ class Dynamic404Helper
 		}
 
 		// Perform a simple HEAD-test to check for redirects or endless redirects
-		if ($this->params->get('prevent_loops', 1) == 1 && function_exists('curl_init'))
-		{
-			$rt = $this->checkNoRedirectLoop($url);
+		$rt = $this->checkNoRedirectLoop($url);
 
-			if ($rt === false)
-			{
-                header('Status: 508 Loop Detected');
-				return false;
-			}
+		if ($rt === false)
+		{
+            header('Status: 508 Loop Detected');
+			return false;
 		}
 
 		$http_status = $this->getHttpStatusByMatch($match);
