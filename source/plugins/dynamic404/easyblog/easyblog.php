@@ -109,6 +109,10 @@ class plgDynamic404EasyBlog extends JPlugin
      */
     private function prepareItem($item)
     {
+        if (empty($item->id)) {
+            return null;
+        }
+
         $item->type = 'component';
         $item->name = $item->title;
         $item->rating = $this->params->get('rating', 85);
@@ -122,6 +126,7 @@ class plgDynamic404EasyBlog extends JPlugin
                 $item->url = EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id='.(int)$item->id);
                 break;
         }
+
         return $item;
     }
 
