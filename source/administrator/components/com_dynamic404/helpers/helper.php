@@ -1070,10 +1070,15 @@ class Dynamic404Helper
 			}
 		}
 
-		if (empty($file) || file_exists($file) == false)
+		if (empty($file) || file_exists($file) === false)
 		{
 			$file = JPATH_ADMINISTRATOR . '/components/com_dynamic404/libraries/error.php';
 		}
+
+        if (file_exists($file) === false)
+        {
+            throw new Exception('Error file not found');
+        }
 
 		JResponse::allowCache(false);
 		require_once $file;
