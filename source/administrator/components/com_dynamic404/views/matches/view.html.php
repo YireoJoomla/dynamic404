@@ -25,6 +25,16 @@ require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/debug.php
  */
 class Dynamic404ViewMatches extends YireoView
 {
+	/**
+	 * @var string
+	 */
+	private $url = '';
+
+	/**
+	 * Dynamic404ViewMatches constructor.
+	 *
+	 * @param array $config
+	 */
 	public function __construct($config = array())
 	{
 		$this->loadToolbar = false;
@@ -32,39 +42,64 @@ class Dynamic404ViewMatches extends YireoView
 		parent::__construct($config);
 	}
 
-	/*
+	/**
 	 * Method to prepare for HTML output
 	 *
-	 * @access public
 	 * @param string $tpl
-	 * @return null
+	 *
+	 * @return  mixed
 	 */
 	public function display($tpl = null)
 	{
 		$this->url = $this->app->input->get('url', null, 'raw');
-		$this->matches = $this->getMatches($this->url);
+		$this->matches = $this->getMatches();
 
-		parent::display();
+		return parent::display();
 	}
 
 	/**
-	 * @param null $url
-	 *
 	 * @return array
 	 * @throws Exception
 	 */
-	public function getMatches($url = null)
+	public function getMatches()
 	{
-		if (empty($url))
+		if (empty($this->url))
 		{
 			return array();
 		}
 
-		$remoteUrl = JUri::root() . 'index.php?option=com_dynamic404&view=matches&format=raw&url=' . urlencode(base64_encode($url));
+		$remoteUrl = $this->getRemoteUrl();
 
 		$result = Dynamic404Helper::fetchPage($remoteUrl, null, true);
 		$matches = json_decode($result);
 
 		return $matches;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isDebug()
+	{
+		$params = JComponentHelper::getParams('com_dynamic404');
+		return (bool) $params->get('debug');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getUrl()
+	{
+		return $this->url;
+	}
+
+	/**
+	 * @param $url
+	 *
+	 * @return string
+	 */
+	public function getRemoteUrl()
+	{
+		return JUri::root() . 'index.php?option=com_dynamic404&view=matches&format=raw&url=' . urlencode(base64_encode($this->url));
 	}
 }

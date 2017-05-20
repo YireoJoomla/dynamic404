@@ -44,7 +44,16 @@ class Dynamic404ViewMatches extends YireoView
 	 */
 	public function display($tpl = null)
 	{
-		ini_set('display_errors', 0);
+		if ($this->isDebug())
+		{
+			ini_set('display_errors', 1);
+			error_reporting(E_ALL);
+		}
+		else
+		{
+			ini_set('display_errors', 0);
+			error_reporting(0);
+		}
 
 		$this->url = $this->app->input->get->getBase64('url');
 		$this->url = base64_decode($this->url);
@@ -65,8 +74,18 @@ class Dynamic404ViewMatches extends YireoView
 	public function getMatches($url)
 	{
 		$matchHelper = new Dynamic404HelperMatch($url);
-		$matches = $matchHelper->getMatches();
+		$matches     = $matchHelper->getMatches();
 
 		return $matches;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isDebug()
+	{
+		$params = JComponentHelper::getParams('com_dynamic404');
+
+		return (bool) $params->get('debug');
 	}
 }

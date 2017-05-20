@@ -23,7 +23,7 @@ defined('_JEXEC') or die();
 		<div class="js-stools-container-bar">
 			<label for="filter_search" class="element-invisible" aria-invalid="false"><?php echo JText::_('LIB_YIREO_VIEW_FORM_FIELDSET_SOURCE'); ?></label>
 			<div class="btn-wrapper input-append">
-				<input type="text" name="url" id="filter_search" value="<?php echo $this->url; ?>" placeholder="<?php echo JText::_('LIB_YIREO_VIEW_FORM_FIELDSET_SOURCE'); ?>" class="input-xxlarge">
+				<input type="text" name="url" id="filter_search" value="<?php echo $this->getUrl(); ?>" placeholder="<?php echo JText::_('LIB_YIREO_VIEW_FORM_FIELDSET_SOURCE'); ?>" class="input-xxlarge">
 				<button type="submit" class="btn hasTooltip" title="" data-original-title="<?php echo JText::_('LIB_YIREO_VIEW_FORM_FIELDSET_SOURCE'); ?>">
 					<i class="icon-search"></i>
 				</button>
@@ -80,3 +80,9 @@ defined('_JEXEC') or die();
 		</tbody>
 	</table>
 </form>
+
+<div class="debug">
+    <?php if ($this->isDebug()) : ?>
+        <a href="<?php echo $this->getRemoteUrl() ?>"><?php echo $this->getRemoteUrl() ?></a>
+    <?php endif; ?>
+</div>

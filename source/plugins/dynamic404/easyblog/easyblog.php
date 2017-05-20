@@ -2,145 +2,164 @@
 /**
  * Joomla! plugin for Dynamic404 - EasyBlog
  *
- * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
+ * @author      Yireo <info@yireo.com>
+ * @copyright   Copyright 2017 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        https://www.yireo.com/
  */
 
 // Check to ensure this file is included in Joomla!
-defined('_JEXEC') or die( 'Restricted access' );
+defined('_JEXEC') or die('Restricted access');
 
 // Import the parent class
-jimport( 'joomla.plugin.plugin' );
+jimport('joomla.plugin.plugin');
 
 /**
- * Dynamic404 Plugin for EasyBlog 
+ * Dynamic404 Plugin for EasyBlog
  */
-class plgDynamic404EasyBlog extends JPlugin
+class PlgDynamic404EasyBlog extends JPlugin
 {
-    /**
-     * Determine whether this plugin could be used
-     * 
-     * @access private
-     * @param null
-     * @return boolean
-     */
-    private function isEnabled()
-    {
-        if(!is_dir(JPATH_SITE.'/components/com_easyblog')) {
-            return false;
-        }
-        return true;
-    }
+	/**
+	 * Determine whether this plugin could be used
+	 *
+	 * @return boolean
+	 */
+	private function isEnabled()
+	{
+		if (!is_dir(JPATH_SITE . '/components/com_easyblog'))
+		{
+			return false;
+		}
 
-    /**
-     * Return all possible matches
-     *
-     * @access public
-     * @param string $urilast
-     * @return array
-     */
-    public function getMatches($urilast = null)
-    {
-        $matches = array();
-        if($this->isEnabled() == false) {
-            return $matches;
-        }
+		return true;
+	}
 
-        $rows = $this->getItems($urilast);
-        if(!empty($rows)) {
-            foreach( $rows as $row ) {
+	/**
+	 * Return all possible matches
+	 *
+	 * @param string $urilast
+	 *
+	 * @return array
+	 */
+	public function getMatches($urilast = null)
+	{
+		$matches = array();
 
-                if(!isset($row->permalink) || empty($row->permalink) || (empty($urilast) && empty($urilast2))) {
-                    continue;
-                }
+		if ($this->isEnabled() == false)
+		{
+			return $matches;
+		}
 
-                $row = $this->prepareItem($row);
-                if(empty($row)) {
-                    continue;
-                }
+		$rows = $this->getItems($urilast);
 
-                $matches[] = $row;
-            }
-        }
+		if (!empty($rows))
+		{
+			foreach ($rows as $row)
+			{
+				if (!isset($row->permalink) || empty($row->permalink) || (empty($urilast) && empty($urilast2)))
+				{
+					continue;
+				}
 
-        return $matches;
-    }
+				$row = $this->prepareItem($row);
 
-    /**
-     * Get all EasyBlog items
-     *
-     * @access public
-     * @param string $alias
-     * @return array
-     */
-    public function getItems($alias)
-    {
-        static $rows = null;
-        if(empty($rows)) {
-            $db = JFactory::getDbo();
-            $query = $db->getQuery(true);
-            $query->select($db->quoteName(array('id', 'title', 'permalink')));
-            $query->from($db->quoteName('#__easyblog_post'));
-            $query->where($db->quoteName('published') . ' = 1');
-            $query->where($db->quoteName('permalink') . ' LIKE '. $db->quote('%'.$alias.'%'));
-            $db->setQuery($query);
-            $rows = $db->loadObjectList();
+				if (empty($row))
+				{
+					continue;
+				}
 
-            if(!empty($rows)) { 
-                foreach($rows as $index => $row) {
-                    $row->row_type = 'item';
-                    $rows[$index] = $row;
-                }
-            }
-        }
+				$matches[] = $row;
+			}
+		}
 
-        return $rows;
-    }
+		return $matches;
+	}
 
-    /**
-     * Method to prepare an item
-     *
-     * @access private
-     * @param object $item
-     * @return string
-     */
-    private function prepareItem($item)
-    {
-        if (empty($item->id)) {
-            return null;
-        }
+	/**
+	 * Get all EasyBlog items
+	 *
+	 * @param string $alias
+	 *
+	 * @return array
+	 */
+	public function getItems($alias)
+	{
+		static $rows = null;
 
-        $item->type = 'component';
-        $item->name = $item->title;
-        $item->rating = $this->params->get('rating', 85);
-        $item->match_note = 'easyblog item';
+		if (is_array($rows))
+		{
+			return $rows;
+		}
 
-        switch($item->row_type) {
-    
-            case 'item':
-            default:
-                $this->includeFiles();
-                $item->url = EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id='.(int)$item->id);
-                break;
-        }
+		$db    = JFactory::getDbo();
+		$query = $db->getQuery(true);
+		$query->select($db->quoteName(array('id', 'title', 'permalink')));
+		$query->from($db->quoteName('#__easyblog_post'));
+		$query->where($db->quoteName('published') . ' = 1');
+		$query->where($db->quoteName('permalink') . ' LIKE ' . $db->quote('%' . $alias . '%'));
+		$db->setQuery($query);
+		$rows = $db->loadObjectList();
 
-        return $item;
-    }
+		if (!empty($rows))
+		{
+			foreach ($rows as $index => $row)
+			{
+				$row->row_type = 'item';
+				$rows[$index]  = $row;
+			}
+		}
 
-    private function includeFiles()
-    {
-        $files = array(
-            JPATH_SITE.'/administrator/components/com_easyblog/includes/easyblog.php',
-            JPATH_SITE.'/components/com_easyblog/helpers/router.php',
-        );
+		return $rows;
+	}
 
-        foreach($files as $file) {
-            if (file_exists($file)) {
-                require_once $file;
-            }
-        }
-    }
+	/**
+	 * Method to prepare an item
+	 *
+	 * @param object $item
+	 *
+	 * @return string
+	 */
+	private function prepareItem($item)
+	{
+		if (empty($item->id))
+		{
+			return null;
+		}
+
+		$item->type       = 'component';
+		$item->name       = $item->title;
+		$item->rating     = $this->params->get('rating', 85);
+		$item->match_note = 'easyblog item';
+
+		switch ($item->row_type)
+		{
+			case 'item':
+			default:
+				$this->includeFiles();
+				$item->url = EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id=' . (int) $item->id);
+				break;
+		}
+
+		return $item;
+	}
+
+	/**
+	 * Include component files
+	 */
+	private function includeFiles()
+	{
+		$files = array(
+			JPATH_SITE . '/administrator/components/com_easyblog/includes/easyblog.php',
+			JPATH_SITE . '/components/com_easyblog/helpers/router.php',
+		);
+
+		foreach ($files as $file)
+		{
+			if (file_exists($file))
+			{
+				require_once $file;
+			}
+		}
+	}
 }

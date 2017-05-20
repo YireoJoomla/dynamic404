@@ -34,13 +34,13 @@ class Dynamic404Controller extends YireoAbstractController
 	{
 		/** @var JApplicationCms app */
 		$this->app = JFactory::getApplication();
-        $input = $this->app->input;
-        $view = $input->get('view');
+		$input     = $this->app->input;
+		$view      = $input->get('view');
 
-        if (empty($view))
-        {
-		    $input->set('view', 'notfound');
-        }
+		if (empty($view))
+		{
+			$input->set('view', 'notfound');
+		}
 
 		parent::__construct();
 	}
@@ -51,7 +51,8 @@ class Dynamic404Controller extends YireoAbstractController
 	public function test()
 	{
 		echo 'Basic connection succeeded<br/>';
-		echo 'Current URL: ' . JUri::getInstance()->toString(array('scheme', 'host', 'port', 'path', 'params'));
+		echo 'Current URL: ' . JUri::getInstance()
+				->toString(array('scheme', 'host', 'port', 'path', 'params'));
 		$this->app->close();
 	}
 }
