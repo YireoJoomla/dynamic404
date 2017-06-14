@@ -2,9 +2,9 @@
 /**
  * Joomla! component Dynamic404
  *
- * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
+ * @author      Yireo <info@yireo.com>
+ * @copyright   Copyright 2017 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        https://www.yireo.com/
  */
@@ -30,7 +30,7 @@ class PlgSystemDynamic404 extends JPlugin
 	/**
 	 * Constructor.
 	 *
-	 * @param   object &$subject The object to observe.
+	 * @param   object $subject  The object to observe.
 	 * @param   array  $config   An optional associative array of configuration settings.
 	 */
 	public function __construct(&$subject, $config)
@@ -44,7 +44,7 @@ class PlgSystemDynamic404 extends JPlugin
 		parent::__construct($subject, $config);
 
 		// Set the error handler for E_ERROR to be the class handleError method.
-		if ($this->app->isSite() && $this->hasComponent())
+		if ($this->app->isClient('site') && $this->hasComponent())
 		{
 			JError::setErrorHandling(E_ERROR, 'callback', array('PlgSystemDynamic404', 'handleError'));
 			set_exception_handler(array('PlgSystemDynamic404', 'handleError'));
@@ -54,11 +54,13 @@ class PlgSystemDynamic404 extends JPlugin
 	/**
 	 * Method to catch Joomla! error-handling
 	 *
-	 * @param object $error JError object
+	 * @param   object  $error JError object
+	 *
+	 * @return void
 	 */
 	static public function handleError($error)
 	{
-		if (empty($error) || $error == false)
+		if (empty($error) || $error === false)
 		{
 			$error = JError::getError();
 		}
@@ -80,7 +82,7 @@ class PlgSystemDynamic404 extends JPlugin
 		}
 
 		// Make sure the error is a 404 and we are not in the administrator.
-		if (!$app->isAdmin() && $errorCode == 404)
+		if (!$app->isClient('administrator') && $errorCode === 404)
 		{
 			// Log the 404 entry
 			$helper->log();
@@ -98,7 +100,7 @@ class PlgSystemDynamic404 extends JPlugin
 		// Render the error page.
 		$params = JComponentHelper::getParams('com_dynamic404');
 
-		if ($params->get('error_page', 0) == 1)
+		if ($params->get('error_page', 0) === 1)
 		{
 			JErrorPage::render($error);
 
@@ -117,7 +119,7 @@ class PlgSystemDynamic404 extends JPlugin
 	public function onAfterInitialise()
 	{
 		// Make sure we are not in the administrator.
-		if ($this->app->isSite() == false)
+		if ($this->app->isClient('site') === false)
 		{
 			return;
 		}
@@ -149,7 +151,7 @@ class PlgSystemDynamic404 extends JPlugin
 		$option = $this->app->input->getCmd('option');
 		$view   = $this->app->input->getCmd('view');
 
-		if ($option != 'com_dynamic404' || $view != 'matches')
+		if ($option !== 'com_dynamic404' || $view !== 'matches')
 		{
 			return;
 		}
@@ -235,7 +237,7 @@ class PlgSystemDynamic404 extends JPlugin
 		$uri          = JUri::current();
 		$lowercaseUri = strtolower($uri);
 
-		if ($uri == $lowercaseUri)
+		if ($uri === $lowercaseUri)
 		{
 			return;
 		}
@@ -325,7 +327,7 @@ class PlgSystemDynamic404 extends JPlugin
 	{
 		$redirectStatic = $this->params->get('redirect_static', 0);
 
-		if ($redirectStatic == 0)
+		if ($redirectStatic === 0)
 		{
 			return;
 		}
@@ -338,7 +340,7 @@ class PlgSystemDynamic404 extends JPlugin
 		$db->setQuery($query);
 		$rs = $db->loadResult();
 
-		if ($rs == 0)
+		if ($rs === 0)
 		{
 			return;
 		}
@@ -360,7 +362,7 @@ class PlgSystemDynamic404 extends JPlugin
 	public function onAfterRoute()
 	{
 		// Make sure we are not in the administrator.
-		if ($this->app->isSite() === false)
+		if ($this->app->isClient('site') === false)
 		{
 			return;
 		}
@@ -374,7 +376,7 @@ class PlgSystemDynamic404 extends JPlugin
 		$url    = JUri::current();
 		$params = JComponentHelper::getParams('com_dynamic404');
 
-		if (!empty($params) && $params->get('expand_ids', 1) == 1 && preg_match('/\/([0-9]+)/', $url))
+		if (!empty($params) && $params->get('expand_ids', 1) === 1 && preg_match('/\/([0-9]+)/', $url))
 		{
 			$this->doExpandUrl();
 		}
@@ -387,7 +389,7 @@ class PlgSystemDynamic404 extends JPlugin
 	 */
 	public function doExpandUrl()
 	{
-		if ($this->hasComponent() == false)
+		if ($this->hasComponent() === false)
 		{
 			return;
 		}
@@ -399,7 +401,7 @@ class PlgSystemDynamic404 extends JPlugin
 		$newUrl    = null;
 
 		// Check for the article view
-		if ($component == 'com_content' && $view == 'article')
+		if ($component === 'com_content' && $view === 'article')
 		{
 			require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/match/article.php';
 
@@ -417,21 +419,25 @@ class PlgSystemDynamic404 extends JPlugin
 				$className = 'plg' . $plugin->type . $plugin->name;
 				$method    = 'onDynamic404Link';
 
-				if (class_exists($className))
+				if (!class_exists($className))
 				{
-					$dispatcher = JEventDispatcher::getInstance();
-					$plugin     = new $className($dispatcher, (array) $plugin);
+					continue;
+				}
 
-					if (method_exists($plugin, $method))
-					{
-						$result = $plugin->$method($component, $view, $id);
+				$dispatcher = JEventDispatcher::getInstance();
+				$plugin     = new $className($dispatcher, (array) $plugin);
 
-						if (!empty($result))
-						{
-							$newUrl = $result;
-							break;
-						}
-					}
+				if (!method_exists($plugin, $method))
+				{
+					continue;
+				}
+
+				$result = $plugin->$method($component, $view, $id);
+
+				if (!empty($result))
+				{
+					$newUrl = $result;
+					break;
 				}
 			}
 		}
@@ -440,7 +446,7 @@ class PlgSystemDynamic404 extends JPlugin
 		$url    = preg_replace('/\?(.*)/', '', $url);
 
 		// Redirect if needed
-		if (!empty($newUrl) && $newUrl != $url)
+		if (!empty($newUrl) && $newUrl !== $url)
 		{
 			$this->app->redirect($newUrl);
 			$this->app->close();
@@ -490,7 +496,12 @@ class PlgSystemDynamic404 extends JPlugin
 
 		if (strstr($title, JText::_('PRODUCT_NOT_FOUND')))
 		{
-			throw new Exception('404 - ' . $title);
+			if (!preg_match('/^404/', $title))
+			{
+				$title = '404 - ' . $title;
+			}
+
+			throw new Exception($title);
 		}
 	}
 
@@ -516,28 +527,34 @@ class PlgSystemDynamic404 extends JPlugin
 
 		foreach ($messageQueue as $message)
 		{
-			if ($message['type'] != 'error')
+			if ($message['type'] !== 'error')
 			{
 				continue;
 			}
 
 			if (strstr($message['message'], JText::_('JGLOBAL_CATEGORY_NOT_FOUND')))
 			{
-				throw new Exception('404 - ' . $message['message']);
+				if (!preg_match('/^404/', $message['message']))
+				{
+					$message['message'] = '404 - ' . $message['message'];
+				}
+
+				throw new Exception($message['message']);
 			}
 		}
 	}
 
-	/*
+	/**
 	 * Method to add support key to download URL
 	 *
-	 * @param string &$url The URL to download the package from
-	 * @param array &$headers An optional associative array of headers
+	 * @param   string  $url     The URL to download the package from
+	 * @param   array   $headers An optional associative array of headers
+	 *
 	 * @return boolean
 	 */
 	public function onInstallerBeforePackageDownload(&$url, &$headers)
 	{
-		if ($this->hasComponent() == false)
+		if ($this->hasComponent() === false)
 		{
 			return true;
 		}
@@ -575,7 +592,7 @@ class PlgSystemDynamic404 extends JPlugin
 		}
 
 		// Add the key to the update URL
-		if ($response->body == '1')
+		if ($response->body === '1')
 		{
 			$url .= $urlAddition;
 
@@ -588,7 +605,7 @@ class PlgSystemDynamic404 extends JPlugin
 	/**
 	 * Get the support key stored with the component
 	 *
-	 * @param $componentName
+	 * @param   string  $componentName Component name
 	 *
 	 * @return mixed
 	 */
@@ -604,7 +621,7 @@ class PlgSystemDynamic404 extends JPlugin
 	/**
 	 * Check whether the component has been installed
 	 *
-	 * @return bool
+	 * @return boolean
 	 */
 	public function hasComponent()
 	{
@@ -626,6 +643,7 @@ class PlgSystemDynamic404 extends JPlugin
 		if ($this->hasComponent())
 		{
 			jimport('yireo.loader');
+
 			return true;
 		}
 

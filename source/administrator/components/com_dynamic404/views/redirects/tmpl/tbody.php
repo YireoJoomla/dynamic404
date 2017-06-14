@@ -2,41 +2,50 @@
 /**
  * Joomla! Yireo Library
  *
- * @author Yireo
- * @package YireoLib
+ * @author    Yireo
+ * @package   YireoLib
  * @copyright Copyright 2016
- * @license GNU Public License
- * @link https://www.yireo.com/
- * @version 0.6.0
+ * @license   GNU Public License
+ * @link      https://www.yireo.com/
+ * @version   0.6.0
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die();
 
-$popup_image = '<img src="../media/com_dynamic404/images/external_link.gif" />';
-$item_match = Dynamic404HelperGUI::getItemMatchLink($item->match, $item->type);
-$item_url = Dynamic404HelperGUI::getItemUrlLink($item->url);
+/** @var object $item */
+/** @var int $i */
+/** @var Dynamic404ViewRedirects $this */
+
+$popupImage = '<img src="../media/com_dynamic404/images/external_link.gif" />';
+$itemMatch  = $this->guiHelper->getItemMatchLink($item->match, $item->type);
+$itemUrl    = $this->guiHelper->getItemUrlLink($item->url);
 ?>
 <td class="break">
-    <?php if($this->isCheckedOut($item)) : ?>
-        <?php echo $this->checkedout($item, $i); ?>
+	<?php if ($this->isCheckedOut($item)): ?>
+		<?php echo $this->checkedout($item, $i); ?>
         <span class="checked_out"><?php echo $item->match; ?></span>
-    <?php else: ?>
-        <a href="<?php echo $item->edit_link; ?>" title="<?php echo JText::_( 'Edit Tag' ); ?>"><?php echo $item->match; ?></a>
-    <?php endif; ?>
-    <?php if(!empty($item_match)) : ?>
-        <a href="<?php echo $item_match; ?>" target="_new"><?php echo $popup_image; ?></a>
-    <?php endif; ?>
+	<?php else: ?>
+        <a href="<?php echo $item->edit_link; ?>" title="<?php echo JText::_('Edit Tag'); ?>">
+            <?php echo html_entity_decode($item->match); ?>
+        </a>
+	<?php endif; ?>
+
+	<?php if (!empty($itemMatch)) : ?>
+        <a href="<?php echo $itemMatch; ?>" target="_new">
+            <?php echo $popupImage; ?>
+        </a>
+	<?php endif; ?>
 </td>
 <td>
-    <?php echo Dynamic404HelperGUI::getTypeTitle($item->type); ?>
+	<?php echo $this->guiHelper->getTypeTitle($item->type); ?>
 </td>
 <td class="break">
-    <?php echo $item->url; ?>
-    <?php if (!empty($item_url)) : ?>
-        <a href="<?php echo $item_url; ?>" target="_new"><?php echo $popup_image; ?></a>
-    <?php endif; ?>
+	<?php echo $item->url; ?>
+	<?php if (!empty($itemUrl)) : ?>
+        <a href="<?php echo $itemUrl; ?>" target="_new"><?php echo $popupImage; ?></a>
+	<?php endif; ?>
 </td>
 <td>
-    <?php echo $item->description; ?>
+	<?php echo $item->description; ?>
 </td>

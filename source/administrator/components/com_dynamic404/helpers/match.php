@@ -4,7 +4,7 @@
  *
  * @package    Dynamic404
  * @author     Yireo <info@yireo.com>
- * @copyright  Copyright 2016 Yireo (https://www.yireo.com/)
+ * @copyright  Copyright 2017 Yireo (https://www.yireo.com/)
  * @license    GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link       https://www.yireo.com/
  */
@@ -73,7 +73,7 @@ class Dynamic404HelperMatch
 	 * Constructor
 	 *
 	 * @param string $uri
-	 * @param bool   $staticRulesOnly
+	 * @param bool $staticRulesOnly
 	 */
 	public function __construct($uri = null, $staticRulesOnly = false)
 	{
@@ -91,7 +91,6 @@ class Dynamic404HelperMatch
 		$this->uriHelper    = new Dynamic404HelperUri;
 		$this->ratingHelper = new \Yireo\Dynamic404\Utility\Rating($uri);
 
-		// Set the URI
 		$this->setUri($uri);
 
 		// Set the static flag
@@ -104,7 +103,9 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to set the internal URI
 	 *
-	 * @param null $uri
+	 * @param   string  $uri Internal URI
+	 *
+	 * @return void
 	 */
 	public function setUri($uri = null)
 	{
@@ -115,16 +116,17 @@ class Dynamic404HelperMatch
 
 		if (empty($uri))
 		{
-			$uri = JUri::current();
+			$uri = JUri::getInstance();
+			$uri = $uri->toString(array('scheme', 'host', 'port', 'path', 'query'));
 		}
 
 		$this->uri = $uri;
 	}
 
 	/**
-	 * Method to get a specific value from the request-array
+	 * Method to get a specific value from the request array
 	 *
-	 * @param string $name
+	 * @param   string   $name Option name within request
 	 *
 	 * @return array
 	 */
@@ -149,7 +151,7 @@ class Dynamic404HelperMatch
 		}
 
 		// Call the internal matches
-		if ($this->staticRulesOnly == true)
+		if ($this->staticRulesOnly === true)
 		{
 			$this->findRedirectMatches();
 		}
@@ -170,7 +172,7 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to parse all URI parts from the URL
 	 *
-	 * @return null
+	 * @return void
 	 */
 	protected function parseUri()
 	{
@@ -180,14 +182,14 @@ class Dynamic404HelperMatch
 		$uri = str_replace('administrator/index.php', '', $uri);
 		$uri = str_replace('?noredirect=1', '', $uri);
 		$uri = preg_replace('/\/$/', '', $uri);
-		$uri = str_replace('_', '-', $uri);
 
 		// If this looks like a SEF-URL, parse it
-		if (strstr($uri, 'index.php?option=') == false && strstr($uri, 'index.php?Itemid=') == false)
+		if (strstr($uri, 'index.php?option=') === false && strstr($uri, 'index.php?Itemid=') === false)
 		{
 			$this->parseSefUri($uri);
 		}
-		elseif (preg_match('/id=([a-zA-Z0-9\.\-\_\:]+)/', $uri, $match))
+
+		if (empty($this->request['uri']) && preg_match('/id=([a-zA-Z0-9\.\-\_\:]+)/', $uri, $match))
 		{
 			$this->parseNonSefUri($uri, $match);
 		}
@@ -198,49 +200,54 @@ class Dynamic404HelperMatch
 	/**
 	 * Parse a non-SEF URI
 	 *
-	 * @param $uri
-	 * @param $match
+	 * @param   string  $uri   URI
+	 * @param   array   $match Match array
+	 *                         
+	 * @return void
 	 */
 	protected function parseNonSefUri($uri, $match)
 	{
 		$id          = $match[1];
 		$id          = explode(':', $id);
-		$uri_lastnum = null;
-		$uri_last    = null;
+		$uriLastnum = null;
+		$uriLast    = null;
 
 		if (is_numeric($id[0]))
 		{
-			$uri_lastnum = $id[0];
+			$uriLastnum = $id[0];
 		}
 
 		if (is_string($id[0]))
 		{
-			$uri_last = $id[0];
+			$uriLast = $id[0];
 		}
 
 		if (!empty($id[1]))
 		{
-			$uri_last = $id[1];
+			$uriLast = $id[1];
 		}
 
 		$this->request = array(
 			'uri'         => $uri,
 			'uri_parts'   => array(),
-			'uri_last'    => $uri_last,
-			'uri_lastnum' => $uri_lastnum,
+			'uri_last'    => $uriLast,
+			'uri_lastnum' => $uriLastnum,
 		);
 	}
 
 	/**
 	 * Parse a SEF URI
 	 *
-	 * @param $uri
+	 * @param   string  $uri Current URI
+	 *                       
+	 * @return void
 	 */
 	protected function parseSefUri($uri)
 	{
 		$juri = JUri::getInstance();
 
 		// Fetch the current request and parse it
+		$uri = str_replace('_', '-', $uri);
 		$uri = preg_replace('/^\//', '', $uri);
 		$uri = preg_replace('/\.(html|htm|php)$/', '', $uri);
 		$uri = preg_replace('/\?lang=([a-zA-Z0-9]+)$/', '', $uri);
@@ -253,41 +260,41 @@ class Dynamic404HelperMatch
 			$uri = preg_replace('/\&(.*)$/', '', $uri);
 		}
 
-		$uri_parts   = $this->uriHelper->getArrayFromUri($uri);
-		$uri_lastnum = null;
-		$uri_last    = null;
-		$total       = count($uri_parts);
+		$uriParts   = $this->uriHelper->getArrayFromUri($uri);
+		$uriLastnum = null;
+		$uriLast    = null;
+		$total       = count($uriParts);
 
 		for ($i = $total; $i > 0; $i--)
 		{
-			if (!isset($uri_parts[$i - 1]))
+			if (!isset($uriParts[$i - 1]))
 			{
 				continue;
 			}
 
-			if (!is_numeric($uri_parts[$i - 1]))
+			if (!is_numeric($uriParts[$i - 1]))
 			{
-				$uri_last = $uri_parts[$i - 1];
+				$uriLast = $uriParts[$i - 1];
 				break;
 			}
-			elseif (is_numeric($uri_parts[$i - 1]))
+			elseif (is_numeric($uriParts[$i - 1]))
 			{
-				$uri_lastnum = $uri_parts[$i - 1];
+				$uriLastnum = $uriParts[$i - 1];
 			}
 		}
 
 		$this->request = array(
 			'uri'         => $uri,
-			'uri_parts'   => $uri_parts,
-			'uri_last'    => $uri_last,
-			'uri_lastnum' => $uri_lastnum,
+			'uri_parts'   => $uriParts,
+			'uri_last'    => $uriLast,
+			'uri_lastnum' => $uriLastnum,
 		);
 	}
 
 	/**
 	 * Method to collect all the numerical matches
 	 *
-	 * @return array
+	 * @return boolean
 	 */
 	public function findNumericMatches()
 	{
@@ -354,9 +361,9 @@ class Dynamic404HelperMatch
 	}
 
 	/**
-	 * @param $string
+	 * @param   string  $string String
 	 *
-	 * @return mixed|string
+	 * @return string
 	 */
 	protected function sanitizeString($string)
 	{
@@ -375,7 +382,7 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to collect all the text matches
 	 *
-	 * @return bool
+	 * @return boolean
 	 */
 	public function findTextMatches()
 	{
@@ -431,8 +438,8 @@ class Dynamic404HelperMatch
 	}
 
 	/**
-	 * @param $text1
-	 * @param $text2
+	 * @param   string  $text1 Text 1
+	 * @param   string  $text2 Text 2
 	 *
 	 * @return array
 	 */
@@ -478,7 +485,7 @@ class Dynamic404HelperMatch
 	 *
 	 * @param   array $matches List of matches to add
 	 *
-	 * @return null
+	 * @return void
 	 */
 	private function addToMatches($matches)
 	{
@@ -491,7 +498,7 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to parse all the matches
 	 *
-	 * @return null
+	 * @return void
 	 */
 	private function parseMatches()
 	{
@@ -521,7 +528,7 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to sort all the matches by their rating
 	 *
-	 * @return null
+	 * @return void
 	 */
 	private function sortMatches()
 	{
@@ -571,7 +578,7 @@ class Dynamic404HelperMatch
 	 * @param   string $text1 String to match
 	 * @param   string $text2 String to compare with
 	 *
-	 * @return bool
+	 * @return boolean
 	 * @deprecated Use \Yireo\Dynamic404\Utility\Rating::hasSimpleMatch() instead
 	 */
 	static public function matchTextString($text1, $text2)
@@ -587,7 +594,7 @@ class Dynamic404HelperMatch
 	 * @param   string $text1 String to match
 	 * @param   string $text2 String to compare with
 	 *
-	 * @return bool
+	 * @return array
 	 * @deprecated Use \Yireo\Dynamic404\Utility\Rating::getMatchedParts() instead
 	 */
 	static public function matchTextParts($text1, $text2)
@@ -601,7 +608,9 @@ class Dynamic404HelperMatch
 	 * Method alias for debugging
 	 *
 	 * @param   string $msg      Debugging message
-	 * @param   null   $variable Optional variable to dump
+	 * @param   string $variable Optional variable to dump
+	 *
+	 * @return void
 	 */
 	public function debug($msg, $variable = null)
 	{

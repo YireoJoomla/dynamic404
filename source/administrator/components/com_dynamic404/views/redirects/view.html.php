@@ -4,12 +4,12 @@
  *
  * @author      Yireo (https://www.yireo.com/)
  * @package     Dynamic404
- * @copyright   Copyright 2016 Yireo (https://www.yireo.com/)
+ * @copyright   Copyright 2017 Yireo (https://www.yireo.com/)
  * @license     GNU Public License (GPL) version 3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @link        https://www.yireo.com/
  */
 
-// Check to ensure this file is included in Joomla!  
+// Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die();
 
 /**
@@ -20,12 +20,16 @@ defined('_JEXEC') or die();
  */
 class Dynamic404ViewRedirects extends YireoViewList
 {
+	/**
+	 * @var Dynamic404HelperGUI
+	 */
+	public $guiHelper;
+
 	/*
 	 * Method to prepare for HTML output
 	 *
-	 * @access public
 	 * @param string $tpl
-	 * @return null
+	 * @return void
 	 */
 	public function display($tpl = null)
 	{
@@ -44,6 +48,8 @@ class Dynamic404ViewRedirects extends YireoViewList
 			$item->match = urldecode($item->match);
 			$item->url = urldecode($item->url);
 		}
+
+		$this->guiHelper = new Dynamic404HelperGUI;
 
 		parent::display($tpl);
 	}
