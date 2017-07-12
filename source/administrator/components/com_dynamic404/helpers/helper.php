@@ -769,7 +769,7 @@ class Dynamic404Helper
 		{
 			if ($value > 0 && preg_match('/^menuitem_id_([0-9]+)/', $name, $match))
 			{
-				if ($errorCode === $match[1])
+				if ((int) $errorCode === (int) $match[1])
 				{
 					$itemId = (int) $value;
 				}
@@ -777,7 +777,7 @@ class Dynamic404Helper
 
 			if ($value > 0 && preg_match('/^article_id_([0-9]+)/', $name, $match))
 			{
-				if ($errorCode === $match[1])
+				if ((int) $errorCode === (int) $match[1])
 				{
 					$article = (int) $value;
 				}

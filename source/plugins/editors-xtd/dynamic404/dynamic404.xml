@@ -2,7 +2,7 @@
 <extension version="2.5" type="plugin" group="editors-xtd" method="upgrade">
     <name>PLG_EDITORS-XTD_DYNAMIC404</name>
     <author>Yireo</author>
-    <creationDate>May 2017</creationDate>
+    <creationDate>June 2017</creationDate>
     <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
     <authorEmail>info@yireo.com</authorEmail>
     <authorUrl>https://www.yireo.com/</authorUrl>
