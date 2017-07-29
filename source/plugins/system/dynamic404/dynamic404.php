@@ -44,7 +44,7 @@ class PlgSystemDynamic404 extends JPlugin
 		parent::__construct($subject, $config);
 
 		// Set the error handler for E_ERROR to be the class handleError method.
-		if ($this->app->isClient('site') && $this->hasComponent())
+		if ($this->app->isSite() && $this->hasComponent())
 		{
 			JError::setErrorHandling(E_ERROR, 'callback', array('PlgSystemDynamic404', 'handleError'));
 			set_exception_handler(array('PlgSystemDynamic404', 'handleError'));
@@ -82,7 +82,7 @@ class PlgSystemDynamic404 extends JPlugin
 		}
 
 		// Make sure the error is a 404 and we are not in the administrator.
-		if (!$app->isClient('administrator') && $errorCode === 404)
+		if (!$app->isAdmin() && $errorCode === 404)
 		{
 			// Log the 404 entry
 			$helper->log();
@@ -119,7 +119,7 @@ class PlgSystemDynamic404 extends JPlugin
 	public function onAfterInitialise()
 	{
 		// Make sure we are not in the administrator.
-		if ($this->app->isClient('site') === false)
+		if ($this->app->isSite() === false)
 		{
 			return;
 		}
@@ -362,7 +362,7 @@ class PlgSystemDynamic404 extends JPlugin
 	public function onAfterRoute()
 	{
 		// Make sure we are not in the administrator.
-		if ($this->app->isClient('site') === false)
+		if ($this->app->isSite() === false)
 		{
 			return;
 		}
