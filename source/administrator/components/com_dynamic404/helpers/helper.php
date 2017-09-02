@@ -309,10 +309,8 @@ class Dynamic404Helper
 		{
 			return JRoute::_('index.php?option=com_search&searchword=' . $this->getLastSegment() . '&Itemid=' . $itemId);
 		}
-		else
-		{
-			return JRoute::_('index.php?option=com_search&searchword=' . $this->getLastSegment());
-		}
+
+		return JRoute::_('index.php?option=com_search&searchword=' . $this->getLastSegment());
 	}
 
 	/**
@@ -324,31 +322,28 @@ class Dynamic404Helper
 	 */
 	public function setErrorObject($error = null)
 	{
-		if (!empty($error) && is_object($error))
+		if ($error instanceof Error || $error instanceof Exception)
 		{
-			if ($error instanceof Error || $error instanceof Exception)
-			{
-				return $this->error = $error;
-			}
+			$this->error = $error;
+
+			return $this->error;
 		}
 
 		$error = JError::getError();
 
 		if (!empty($error))
 		{
-			return $this->error = $error;
+			$this->error = $error;
 		}
 
 		if (empty($this->error) || $this->error === false)
 		{
-			$code    = 404;
-			$message = JText::_('Not found');
-
-			return $this->error = new Exception($message, $code);
+			$code        = 404;
+			$message     = JText::_('Not found');
+			$this->error = new Exception($message, $code);
 		}
 
-		echo 'unknown test: ';
-		exit;
+		return $this->error;
 	}
 
 	/**
@@ -559,7 +554,7 @@ class Dynamic404Helper
 	private function givesNoRedirectLoopYireoApi($url)
 	{
 		$userAgent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : null;
-		$key       = $this->params->get('support_key');
+		$key       = trim($this->params->get('support_key'));
 
 		if (empty($key))
 		{
@@ -649,13 +644,13 @@ class Dynamic404Helper
 		if (empty($match->params))
 		{
 			$match->params = null;
-			$matchRedirect = $globalRedirect;
+			$matchRedirect = (int) $globalRedirect;
 		}
 		else
 		{
 			/** @var \Joomla\Registry\Registry $params */
 			$params        = YireoHelper::toRegistry($match->params);
-			$matchRedirect = $params->get('redirect', $globalRedirect);
+			$matchRedirect = (int) $params->get('redirect', $globalRedirect);
 		}
 
 		// Set global redirect value
@@ -871,7 +866,7 @@ class Dynamic404Helper
 	{
 		$componentParams = JComponentHelper::getParams('com_dynamic404');
 
-		if ($componentParams->get('error_page', self::ERROR_PAGE_DYNAMIC404) === self::ERROR_PAGE_MENUITEM_JSREDIRECT)
+		if ($componentParams->get('error_page', self::ERROR_PAGE_DYNAMIC404) == self::ERROR_PAGE_MENUITEM_JSREDIRECT)
 		{
 			return true;
 		}
@@ -1068,6 +1063,7 @@ class Dynamic404Helper
 	 * Method to handle the default error page
 	 *
 	 * @return null
+	 * @throws Exception
 	 */
 	public function displayErrorPage()
 	{

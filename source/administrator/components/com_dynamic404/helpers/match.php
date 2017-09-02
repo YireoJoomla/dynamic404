@@ -177,6 +177,7 @@ class Dynamic404HelperMatch
 	protected function parseUri()
 	{
 		$uri = $this->uri;
+		$uri = urldecode($uri);
 
 		// Replace non-sense strings
 		$uri = str_replace('administrator/index.php', '', $uri);

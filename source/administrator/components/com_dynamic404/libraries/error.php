@@ -12,6 +12,10 @@
 // No direct access
 defined('_JEXEC') or die('Restricted access');
 
+/**
+ * @var $this Dynamic404Helper
+ */
+
 // Include the 404 Helper
 require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/helpers/helper.php';
 
@@ -61,7 +65,7 @@ if (!empty($article))
 }
 
 // Fetch additional properties
-$errorMsg         = (is_object($this->error) && isset($this->error->message)) ? $this->error->message : $this->title;
+$errorMsg         = (is_object($this->error) && method_exists($this->error, 'getMessage')) ? $this->error->getMessage() : $this->title;
 $additionalErrors = $this->getAdditionalErrors();
 
 // Debug messages
@@ -75,6 +79,7 @@ $debugMessages = $debug->getMessages();
 <head>
 	<title><?php echo $errorCode ?> - <?php echo $this->title; ?></title>
 	<link rel="stylesheet" href="<?php echo JURI::base(); ?>/templates/system/css/error.css" type="text/css"/>
+    <script src="<?php echo JURI::base(); ?>/media/jui/js/jquery.min.js"></script>
 </head>
 <body>
 <?php if ($helper->isMenuItemJsRedirect()) : ?>
@@ -117,8 +122,7 @@ $debugMessages = $debug->getMessages();
 							<li>
 								<a href="<?php echo JRoute::_('index.php?option=com_search&searchword=' . urlencode($search)); ?>"
 								   title="<?php echo JText::_('COM_DYNAMIC404_SEARCH');
-								   ?>"><?php echo JText::_('COM_DYNAMIC404_SEARCH_FOR'); ?>: "<?php echo $search; ?>
-									"</a>
+								   ?>"><?php echo JText::_('COM_DYNAMIC404_SEARCH_FOR'); ?>: "<?php echo $search; ?>"</a>
 							</li>
 						<?php endif; ?>
 					</ul>
