@@ -522,7 +522,9 @@ class Dynamic404Helper
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_MAXCONNECTS, 1);
 		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
-		curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+
+		$defaultUserAgent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : '';
+		curl_setopt($ch, CURLOPT_USERAGENT, $defaultUserAgent);
 
 		$curlHead = curl_exec($ch);
 		$curlInfo = curl_getinfo($ch);
@@ -553,7 +555,7 @@ class Dynamic404Helper
 	 */
 	private function givesNoRedirectLoopYireoApi($url)
 	{
-		$userAgent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : null;
+		$userAgent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : '';
 		$key       = trim($this->params->get('support_key'));
 
 		if (empty($key))
@@ -960,7 +962,8 @@ class Dynamic404Helper
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 		curl_setopt($ch, CURLOPT_MAXREDIRS, 1);
 
-		$userAgent = (!empty($useragent)) ? $useragent : $_SERVER['HTTP_USER_AGENT'];
+		$defaultUserAgent = (isset($_SERVER['HTTP_USER_AGENT'])) ? $_SERVER['HTTP_USER_AGENT'] : '';
+		$userAgent = (!empty($useragent)) ? $useragent : $defaultUserAgent;
 		curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
 
 		$response = curl_exec($ch);
