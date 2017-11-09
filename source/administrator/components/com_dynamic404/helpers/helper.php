@@ -481,6 +481,16 @@ class Dynamic404Helper
 			return false;
 		}
 
+        if (JUri::getInstance()->toString() == $url) 
+        {
+            return false;
+        }
+
+        if (JUri::current() == $url) 
+        {
+            return false;
+        }
+
 		$redirectLoopChecker = $this->params->get('redirect_loop_checker', 'internal');
 
 		if ($redirectLoopChecker === 'yireo')
@@ -811,7 +821,7 @@ class Dynamic404Helper
 			// Construct the URL
 			if (isset($item->component) && $item->component === 'com_dynamic404')
 			{
-				$currentUrl = JURI::current();
+				$currentUrl = JUri::current();
 				$currentUrl = str_replace('?noredirect=1', '', $currentUrl);
 				$url        = JRoute::_('index.php?option=com_dynamic404&Itemid=' . $itemId . '&uri=' . base64_encode($currentUrl));
 			}
@@ -836,7 +846,7 @@ class Dynamic404Helper
 		}
 
 		// Complete the URL
-		$url = JURI::base() . substr($url, strlen(JURI::base(true)) + 1);
+		$url = JUri::base() . substr($url, strlen(JUri::base(true)) + 1);
 
 		// Detect the language-SEF
 		$currentLanguage = JFactory::getLanguage();
@@ -1075,7 +1085,7 @@ class Dynamic404Helper
 
 		// Add some common variables to the error-page
 		$this->error    = $this->getErrorObject();
-		$this->baseurl  = JURI::base();
+		$this->baseurl  = JUri::base();
 		$this->template = $application->getTemplate();
 		$this->debug    = 0;
 
@@ -1215,7 +1225,7 @@ class Dynamic404Helper
 
 		if ($fullurl)
 		{
-			return JURI::root() . $match;
+			return JUri::root() . $match;
 		}
 		else
 		{
@@ -1250,7 +1260,7 @@ class Dynamic404Helper
 	 */
 	public function preventHacks()
 	{
-		$url   = JURI::current();
+		$url   = JUri::current();
 		$block = false;
 
 		// Block certain hack strings
