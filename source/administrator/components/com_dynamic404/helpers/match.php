@@ -103,7 +103,7 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to set the internal URI
 	 *
-	 * @param   string  $uri Internal URI
+	 * @param   string $uri Internal URI
 	 *
 	 * @return void
 	 */
@@ -126,7 +126,7 @@ class Dynamic404HelperMatch
 	/**
 	 * Method to get a specific value from the request array
 	 *
-	 * @param   string   $name Option name within request
+	 * @param   string $name Option name within request
 	 *
 	 * @return array
 	 */
@@ -201,15 +201,15 @@ class Dynamic404HelperMatch
 	/**
 	 * Parse a non-SEF URI
 	 *
-	 * @param   string  $uri   URI
-	 * @param   array   $match Match array
-	 *                         
+	 * @param   string $uri  URI
+	 * @param   array $match Match array
+	 *
 	 * @return void
 	 */
 	protected function parseNonSefUri($uri, $match)
 	{
-		$id          = $match[1];
-		$id          = explode(':', $id);
+		$id         = $match[1];
+		$id         = explode(':', $id);
 		$uriLastnum = null;
 		$uriLast    = null;
 
@@ -239,8 +239,8 @@ class Dynamic404HelperMatch
 	/**
 	 * Parse a SEF URI
 	 *
-	 * @param   string  $uri Current URI
-	 *                       
+	 * @param   string $uri Current URI
+	 *
 	 * @return void
 	 */
 	protected function parseSefUri($uri)
@@ -264,7 +264,7 @@ class Dynamic404HelperMatch
 		$uriParts   = $this->uriHelper->getArrayFromUri($uri);
 		$uriLastnum = null;
 		$uriLast    = null;
-		$total       = count($uriParts);
+		$total      = count($uriParts);
 
 		for ($i = $total; $i > 0; $i--)
 		{
@@ -362,7 +362,7 @@ class Dynamic404HelperMatch
 	}
 
 	/**
-	 * @param   string  $string String
+	 * @param   string $string String
 	 *
 	 * @return string
 	 */
@@ -439,8 +439,8 @@ class Dynamic404HelperMatch
 	}
 
 	/**
-	 * @param   string  $text1 Text 1
-	 * @param   string  $text2 Text 2
+	 * @param   string $text1 Text 1
+	 * @param   string $text2 Text 2
 	 *
 	 * @return array
 	 */
@@ -505,24 +505,26 @@ class Dynamic404HelperMatch
 	{
 		$uri = JUri::getInstance();
 
-		if (!empty($this->matches))
+		if (empty($this->matches))
 		{
-			foreach ($this->matches as $index => $match)
+			return;
+		}
+
+		foreach ($this->matches as $index => $match)
+		{
+			// Cast this match to the right class
+			$match = Dynamic404ModelMatch::getInstance($match);
+
+			// Parse the current match
+			$match->parse();
+
+			if ($uri->toString(array('path')) == $match->url)
 			{
-				// Cast this match to the right class
-				$match = Dynamic404ModelMatch::getInstance($match);
-
-				// Parse the current match
-				$match->parse();
-
-				if ($uri->toString(array('path')) == $match->url)
-				{
-					unset($this->matches[$index]);
-					continue;
-				}
-
-				$this->matches[$index] = $match;
+				//unset($this->matches[$index]);
+				continue;
 			}
+
+			$this->matches[$index] = $match;
 		}
 	}
 
