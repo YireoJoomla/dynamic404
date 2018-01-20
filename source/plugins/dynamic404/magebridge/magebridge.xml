@@ -2,7 +2,7 @@
 <extension version="2.5" type="plugin" group="dynamic404" method="upgrade">
     <name>PLG_DYNAMIC404_MAGEBRIDGE</name>
     <author>Yireo</author>
-    <creationDate>September 2017</creationDate>
+    <creationDate>November 2017</creationDate>
     <copyright>Copyright 2016 Yireo.com. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
     <authorEmail>info@yireo.com</authorEmail>
