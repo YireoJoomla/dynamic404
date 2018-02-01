@@ -136,10 +136,10 @@ class Dynamic404HelperMatchArticle
 
 			if ($this->params->get('apply_character_rating', 1) == 1)
 			{
-				$match->rating     = $match->rating + $additionalRating;
+				$match->rating = $match->rating + $additionalRating;
 			}
 
-			$matches[]         = $match;
+			$matches[] = $match;
 		}
 
 		return $matches;
@@ -158,6 +158,7 @@ class Dynamic404HelperMatchArticle
 	public function getArticleLink($article_slug, $category_id = null, $section_id = null, $language = null)
 	{
         $authorised = JAccess::getAuthorisedViewLevels(JFactory::getUser()->get('id'));
+		$article = $this->getArticleSlugDetailsById($article_slug);
 
 		if (empty($article_slug))
 		{
@@ -168,7 +169,6 @@ class Dynamic404HelperMatchArticle
 
 		if (empty($category_id) || is_numeric($article_slug))
 		{
-			$article = $this->getArticleSlugDetailsById($article_slug);
 
             if (!in_array($article->access, $authorised))
             {
@@ -181,10 +181,10 @@ class Dynamic404HelperMatchArticle
 				$category_id  = $article->catid . ':' . $article->catalias;
 			}
 		}
-                
+
         if (!empty($category_id) && !empty($article->cataccess) && !in_array($article->cataccess, $authorised))
         {
-            $category_id = 0;
+            return null;
         }
 
 		if ($section_id > 0)
@@ -203,7 +203,7 @@ class Dynamic404HelperMatchArticle
 			$link .= '&lang=' . $language;
 		}
 
-		return $link;
+		return JRoute::_($link);
 	}
 
 	/**
@@ -356,7 +356,7 @@ class Dynamic404HelperMatchArticle
 			return $this->getArticleLink($item->id . ':' . $item->alias, $item->catid, $item->sectionid, $item->language);
 		}
 
-		return $item->url = $this->getArticleLink($item->id . ':' . $item->alias, $item->catid, null, $item->language);
+		return $this->getArticleLink($item->id . ':' . $item->alias, $item->catid, null, $item->language);
 	}
 
 	/**
