@@ -341,6 +341,10 @@ class Dynamic404HelperMatchArticle
 		$item->parseLanguage();
 		$item->url = $this->getArticleUrl($item);
 
+        if (empty($item->url)) {
+            return null;
+        }
+
 		return $item;
 	}
 
