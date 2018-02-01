@@ -157,6 +157,8 @@ class Dynamic404HelperMatchArticle
 	 */
 	public function getArticleLink($article_slug, $category_id = null, $section_id = null, $language = null)
 	{
+        $authorised = JAccess::getAuthorisedViewLevels(JFactory::getUser()->get('id'));
+
 		if (empty($article_slug))
 		{
 			return null;
@@ -168,12 +170,22 @@ class Dynamic404HelperMatchArticle
 		{
 			$article = $this->getArticleSlugDetailsById($article_slug);
 
+            if (!in_array($article->access, $authorised))
+            {
+                return null;
+            }
+
 			if (!empty($article))
 			{
 				$article_slug = $article->id . ':' . $article->alias;
 				$category_id  = $article->catid . ':' . $article->catalias;
 			}
 		}
+                
+        if (!empty($category_id) && !empty($article->cataccess) && !in_array($article->cataccess, $authorised))
+        {
+            $category_id = 0;
+        }
 
 		if ($section_id > 0)
 		{
@@ -203,8 +215,9 @@ class Dynamic404HelperMatchArticle
 	{
 		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true);
-		$query->select($db->quoteName(array('a.id', 'a.alias', 'a.catid')))
+		$query->select($db->quoteName(array('a.id', 'a.alias', 'a.catid', 'a.access')))
 			->select($db->quoteName('c.alias', 'catalias'))
+			->select($db->quoteName('c.access', 'cataccess'))
 			->from($db->quoteName('#__content', 'a'))
 			->join('INNER', $db->quoteName('#__categories', 'c') . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')')
 			->where($db->quoteName('a.id') . '=' . (int) $id)
