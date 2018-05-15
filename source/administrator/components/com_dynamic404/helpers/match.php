@@ -195,7 +195,7 @@ class Dynamic404HelperMatch
 			$this->parseNonSefUri($uri, $match);
 		}
 
-		if (empty($this->request['uri'])) {
+		if (!empty($this->request['uri'])) {
     		$this->debug('Current URI', $this->request['uri']);
         }
 	}
