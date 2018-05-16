@@ -34,6 +34,9 @@ class Dynamic404ViewHome extends YireoViewHome
 
 		JToolbarHelper::custom('updateQueries', 'archive', '', 'DB Upgrade', false);
 
+        $matchArticle = new Dynamic404HelperMatchArticle();
+        $matchArticle->findNumericMatches(1);
+
 		parent::display($tpl);
 	}
 

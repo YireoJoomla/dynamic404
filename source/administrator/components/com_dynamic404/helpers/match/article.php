@@ -222,6 +222,7 @@ class Dynamic404HelperMatchArticle
 			->join('INNER', $db->quoteName('#__categories', 'c') . ' ON (' . $db->quoteName('a.catid') . ' = ' . $db->quoteName('c.id') . ')')
 			->where($db->quoteName('a.id') . '=' . (int) $id)
 			->setLimit(1);
+
 		$db->setQuery($query);
 		$article = $db->loadObject();
 
@@ -245,7 +246,8 @@ class Dynamic404HelperMatchArticle
 			->where($db->quoteName('id') . '=' . (int) $id)
 			->order($db->quoteName('ordering') . ' ASC')
 			->setLimit(1);
-		$db->setQuery($query, 0, 1);
+
+		$db->setQuery($query);
 
 		if ($this->params->get('debug', 0) == 1)
 		{

@@ -154,9 +154,11 @@ class Dynamic404HelperMatchCategory
 			->from($db->quoteName('#__categories'))
 			->where($db->quoteName('extension') . '=' . $db->quote('com_content'))
 			->where($db->quoteName('published') . '= 1')
-			->where($db->quoteName('id') . ' = ' . (int) $id);
+			->where($db->quoteName('id') . ' = ' . (int) $id)
+            ->setLimit(1)
+        ;
 
-		$db->setQuery($query, 0, 1);
+		$db->setQuery($query);
 
 		if ($this->params->get('debug') == 1)
 		{
