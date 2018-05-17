@@ -332,6 +332,7 @@ class Dynamic404HelperMatchArticle
 		}
 
 		// Cast this match to the right class
+        require_once JPATH_ADMINISTRATOR . '/components/com_dynamic404/models/match.php';
 		$item = Dynamic404ModelMatch::getInstance($item);
 
 		$item->type    = 'component';
