@@ -82,6 +82,20 @@ class Dynamic404ControllerBrowse extends YireoController
 
 		require_once JPATH_COMPONENT . '/helpers/helper.php';
 		$response = Dynamic404Helper::fetchPage($url);
+
+        if (empty($response)) 
+        {
+			$this->responses[] = 'ERROR: Empty response for URL '.$url;
+
+            $client = curl_init($url);  
+            curl_setopt($client, CURLOPT_HEADER, 1);
+            curl_setopt($client, CURLOPT_RETURNTRANSFER, 1);
+            $response = curl_exec($client);
+			$this->responses[] = $response;
+
+			return false;
+        }
+
 		echo $response;
 		exit;
 	}
