@@ -165,7 +165,7 @@ class Dynamic404HelperMatchManual
 				}
 
 				// Match the full URLs
-				if ($row->type == 'full_url' && !empty($uri) && strstr($row->match, $uri))
+				if ($row->type == 'full_url' && !empty($uri) && strstr($uri, $row->match))
 				{
 					$row->type   = 'component';
 					$row->rating = $params->get('rating', 0);
@@ -178,8 +178,9 @@ class Dynamic404HelperMatchManual
 					$matches[] = $row;
 					break;
 				}
+
 				// Match the last URL-segment
-				elseif ($row->type == 'last_segment' && !empty($uri_last) && $row->match == $uri_last)
+				if ($row->type == 'last_segment' && !empty($uri_last) && $row->match == $uri_last)
 				{
 					$row->type   = 'component';
 					$row->rating = $params->get('rating', 0);
@@ -192,8 +193,9 @@ class Dynamic404HelperMatchManual
 					$matches[] = $row;
 					break;
 				}
+
 				// Fuzzy matching
-				elseif ($row->type == 'fuzzy')
+				if ($row->type == 'fuzzy')
 				{
 					if ((!empty($uri_last) && strstr($row->match, $uri_last)) || (!empty($uri_last) && strstr($uri_last, $row->match)))
 					{
@@ -209,8 +211,9 @@ class Dynamic404HelperMatchManual
 						break;
 					}
 				}
+
 				// Matching by regular expression
-				elseif ($row->type == 'regex')
+				if ($row->type == 'regex')
 				{
 					$regex = trim($row->match);
 					$regex = str_replace('/', '\/', $regex);
@@ -242,8 +245,9 @@ class Dynamic404HelperMatchManual
 						break;
 					}
 				}
+
 				// Match any segment
-				elseif ($row->type == 'any_segment' && !empty($uri_parts) && in_array($row->match, $uri_parts))
+				if ($row->type == 'any_segment' && !empty($uri_parts) && in_array($row->match, $uri_parts))
 				{
 					$row->type   = 'component';
 					$row->rating = $params->get('rating', 0);
@@ -255,7 +259,6 @@ class Dynamic404HelperMatchManual
 
 					$matches[] = $row;
 					break;
-
 				}
 			}
 		}
