@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<updates>
+    <update>
+        <name>Dynamic404 - K2</name>
+        <element>k2</element>
+        <type>plugin</type>
+        <folder>dynamic404</folder>
+        <client>0</client>
+        <version>1.2.1</version>
+        <infourl title="Dynamic404 - K2">https://www.yireo.com/software/joomla-extensions/dynamic404</infourl>
+        <downloads>
+            <downloadurl type="full" format="zip">https://www.yireo.com/documents/plg_dynamic404_k2_j3x.zip</downloadurl>
+        </downloads>
+        <maintainer>Yireo</maintainer>
+        <maintainerurl>https://www.yireo.com</maintainerurl>
+        <section>Yireo</section>
+        <targetplatform name="joomla" version="3.[0123456789]" />
+        <php_minimum>5.4</php_minimum>
+    </update>
+</updates>
